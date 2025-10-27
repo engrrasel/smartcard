@@ -1,0 +1,7 @@
+Hi {{ user.email }},
+
+Click the link below to activate your Smart NFC Card account:
+
+{{ activate_url }}
+
+If you didn't sign up, ignore this message.
