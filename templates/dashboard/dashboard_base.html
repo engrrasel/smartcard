@@ -48,8 +48,14 @@
             <a href="{% url 'dashboard' %}">Overview</a>
             <a href="{% url 'edit_profile' %}">My Profile</a>
             <a href="#">Settings</a>
-            <a href="{% url 'logout' %}">Logout</a>
+            <form action="{% url 'logout' %}" method="post" style="display:inline-flex;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                Logout
+            </button>
+        </form>
         </div>
+
 
 
         <!-- Main Content -->

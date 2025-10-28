@@ -1,7 +1,7 @@
 from django.contrib.auth import login, get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
+from django.utils.encoding import force_bytes
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
@@ -9,16 +9,17 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .forms import SignupForm, ProfileForm
-from .models import CustomUser, UserProfile
+from .models import UserProfile
 from django.contrib.auth.views import LoginView
 
 
 def signup_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')  # ✅ User already logged in হলে signup এ আসতে পারবে না
+        return redirect('dashboard')
 
-    if request.method == 'POST':
-        form = SignupForm(request.POST)
+    form = SignupForm(request.POST or None)
+
+    if request.method == "POST":
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
@@ -32,39 +33,42 @@ def signup_view(request):
             )
 
             send_mail(
-                "Activate your SmartCard Account",
-                f"Click the link to activate: {activation_link}",
+                'Activate your SmartCard account',
+                f'Click here to verify your email: {activation_link}',
                 settings.DEFAULT_FROM_EMAIL,
-                [user.email]
+                [user.email],
             )
 
-            messages.success(request, "Check your email to verify your account.")
-            return redirect('email_sent')
-    else:
-        form = SignupForm()
-        return render(request, 'accounts/signup.html', {'form': form})
+            messages.success(
+                request,
+                "Thank you! Account created succesfully! Please verify your email before login."
+            )
+            return redirect('login')
+
+        messages.error(request, "Please correct the errors below.")
+
+    return render(request, 'accounts/signup.html', {'form': form})
 
 
+
+User = get_user_model()
 
 
 def activate_account(request, uidb64, token):
     try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = CustomUser.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except Exception:
         user = None
 
     if user and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
         login(request, user)
+        messages.success(request, "Your email is verified. Welcome!")
         return redirect('dashboard')
-    else:
-        return render(request, 'accounts/activation_invalid.html')
 
-
-def email_sent(request):
-    return render(request, 'accounts/email_sent.html')
+    return render(request, "accounts/activation_failed.html")
 
 
 @login_required
@@ -75,15 +79,12 @@ def dashboard(request):
 @login_required
 def edit_profile(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
+    form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
 
-    if request.method == "POST":
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
-            return redirect('edit_profile')
-    else:
-        form = ProfileForm(instance=profile)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect('edit_profile')
 
     return render(request, "accounts/edit_profile.html", {"form": form})
 
@@ -99,15 +100,5 @@ def remove_profile_picture(request):
     return redirect('edit_profile')
 
 
-
-
-class CustomLoginView(LoginView):
-    template_name = "accounts/login.html"
-    redirect_authenticated_user = True  # ✅ MAGIC LINE
-
-    def get_success_url(self):
-        return reverse("dashboard")
-    
-
-
-    
+def email_sent(request):
+    return render(request, 'accounts/email_sent.html')

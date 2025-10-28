@@ -7,16 +7,16 @@
 
         <form method="POST">
             {% csrf_token %}
-            
-            <div class="mb-3">
-                <label>Email</label>
-                <input type="email" name="email" class="form-control" required>
-            </div>
 
-            <div class="mb-3">
-                <label>Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
+            {{ form.non_field_errors }}
+
+            {% for field in form %}
+                <div class="mb-3">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    <small class="text-danger">{{ field.errors }}</small>
+                </div>
+            {% endfor %}
 
             <button type="submit" class="btn btn-primary w-100">Sign Up</button>
 
