@@ -139,7 +139,7 @@ AUTH_USER_MODEL = 'app_accounts.CustomUser'
 
 
 # login redirects
-LOGIN_URL = "/login/"
+LOGIN_URL = 'dashboard'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 

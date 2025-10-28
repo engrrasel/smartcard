@@ -10,9 +10,13 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .forms import SignupForm, ProfileForm
 from .models import CustomUser, UserProfile
+from django.contrib.auth.views import LoginView
 
 
 def signup_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')  # ✅ User already logged in হলে signup এ আসতে পারবে না
+
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -38,8 +42,9 @@ def signup_view(request):
             return redirect('email_sent')
     else:
         form = SignupForm()
+        return render(request, 'accounts/signup.html', {'form': form})
 
-    return render(request, 'accounts/signup.html', {'form': form})
+
 
 
 def activate_account(request, uidb64, token):
@@ -92,3 +97,17 @@ def remove_profile_picture(request):
         profile.save()
         messages.success(request, "Profile picture removed successfully!")
     return redirect('edit_profile')
+
+
+
+
+class CustomLoginView(LoginView):
+    template_name = "accounts/login.html"
+    redirect_authenticated_user = True  # ✅ MAGIC LINE
+
+    def get_success_url(self):
+        return reverse("dashboard")
+    
+
+
+    
