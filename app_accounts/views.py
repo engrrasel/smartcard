@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import SignupForm, ProfileForm
 from .models import UserProfile
 from django.contrib.auth.views import LoginView
+from django.shortcuts import render, get_object_or_404
+from .models import UserProfile
 
 
 def signup_view(request):
@@ -68,7 +70,7 @@ def activate_account(request, uidb64, token):
         messages.success(request, "Your email is verified. Welcome!")
         return redirect('dashboard')
 
-    return render(request, "accounts/activation_failed.html")
+    return render(request, "accounts/activation_invalid.html")
 
 
 @login_required
@@ -102,3 +104,13 @@ def remove_profile_picture(request):
 
 def email_sent(request):
     return render(request, 'accounts/email_sent.html')
+
+
+
+
+def public_profile(request, username):
+    profile = get_object_or_404(UserProfile, username=username)
+    context = {
+        'profile': profile
+    }
+    return render(request, 'accounts/public_profile.html', context)

@@ -1,5 +1,7 @@
 from django.urls import path
 from django.shortcuts import render
+from . import views
+
 from .views import (
     signup_view,
     activate_account,
@@ -18,4 +20,5 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('profile/edit/', edit_profile, name='edit_profile'),
     path('profile/remove-picture/', remove_profile_picture, name='remove_profile_picture'),
+    path('profile/<str:username>/', views.public_profile, name='public_profile'),
 ]

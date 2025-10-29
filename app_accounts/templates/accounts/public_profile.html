@@ -1,0 +1,15 @@
+<h2>{{ profile.full_name }}</h2>
+<p>{{ profile.job_title }}</p>
+<p>{{ profile.company_name }}</p>
+<p>{{ profile.bio }}</p>
+
+{% if profile.profile_picture %}
+<img src="{{ profile.profile_picture.url }}" width="150">
+{% endif %}
+
+<div>
+    {% if profile.facebook %}<a href="{{ profile.facebook }}">Facebook</a>{% endif %}
+    {% if profile.linkedin %}<a href="{{ profile.linkedin }}">LinkedIn</a>{% endif %}
+    {% if profile.instagram %}<a href="{{ profile.instagram }}">Instagram</a>{% endif %}
+    {% if profile.website %}<a href="{{ profile.website }}">Website</a>{% endif %}
+</div>
