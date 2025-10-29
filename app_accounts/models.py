@@ -5,7 +5,6 @@ from django.conf import settings
 from django.utils.text import slugify
 
 
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -27,7 +26,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-
     date_joined = models.DateTimeField(default=timezone.now)
     activation_date = models.DateTimeField(null=True, blank=True)
 
@@ -42,42 +40,37 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
     username = models.SlugField(max_length=100, unique=True, blank=True, null=True)
-
     full_name = models.CharField(max_length=150, blank=True, null=True)
     job_title = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     company_name = models.CharField(max_length=100, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-
     facebook = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     instagram = models.URLField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
-
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.username or self.user.email
-
     def save(self, *args, **kwargs):
-        if self.full_name and not self.username:
-            base = slugify(self.full_name.replace(" ", "_"))
+        # ✅ Generate username if missing but full_name is provided
+        if (not self.username or self.username.strip() == "") and self.full_name:
+            base = slugify(self.full_name.strip().replace(" ", "_"))
             username = base
             count = 1
-
-            while UserProfile.objects.filter(username=username).exists():
+            while UserProfile.objects.filter(username=username).exclude(pk=self.pk).exists():
                 username = f"{base}_{count}"
                 count += 1
-
             self.username = username
+
+        # ✅ Prevent further username changes once set
+        elif self.pk:
+            old = UserProfile.objects.filter(pk=self.pk).first()
+            if old and old.username != self.username:
+                self.username = old.username
 
         super().save(*args, **kwargs)
 
-
-def generate_username(full_name):
-    base_username = slugify(full_name.replace(" ", "_"))
-    return base_username
+    def __str__(self):
+        return self.username or self.user.email

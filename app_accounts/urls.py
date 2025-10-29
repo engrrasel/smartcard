@@ -7,7 +7,7 @@ from .views import (
     activate_account,
     dashboard,
     edit_profile,
-    remove_profile_picture
+    remove_profile_picture,public_profile,
 )
 from django.contrib.auth.views import LoginView
 
@@ -20,5 +20,5 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('profile/edit/', edit_profile, name='edit_profile'),
     path('profile/remove-picture/', remove_profile_picture, name='remove_profile_picture'),
-    path('profile/<str:username>/', views.public_profile, name='public_profile'),
+    path('<slug:username>/', public_profile, name='public_profile'),
 ]

@@ -1,15 +1,132 @@
-<h2>{{ profile.full_name }}</h2>
-<p>{{ profile.job_title }}</p>
-<p>{{ profile.company_name }}</p>
-<p>{{ profile.bio }}</p>
+{% extends "base.html" %}
+{% block content %}
+<style>
+.profile-card {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+.cover {
+  background: linear-gradient(120deg,#007bff,#00aaff);
+  height: 120px;
+}
+.avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  margin-top: -55px;
+  background: #eee;
+  object-fit: cover;
+}
+.name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+.title {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: .25rem;
+}
+.company {
+  color: #444;
+  font-weight: 500;
+  margin-bottom: .5rem;
+}
+.location {
+  color: #777;
+  font-size: .9rem;
+}
+.section {
+  border-top: 1px solid #e5e5e5;
+  padding: 1rem 1.5rem;
+  text-align: left;
+}
+.section h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: .75rem;
+}
+.section p {
+  margin: 0 0 .5rem;
+  color: #555;
+}
+.btn-connect {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: .5rem 1rem;
+  border-radius: 6px;
+}
+.btn-message {
+  border: 1px solid #007bff;
+  color: #007bff;
+  background: white;
+  padding: .5rem 1rem;
+  border-radius: 6px;
+}
+.social-links a {
+  margin: 0 .3rem;
+  color: #007bff;
+}
+</style>
 
-{% if profile.profile_picture %}
-<img src="{{ profile.profile_picture.url }}" width="150">
-{% endif %}
+<div class="profile-card">
+  <div class="cover"></div>
+  <div class="text-center px-3 pb-3">
+    {% if profile.profile_picture %}
+      <img src="{{ profile.profile_picture.url }}" alt="Profile" class="avatar">
+    {% else %}
+      <img src="https://via.placeholder.com/110" class="avatar" alt="No photo">
+    {% endif %}
+    <h2 class="name">{{ profile.full_name|default:"Unnamed User" }}</h2>
+    <p class="title">{{ profile.job_title|default:"" }}</p>
+    <p class="company">{{ profile.company_name|default:"" }}</p>
+    <p class="location">{{ profile.bio|default:"" }}</p>
+    <div class="d-flex justify-content-center gap-2 my-3">
+      <a href="mailto:{{ profile.user.email }}" class="btn-connect">Connect</a>
+      {% if profile.phone %}
+      <a href="tel:{{ profile.phone }}" class="btn-message">Message</a>
+      {% endif %}
+    </div>
+    <div class="social-links">
+      {% if profile.facebook %}
+        <a href="{{ profile.facebook }}" target="_blank"><i class="fab fa-facebook"></i></a>
+      {% endif %}
+      {% if profile.linkedin %}
+        <a href="{{ profile.linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>
+      {% endif %}
+      {% if profile.instagram %}
+        <a href="{{ profile.instagram }}" target="_blank"><i class="fab fa-instagram"></i></a>
+      {% endif %}
+      {% if profile.website %}
+        <a href="{{ profile.website }}" target="_blank"><i class="fas fa-globe"></i></a>
+      {% endif %}
+    </div>
+  </div>
 
-<div>
-    {% if profile.facebook %}<a href="{{ profile.facebook }}">Facebook</a>{% endif %}
-    {% if profile.linkedin %}<a href="{{ profile.linkedin }}">LinkedIn</a>{% endif %}
-    {% if profile.instagram %}<a href="{{ profile.instagram }}">Instagram</a>{% endif %}
-    {% if profile.website %}<a href="{{ profile.website }}">Website</a>{% endif %}
+  <div class="section">
+    <h5>Activity</h5>
+    <p>👥 Followers: <strong>1,362</strong></p>
+    <p>Latest post or update will appear here…</p>
+  </div>
+
+  <div class="section">
+    <h5>Experience</h5>
+    {% if profile.job_title %}
+      <p><strong>{{ profile.job_title }}</strong> — {{ profile.company_name }}</p>
+      <p class="text-muted">Present</p>
+    {% else %}
+      <p>No experience added yet.</p>
+    {% endif %}
+  </div>
 </div>
+
+<!-- Optional FontAwesome -->
+<script src="https://kit.fontawesome.com/a2d9d6b6a0.js" crossorigin="anonymous"></script>
+{% endblock %}

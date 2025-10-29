@@ -19,8 +19,20 @@
     
     <div class="row g-3">
 
+        <!-- ✅ Username (Special Field) -->
+        <div class="col-md-6">
+            <label class="form-label">Username</label>
+            {{ form.username|add_class:"form-control" }}
+            {% if form.username.field.disabled %}
+                <small class="text-muted">You can change your username only once.</small>
+            {% else %}
+                <small class="text-muted">Choose carefully — this can’t be changed later.</small>
+            {% endif %}
+        </div>
+
+        <!-- ✅ Other fields -->
         {% for field in form %}
-            {% if field.name != 'profile_picture' %}
+            {% if field.name != 'profile_picture' and field.name != 'username' %}
             <div class="col-md-6">
                 <label class="form-label">{{ field.label }}</label>
                 {{ field|add_class:"form-control" }}

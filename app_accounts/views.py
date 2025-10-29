@@ -12,7 +12,12 @@ from .forms import SignupForm, ProfileForm
 from .models import UserProfile
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, get_object_or_404
-from .models import UserProfile
+
+
+import qrcode
+from io import BytesIO
+import base64
+
 
 
 def signup_view(request):
@@ -75,7 +80,30 @@ def activate_account(request, uidb64, token):
 
 @login_required
 def dashboard(request):
-    return render(request, 'accounts/dashboard.html')
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    # ✅ যদি username না থাকে, তৈরি করো
+    if not profile.username and profile.full_name:
+        from django.utils.text import slugify
+        base = slugify(profile.full_name.replace(" ", "_"))
+        username = base
+        count = 1
+        while UserProfile.objects.filter(username=username).exists():
+            username = f"{base}_{count}"
+            count += 1
+        profile.username = username
+        profile.save()
+
+    # ✅ Public Profile URL তৈরি করো
+    public_url = request.build_absolute_uri(
+        reverse('public_profile', args=[profile.username])
+    ) if profile.username else None
+
+    context = {
+        "profile": profile,
+        "public_url": public_url,
+    }
+    return render(request, 'accounts/dashboard.html', context)
 
 
 @login_required
@@ -84,7 +112,8 @@ def edit_profile(request):
     form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
 
     if request.method == "POST" and form.is_valid():
-        form.save()
+        profile = form.save(commit=False)
+        profile.save()
         messages.success(request, "Profile updated successfully!")
         return redirect('edit_profile')
 
@@ -110,7 +139,29 @@ def email_sent(request):
 
 def public_profile(request, username):
     profile = get_object_or_404(UserProfile, username=username)
+
+    # ✅ QR code generate
+    qr_data = request.build_absolute_uri()  # Public profile URL
+    qr = qrcode.make(qr_data)
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    qr_code_data = base64.b64encode(buffer.getvalue()).decode()
+
+    # ✅ vCard content
+    vcard_data = f"""BEGIN:VCARD
+VERSION:3.0
+N:{profile.full_name or ""}
+TEL:{profile.phone or ""}
+EMAIL:{profile.user.email or ""}
+ORG:{profile.company_name or ""}
+TITLE:{profile.job_title or ""}
+URL:{profile.website or ""}
+END:VCARD
+"""
+
     context = {
-        'profile': profile
+        "profile": profile,
+        "qr_code_data": qr_code_data,
+        "vcard_data": vcard_data,
     }
-    return render(request, 'accounts/public_profile.html', context)
+    return render(request, "accounts/public_profile.html", context)

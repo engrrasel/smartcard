@@ -48,6 +48,10 @@
             <a href="{% url 'dashboard' %}">Overview</a>
             <a href="{% url 'edit_profile' %}">My Profile</a>
             <a href="#">Settings</a>
+            <a href="{% url 'public_profile' username=request.user.userprofile.username %}" class="btn btn-primary">
+                Profile
+            </a>
+
             <form action="{% url 'logout' %}" method="post" style="display:inline-flex;">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">
