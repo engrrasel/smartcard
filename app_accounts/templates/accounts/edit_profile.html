@@ -2,83 +2,80 @@
 {% load widget_tweaks %}
 
 {% block content %}
-<style>
-#previewImage {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #ddd;
-}
-</style>
+<div class="container py-4">
 
-<!-- ✅ Message Block -->
-{% if messages %}
-<div class="container mt-3">
-    {% for message in messages %}
-        <div class="alert 
-                    {% if message.tags == 'error' %}alert-danger
-                    {% elif message.tags == 'warning' %}alert-warning
-                    {% elif message.tags == 'success' %}alert-success
-                    {% else %}alert-info{% endif %}">
-            {{ message }}
-        </div>
-    {% endfor %}
-</div>
-{% endif %}
+    <!-- 🧾 Page Title -->
+    <h3 class="mb-4">Edit Profile</h3>
 
-<h2 class="mb-3">Edit Profile</h2>
-
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    
-    <div class="row g-3">
-
-        <!-- ✅ Username -->
-        <div class="col-md-6">
-            <label class="form-label">Username</label>
-            {{ form.username|add_class:"form-control" }}
-            {% if form.username.field.disabled %}
-                <small class="text-muted">You can change your username only once.</small>
-            {% else %}
-                <small class="text-muted">Choose carefully — this can’t be changed later.</small>
-            {% endif %}
-        </div>
-
-        <!-- ✅ Other fields -->
-        {% for field in form %}
-            {% if field.name != 'profile_picture' and field.name != 'username' %}
-            <div class="col-md-6">
-                <label class="form-label">{{ field.label }}</label>
-                {{ field|add_class:"form-control" }}
-            </div>
-            {% endif %}
+    <!-- ✅ Show Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
         {% endfor %}
-        
-        <!-- ✅ Profile Picture -->
-        <div class="col-md-6">
-            <label class="form-label">Profile Picture</label>
-            <input type="file" name="profile_picture" id="id_profile_picture" class="form-control">
+    {% endif %}
 
-            <img id="previewImage"
-                 src="{% if user.userprofile.profile_picture %}{{ user.userprofile.profile_picture.url }}{% else %}https://via.placeholder.com/150{% endif %}"
-                 class="mt-2"
-                 alt="Preview">
+    <!-- 🧍 Profile Edit Form -->
+    <form method="POST" enctype="multipart/form-data" class="card shadow-sm p-4">
+        {% csrf_token %}
+
+        <div class="row g-3">
+
+            <!-- 🧩 Profile Picture -->
+            <div class="col-md-12 text-center mb-3">
+                <img id="previewImage"
+                     src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}https://via.placeholder.com/150{% endif %}"
+                     alt="Profile Picture"
+                     class="rounded-circle border"
+                     width="150" height="150">
+
+                <div class="mt-2">
+                    <input type="file" name="profile_picture" id="id_profile_picture" class="form-control mt-2" accept="image/*">
+                    {% if form.instance.profile_picture %}
+                        <a href="{% url 'app_account:remove_profile_picture' pk=form.instance.pk %}" class="btn btn-sm btn-danger mt-2">
+                            🗑 Remove Picture
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 🧩 Username -->
+            <div class="col-md-6">
+                <label class="form-label">Username</label>
+                {{ form.username|add_class:"form-control" }}
+                {% if form.username.field.disabled %}
+                    <small class="text-muted">Username cannot be changed once set.</small>
+                {% else %}
+                    <small class="text-muted">Choose carefully — this can only be set once.</small>
+                {% endif %}
+            </div>
+
+            <!-- 🧩 Email -->
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                {{ form.email|add_class:"form-control" }}
+            </div>
+
+            <!-- 🧩 Other Fields -->
+            {% for field in form %}
+                {% if field.name not in "username,email,profile_picture" %}
+                    <div class="col-md-6">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                    </div>
+                {% endif %}
+            {% endfor %}
         </div>
 
-    </div>
+        <div class="d-flex justify-content-between mt-4">
+            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+            <a href="{% url 'app_account:dashboard' %}" class="btn btn-outline-secondary">⬅ Back</a>
+        </div>
+    </form>
+</div>
 
-    <div class="d-flex gap-2 mt-4">
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-
-        {% if user.userprofile.profile_picture %}
-        <a href="{% url 'remove_profile_picture' %}" class="btn btn-danger">Remove Picture</a>
-        {% endif %}
-    </div>
-</form>
-
+<!-- 🧠 Live Preview Script -->
 <script>
-document.getElementById("id_profile_picture").addEventListener("change", function () {
+document.getElementById("id_profile_picture").addEventListener("change", function() {
     const file = this.files[0];
     if (file) {
         document.getElementById("previewImage").src = URL.createObjectURL(file);

@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.127']
 # Application definition
 
 INSTALLED_APPS = [
+    'django_extensions',
     'widget_tweaks',
     "app_profiles",
     "app_cards",
@@ -141,9 +142,9 @@ AUTH_USER_MODEL = 'app_accounts.CustomUser'
 
 
 # login redirects
-LOGIN_URL = 'dashboard'
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'app_account:login'
+LOGIN_REDIRECT_URL = 'app_account:dashboard'
+LOGOUT_REDIRECT_URL = 'app_account:login'
 
 
 

@@ -1,34 +1,39 @@
 {% extends "dashboard/dashboard_base.html" %}
-{% block title %}User Dashboard{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Dashboard Overview</h2>
+<div class="container py-4">
+    <h3 class="mb-3">Your Profiles</h3>
 
-<div class="row g-4">
+    {% if profiles %}
+        <ul class="list-group">
+            {% for profile in profiles %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/50{% endif %}"
+                             alt="Profile Picture"
+                             class="rounded-circle" width="50" height="50">
+                        <div>
+                            <strong>{{ profile.full_name|default:"Unnamed Profile" }}</strong><br>
+                            <small class="text-muted">{{ profile.job_title|default:"No job title" }}</small>
+                        </div>
+                    </div>
 
-    <div class="col-md-4">
-        <div class="card shadow-sm p-3">
-            <h5>Total Profile Views</h5>
-            <h3>0</h3>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'app_account:public_profile' username=profile.username %}" class="btn btn-sm btn-outline-primary">
+                            View
+                        </a>
+                        <a href="{% url 'app_account:edit_profile' pk=profile.pk %}" class="btn btn-sm btn-outline-secondary">
+                            Edit
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-info mt-3">
+            You haven’t created any profiles yet.
+            <a href="{% url 'app_account:create_profile' %}" class="btn btn-sm btn-success ms-2">Create Now</a>
         </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card shadow-sm p-3">
-            <h5>Active Links</h5>
-            <h3>0</h3>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card shadow-sm p-3">
-            <h5>Completed Profile</h5>
-            <div class="progress mt-2">
-                <div class="progress-bar" style="width:40%;">40%</div>
-            </div>
-        </div>
-    </div>
-
+    {% endif %}
 </div>
-
 {% endblock %}
