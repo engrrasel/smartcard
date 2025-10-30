@@ -12,6 +12,21 @@
 }
 </style>
 
+<!-- ✅ Message Block -->
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+        <div class="alert 
+                    {% if message.tags == 'error' %}alert-danger
+                    {% elif message.tags == 'warning' %}alert-warning
+                    {% elif message.tags == 'success' %}alert-success
+                    {% else %}alert-info{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <h2 class="mb-3">Edit Profile</h2>
 
 <form method="POST" enctype="multipart/form-data">
@@ -19,7 +34,7 @@
     
     <div class="row g-3">
 
-        <!-- ✅ Username (Special Field) -->
+        <!-- ✅ Username -->
         <div class="col-md-6">
             <label class="form-label">Username</label>
             {{ form.username|add_class:"form-control" }}
@@ -40,12 +55,11 @@
             {% endif %}
         {% endfor %}
         
-        <!-- ✅ Profile Picture Upload -->
+        <!-- ✅ Profile Picture -->
         <div class="col-md-6">
             <label class="form-label">Profile Picture</label>
             <input type="file" name="profile_picture" id="id_profile_picture" class="form-control">
 
-            <!-- ✅ Profile Image Preview -->
             <img id="previewImage"
                  src="{% if user.userprofile.profile_picture %}{{ user.userprofile.profile_picture.url }}{% else %}https://via.placeholder.com/150{% endif %}"
                  class="mt-2"
@@ -61,7 +75,6 @@
         <a href="{% url 'remove_profile_picture' %}" class="btn btn-danger">Remove Picture</a>
         {% endif %}
     </div>
-
 </form>
 
 <script>

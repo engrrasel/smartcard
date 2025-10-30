@@ -154,3 +154,5 @@ END:VCARD
         "qr_code_data": qr_code_data,
         "vcard_data": vcard_data,
     })
+
+

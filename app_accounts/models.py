@@ -67,3 +67,4 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.username or self.user.email
+

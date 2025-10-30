@@ -35,3 +35,5 @@ class UserProfileAdmin(admin.ModelAdmin):
         if obj and obj.username:  # যদি আগে username থাকে
             return self.readonly_fields + ('user',)
         return self.readonly_fields
+
+
