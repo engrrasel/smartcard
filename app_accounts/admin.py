@@ -26,10 +26,9 @@ class CustomUserAdmin(BaseUserAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'job_title', 'company_name', 'updated_at')
-    search_fields = ('user__email', 'full_name', 'company_name', 'username')
-    prepopulated_fields = {'username': ('full_name',)}  # Auto slug fill
-    ordering = ('-updated_at',)
+    list_display = ("user", "username", "full_name", "company_name", "updated_at")
+    search_fields = ("username", "full_name", "user__email")
 
-
-admin.site.register(CustomUser, CustomUserAdmin)
+    def save_model(self, request, obj, form, change):
+        # ✅ Admin can force username update
+        obj.save(force_update=True)

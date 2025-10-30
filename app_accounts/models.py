@@ -41,6 +41,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     username = models.SlugField(max_length=100, unique=True, blank=True, null=True)
+
     full_name = models.CharField(max_length=150, blank=True, null=True)
     job_title = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -54,21 +55,23 @@ class UserProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # ✅ Generate username if missing but full_name is provided
-        if (not self.username or self.username.strip() == "") and self.full_name:
-            base = slugify(self.full_name.strip().replace(" ", "_"))
+        # ✅ Auto generate username if missing
+        if not self.username and self.full_name:
+            base = slugify(self.full_name.replace(" ", "_"))
             username = base
             count = 1
-            while UserProfile.objects.filter(username=username).exclude(pk=self.pk).exists():
+            while UserProfile.objects.filter(username=username).exists():
                 username = f"{base}_{count}"
                 count += 1
             self.username = username
 
-        # ✅ Prevent further username changes once set
-        elif self.pk:
+        # ✅ Prevent username change by user (but allow admin)
+        if self.pk is not None:
             old = UserProfile.objects.filter(pk=self.pk).first()
             if old and old.username != self.username:
-                self.username = old.username
+                # Admin can override using force_update=True
+                if not kwargs.get('force_update', False):
+                    self.username = old.username  # revert to old
 
         super().save(*args, **kwargs)
 
