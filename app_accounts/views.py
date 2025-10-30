@@ -2,22 +2,21 @@ from django.contrib.auth import login, get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .forms import SignupForm, ProfileForm
-from .models import UserProfile
 from django.contrib.auth.views import LoginView
-from django.shortcuts import render, get_object_or_404
-
-
+from .forms import SignupForm, ProfileUpdateForm
+from .models import UserProfile
 import qrcode
 from io import BytesIO
 import base64
 
+
+User = get_user_model()
 
 
 def signup_view(request):
@@ -26,39 +25,36 @@ def signup_view(request):
 
     form = SignupForm(request.POST or None)
 
-    if request.method == "POST":
-        if form.is_valid():
-            user = form.save(commit=False)
+    if request.method == "POST" and form.is_valid():
+        user = form.save(commit=False)
+
+        # ✅ DEBUG মোডে ইমেল ভেরিফিকেশন স্কিপ
+        if settings.DEBUG:
+            user.is_active = True
+            user.save()
+            login(request, user)
+            messages.success(request, "✅ Test Mode: Account created and logged in (email verification skipped).")
+            return redirect('dashboard')
+
+        # 🚨 Production এ ইমেল ভেরিফিকেশন পাঠাবে
+        else:
             user.is_active = False
             user.save()
-
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
-
             activation_link = request.build_absolute_uri(
                 reverse('activate_account', args=[uid, token])
             )
-
             send_mail(
                 'Activate your SmartCard account',
                 f'Click here to verify your email: {activation_link}',
                 settings.DEFAULT_FROM_EMAIL,
                 [user.email],
             )
-
-            messages.success(
-                request,
-                "Thank you! Account created succesfully! Please verify your email before login."
-            )
+            messages.success(request, "Account created! Please verify your email.")
             return redirect('login')
 
-        messages.error(request, "Please correct the errors below.")
-
     return render(request, 'accounts/signup.html', {'form': form})
-
-
-
-User = get_user_model()
 
 
 def activate_account(request, uidb64, token):
@@ -82,7 +78,7 @@ def activate_account(request, uidb64, token):
 def dashboard(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
 
-    # ✅ যদি username না থাকে, তৈরি করো
+    # ✅ username generate if missing
     if not profile.username and profile.full_name:
         from django.utils.text import slugify
         base = slugify(profile.full_name.replace(" ", "_"))
@@ -94,27 +90,30 @@ def dashboard(request):
         profile.username = username
         profile.save()
 
-    # ✅ Public Profile URL তৈরি করো
     public_url = request.build_absolute_uri(
         reverse('public_profile', args=[profile.username])
     ) if profile.username else None
 
-    context = {
-        "profile": profile,
-        "public_url": public_url,
-    }
+    context = {"profile": profile, "public_url": public_url}
     return render(request, 'accounts/dashboard.html', context)
 
 
 @login_required
 def edit_profile(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
-    form = ProfileForm(request.POST or None, request.FILES or None, instance=profile)
+    form = ProfileUpdateForm(request.POST or None, request.FILES or None, instance=profile)
 
     if request.method == "POST" and form.is_valid():
         profile = form.save(commit=False)
+        new_email = form.cleaned_data.get('email')
+
+        # ইমেইল আপডেট
+        if new_email and new_email != request.user.email:
+            request.user.email = new_email
+            request.user.save()
+
         profile.save()
-        messages.success(request, "Profile updated successfully!")
+        messages.success(request, "✅ Profile updated successfully!")
         return redirect('edit_profile')
 
     return render(request, "accounts/edit_profile.html", {"form": form})
@@ -131,23 +130,14 @@ def remove_profile_picture(request):
     return redirect('edit_profile')
 
 
-def email_sent(request):
-    return render(request, 'accounts/email_sent.html')
-
-
-
-
 def public_profile(request, username):
     profile = get_object_or_404(UserProfile, username=username)
-
-    # ✅ QR code generate
-    qr_data = request.build_absolute_uri()  # Public profile URL
+    qr_data = request.build_absolute_uri()
     qr = qrcode.make(qr_data)
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     qr_code_data = base64.b64encode(buffer.getvalue()).decode()
 
-    # ✅ vCard content
     vcard_data = f"""BEGIN:VCARD
 VERSION:3.0
 N:{profile.full_name or ""}
@@ -159,9 +149,8 @@ URL:{profile.website or ""}
 END:VCARD
 """
 
-    context = {
+    return render(request, "accounts/public_profile.html", {
         "profile": profile,
         "qr_code_data": qr_code_data,
         "vcard_data": vcard_data,
-    }
-    return render(request, "accounts/public_profile.html", context)
+    })

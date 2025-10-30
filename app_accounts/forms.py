@@ -1,58 +1,54 @@
 from django import forms
-from .models import UserProfile
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser, UserProfile
 
 
-from django import forms
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-
-User = get_user_model()
-
-
-class SignupForm(forms.ModelForm):
-    password1 = forms.CharField(
-        label="Password",
-        widget=forms.PasswordInput(attrs={"class": "form-control"}),
-    )
-    password2 = forms.CharField(
-        label="Confirm Password",
-        widget=forms.PasswordInput(attrs={"class": "form-control"}),
-    )
-
+# ✅ Signup Form
+class SignupForm(UserCreationForm):
     class Meta:
-        model = User
-        fields = ["email"]
-
-    def clean_password2(self):
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-
-        if password1 and password2 and password1 != password2:
-            raise ValidationError("Passwords do not match!")
-        return password2
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
-        if commit:
-            user.save()
-        return user
+        model = CustomUser
+        fields = ['email', 'password1', 'password2']
 
 
-class ProfileForm(forms.ModelForm):
+# ✅ Profile Form (for profile editing)
+class ProfileUpdateForm(forms.ModelForm):
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email'})
+    )
+
+    # ✅ Username এখন ফর্মে দৃশ্যমান থাকবে (readonly নয়, একবার সেট না থাকলে এডিট করা যাবে)
+    username = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Unique username'})
+    )
+
     class Meta:
         model = UserProfile
-        fields = [
-            "full_name", "job_title", "company_name", "bio",
-            "phone", "profile_picture", "facebook",
-            "linkedin", "instagram", "website", "username"
-        ]
-        widgets = {'bio': forms.Textarea(attrs={'rows': 3})}
+        exclude = ['user']
+        widgets = {
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full name'}),
+            'job_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Job title'}),
+            'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Company name'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone'}),
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Short bio'}),
+            'facebook': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Facebook profile'}),
+            'linkedin': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'LinkedIn profile'}),
+            'instagram': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Instagram profile'}),
+            'website': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Website'}),
+            'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # ✅ Show current email of the user
+        if self.instance and self.instance.user:
+            self.fields['email'].initial = self.instance.user.email
+
+        # ✅ যদি username আগে থেকেই থাকে তাহলে তা readonly করে দিচ্ছি
         if self.instance and self.instance.username:
             self.fields['username'].disabled = True
+            self.fields['username'].help_text = "Username already set and cannot be changed again."
+        else:
+            self.fields['username'].help_text = "Choose a unique username (only once)."

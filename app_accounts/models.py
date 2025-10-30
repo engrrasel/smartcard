@@ -55,24 +55,14 @@ class UserProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # ✅ Auto generate username if missing
         if not self.username and self.full_name:
             base = slugify(self.full_name.replace(" ", "_"))
             username = base
             count = 1
-            while UserProfile.objects.filter(username=username).exists():
+            while UserProfile.objects.filter(username=username).exclude(pk=self.pk).exists():
                 username = f"{base}_{count}"
                 count += 1
             self.username = username
-
-        # ✅ Prevent username change by user (but allow admin)
-        if self.pk is not None:
-            old = UserProfile.objects.filter(pk=self.pk).first()
-            if old and old.username != self.username:
-                # Admin can override using force_update=True
-                if not kwargs.get('force_update', False):
-                    self.username = old.username  # revert to old
-
         super().save(*args, **kwargs)
 
     def __str__(self):

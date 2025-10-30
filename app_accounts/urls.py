@@ -1,13 +1,12 @@
 from django.urls import path
 from django.shortcuts import render
-from . import views
-
 from .views import (
     signup_view,
     activate_account,
     dashboard,
     edit_profile,
-    remove_profile_picture,public_profile,
+    remove_profile_picture,
+    public_profile,
 )
 from django.contrib.auth.views import LoginView
 
