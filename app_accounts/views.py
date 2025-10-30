@@ -247,3 +247,11 @@ END:VCARD
         "vcard_data": vcard_data,
     }
     return render(request, "accounts/public_profile.html", context)
+
+"""@login_required
+def delete_profile(request, pk):
+    profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
+    profile.delete()
+    messages.success(request, "🗑️ Profile deleted successfully.")
+    return redirect("dashboard:dashboard")
+"""

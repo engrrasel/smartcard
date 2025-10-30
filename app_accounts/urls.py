@@ -17,8 +17,8 @@ urlpatterns = [
     # 🏠 Dashboard & Profiles
     path('dashboard/', views.dashboard, name='dashboard'),
     path('profile/create/', views.create_profile, name='create_profile'),
-path('profile/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
-path('profile/<int:pk>/remove-picture/', views.remove_profile_picture, name='remove_profile_picture'),
+    path('profile/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
+    path('profile/<int:pk>/remove-picture/', views.remove_profile_picture, name='remove_profile_picture'),
 
 
     # 🌐 Public Profile
