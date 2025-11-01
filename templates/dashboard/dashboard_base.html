@@ -40,6 +40,7 @@
             flex-direction: column;
             justify-content: space-between;
             padding: 1.5rem 1rem;
+            transition: all 0.3s ease;
         }
 
         .sidebar h3 {
@@ -89,6 +90,7 @@
         .main {
             margin-left: 260px;
             padding: 2.5rem;
+            transition: all 0.3s ease;
         }
 
         /* Card & Buttons */
@@ -154,6 +156,59 @@
         .btn-primary:hover {
             background-color: #0069d9;
         }
+
+        /* ---------------- Responsive Sidebar ---------------- */
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            border-radius: 8px;
+            display: none;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                z-index: 1000;
+                height: 100%;
+                transition: all 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            }
+
+            .main {
+                margin-left: 0 !important;
+                padding: 1.5rem;
+            }
+
+            .sidebar-toggle {
+                display: inline-block;
+            }
+        }
+
+        /* Mobile adjustments for profile card */
+        @media (max-width: 576px) {
+            .profile-card {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.8rem;
+            }
+            .profile-info {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.8rem;
+            }
+            .profile-info img {
+                width: 50px;
+                height: 50px;
+            }
+        }
     </style>
 </head>
 
@@ -172,12 +227,28 @@
                 <i class="fa-solid fa-right-from-bracket"></i> Logout
             </button>
         </form>
-
     </div>
 
     <main class="main">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Responsive Sidebar Toggle Script -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const sidebar = document.querySelector(".sidebar");
+        const toggleBtn = document.createElement("button");
+
+        toggleBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        toggleBtn.classList.add("sidebar-toggle", "btn", "btn-light", "shadow-sm");
+
+        document.body.appendChild(toggleBtn);
+
+        toggleBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("open");
+        });
+    });
+    </script>
 
 </body>
 </html>
