@@ -1,19 +1,30 @@
+# ─────────────────────────────────────────────
+# ✅ Django Core Imports
+# ─────────────────────────────────────────────
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.urls import reverse
+from django.contrib import messages
 from django.contrib.auth import login, get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.urls import reverse
+from django.utils.text import slugify
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.utils.text import slugify
-from io import BytesIO
+
+# ─────────────────────────────────────────────
+# ✅ Third-Party / Utility Imports
+# ─────────────────────────────────────────────
 import base64
 import qrcode
+from io import BytesIO
 
-from .forms import SignupForm, ProfileUpdateForm, ProfileForm
+# ─────────────────────────────────────────────
+# ✅ Local App Imports
+# ─────────────────────────────────────────────
+from .forms import SignupForm, ProfileForm, ProfileUpdateForm
 from .models import UserProfile
 
 User = get_user_model()
@@ -248,10 +259,24 @@ END:VCARD
     }
     return render(request, "accounts/public_profile.html", context)
 
-"""@login_required
+@login_required
 def delete_profile(request, pk):
     profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
     profile.delete()
-    messages.success(request, "🗑️ Profile deleted successfully.")
-    return redirect("dashboard:dashboard")
-"""
+    messages.success(request, "Profile deleted successfully.")
+    return redirect("app_account:dashboard")
+
+
+
+def download_qr(request, pk):
+    profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
+    url = request.build_absolute_uri(profile.get_absolute_url())
+
+    qr = qrcode.make(url)
+    buffer = BytesIO()
+    qr.save(buffer, format='PNG')
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type='image/png')
+    response['Content-Disposition'] = f'attachment; filename="{profile.username or profile.pk}.png"'
+    return response

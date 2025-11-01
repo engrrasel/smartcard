@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 from django.utils.text import slugify
+from django.urls import reverse
 
 
 # 🟩 Custom User Manager
@@ -70,20 +71,23 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 # 🟨 User Profile Model
+
 class UserProfile(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=150, blank=True, null=True)
     username = models.SlugField(max_length=100, unique=True, blank=True, null=True)
-    
+
     job_title = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     company_name = models.CharField(max_length=100, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to="profile_pics/", blank=True, null=True)
+
     facebook = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     instagram = models.URLField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -92,17 +96,24 @@ class UserProfile(models.Model):
         ordering = ["-updated_at"]
 
     def save(self, *args, **kwargs):
-        # ✅ Auto-generate username if missing
-        if not self.username and self.full_name:
-            base = slugify(self.full_name.replace(" ", "_"))
+        # ✅ Auto-generate unique username if missing
+        if not self.username:
+            base = slugify(self.full_name or self.user.email.split("@")[0])
             username = base
             count = 1
             while UserProfile.objects.filter(username=username).exclude(pk=self.pk).exists():
                 username = f"{base}_{count}"
                 count += 1
             self.username = username
-
         super().save(*args, **kwargs)
+
+    # ✅ Public profile URL
+    def get_absolute_url(self):
+        # fallback যদি username না থাকে
+        if not self.username:
+            return reverse("app_accounts:dashboard")
+        return reverse("app_account:public_profile", args=[self.username])
 
     def __str__(self):
         return self.full_name or self.user.email
+

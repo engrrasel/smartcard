@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.views import LoginView, LogoutView
 from . import views
 
-app_name = "app_account"
+app_name = "app_accounts"
 
 urlpatterns = [
     # 🔐 Authentication
@@ -23,4 +23,9 @@ urlpatterns = [
 
     # 🌐 Public Profile
     path('<slug:username>/', views.public_profile, name='public_profile'),
+    path('profile/<int:pk>/download_qr/', views.download_qr, name='download_qr'),
+    path("profile/<int:pk>/delete/", views.delete_profile, name="delete_profile"),
+
+
+
 ]
