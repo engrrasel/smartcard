@@ -166,9 +166,13 @@
             <a href="{% url 'app_account:create_profile' %}"><i class="fa-solid fa-user-plus"></i> Create Profile</a>
             <a href="#"><i class="fa-solid fa-gear"></i> Settings</a>
         </div>
-        <a href="{% url 'app_account:logout' %}" class="logout-btn">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-        </a>
+        <form action="{% url 'app_account:logout' %}" method="post" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn w-100 border-0">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </form>
+
     </div>
 
     <main class="main">
