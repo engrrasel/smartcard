@@ -280,3 +280,18 @@ def download_qr(request, pk):
     response = HttpResponse(buffer, content_type='image/png')
     response['Content-Disposition'] = f'attachment; filename="{profile.username or profile.pk}.png"'
     return response
+
+
+
+
+def profile_dashboard(request):
+    return render(request, 'accounts/profile_dashboard.html')
+
+def contacts(request):
+    return render(request, 'dashboard/contacts.html')
+
+def subscription(request):
+    return render(request, 'dashboard/subscription.html')
+
+def settings(request):
+    return render(request, 'dashboard/settings.html')
