@@ -223,35 +223,43 @@ def remove_profile_picture(request, pk):
 # -----------------------------
 from datetime import date
 
+from datetime import date
+from django.utils import timezone
+
 def public_profile(request, username):
     profile = get_object_or_404(UserProfile, username=username)
-    today = date.today()
+    today = timezone.now().date()
 
-    # 🟢 View Tracking Logic
+    # ✅ যদি নতুন দিন হয়, তাহলে reset হবে
     if profile.last_viewed != today:
-        # নতুন দিন শুরু হলে daily views reset হবে
         profile.daily_views = 1
         profile.last_viewed = today
     else:
         profile.daily_views += 1
 
-    # মাসিক ও বার্ষিক ভিউ আপডেট
+    # ✅ মাস ও বছর চেক
+    if not profile.last_viewed or profile.last_viewed.month != today.month:
+        profile.monthly_views = 0
+    if not profile.last_viewed or profile.last_viewed.year != today.year:
+        profile.yearly_views = 0
+
+    # ✅ মাসিক ও বার্ষিক view বৃদ্ধি
     profile.monthly_views += 1
     profile.yearly_views += 1
     profile.save()
 
-    # ✅ Public Profile URL
+    # ✅ Public profile URL
     profile_url = request.build_absolute_uri(
         reverse("app_accounts:public_profile", args=[username])
     )
 
-    # ✅ Generate QR Code
+    # ✅ QR code
     qr = qrcode.make(profile_url)
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     qr_code_data = base64.b64encode(buffer.getvalue()).decode()
 
-    # ✅ vCard Data
+    # ✅ vCard data
     vcard_data = f"""BEGIN:VCARD
 VERSION:3.0
 N:{profile.full_name or ""}
@@ -301,11 +309,13 @@ def dashboard(request):
     user = request.user
     profiles = UserProfile.objects.filter(user=user)
 
-    # উদাহরণ ডেটা (এখন static; পরে analytics থেকে আনতে পারো)
+    # ✅ মোট প্রোফাইল সংখ্যা
     total_profiles = profiles.count()
-    daily_views = 42
-    monthly_views = 310
-    yearly_views = 5120
+
+    # ✅ সব প্রোফাইলের ভিউ কাউন্ট যোগফল
+    daily_views = sum(profile.daily_views for profile in profiles)
+    monthly_views = sum(profile.monthly_views for profile in profiles)
+    yearly_views = sum(profile.yearly_views for profile in profiles)
 
     context = {
         "profiles": profiles,
@@ -315,6 +325,9 @@ def dashboard(request):
         "yearly_views": yearly_views,
     }
     return render(request, "accounts/dashboard.html", context)
+
+
+
 
 def contacts(request):
     return render(request, "dashboard/contacts.html")

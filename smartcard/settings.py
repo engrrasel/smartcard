@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.127']
 # Application definition
 
 INSTALLED_APPS = [
+    'django_crontab',
     'django_extensions',
     'widget_tweaks',
     "app_profiles",
@@ -169,3 +170,6 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
+CRONJOBS = [
+    ('0 0 * * *', 'app_accounts.cron.reset_daily_views'),  # 🕛 প্রতি রাত ১২টায় রান হবে
+]
