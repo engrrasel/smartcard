@@ -18,6 +18,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile as Profile
 from django.views.decorators.http import require_POST
 
+import urllib.parse
+
 
 
 # ─────────────────────────────────────────────
@@ -399,3 +401,86 @@ def subscription(request):
 
 def settings(request):
     return render(request, "dashboard/settings.html")
+
+
+
+
+
+# ... (অন্যান্য imports/ভিউগুলো)
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils.text import slugify
+import urllib.parse
+from app_accounts.models import UserProfile  # প্রয়োজনমতো import ঠিক করো
+
+from app_accounts.models import UserProfile  # তোমার মডেল অনুযায়ী ঠিক করো
+
+import base64
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils.text import slugify
+import urllib
+
+from app_accounts.models import UserProfile  # তোমার মডেল অনুসারে ঠিক রাখো
+
+
+def download_contact_vcard(request, username):
+    profile = get_object_or_404(UserProfile, username=username)
+
+    full_name = profile.full_name or ""
+    phone = profile.phone or ""
+    email = profile.user.email or ""
+    org = profile.company_name or ""
+    title = profile.job_title or ""
+    url = profile.website or ""
+
+    # 🔹 নাম ভাগ করা
+    parts = full_name.split(" ", 1)
+    first_name = parts[0]
+    last_name = parts[1] if len(parts) > 1 else ""
+
+    # 🔹 ছবি যোগ করা
+    photo_line = ""
+    try:
+        if profile.profile_picture and profile.profile_picture.path:
+            with open(profile.profile_picture.path, "rb") as f:
+                photo_base64 = base64.b64encode(f.read()).decode("utf-8")
+                # iPhone-friendly format
+                photo_line = "PHOTO;ENCODING=b;TYPE=JPEG:" + photo_base64
+    except Exception as e:
+        print("❌ Photo load error:", e)
+
+    # 🔹 vCard তৈরি
+    vcard_lines = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        f"N:{last_name};{first_name};;;",
+        f"FN:{full_name}",
+    ]
+
+    if org:
+        vcard_lines.append(f"ORG:{org}")
+    if title:
+        vcard_lines.append(f"TITLE:{title}")
+    if email:
+        vcard_lines.append(f"EMAIL;TYPE=INTERNET:{email}")
+    if phone:
+        vcard_lines.append(f"TEL;TYPE=CELL:{phone}")
+    if url:
+        vcard_lines.append(f"URL:{url}")
+    if photo_line:
+        vcard_lines.append(photo_line)
+
+    vcard_lines.append("END:VCARD")
+
+    # 🔹 CRLF (Windows/iPhone compatible)
+    vcard_text = "\r\n".join(vcard_lines)
+
+    filename_base = slugify(full_name) or slugify(username)
+    filename = urllib.parse.quote(f"{filename_base}.vcf")
+
+    response = HttpResponse(vcard_text, content_type="text/vcard; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response

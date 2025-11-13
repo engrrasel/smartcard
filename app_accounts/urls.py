@@ -42,4 +42,6 @@ urlpatterns = [
 
     # 🌐 Public Profile (⚠️ keep LAST)
     path('user/<slug:username>/', views.public_profile, name='public_profile'),
+    path('user/<slug:username>/download-contact/', views.download_contact_vcard, name='download_contact_vcard'),
+
 ]
