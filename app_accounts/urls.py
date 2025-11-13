@@ -31,6 +31,9 @@ urlpatterns = [
     path('contacts/', views.contacts, name='contacts'),
     path('subscription/', views.subscription, name='subscription'),
     path('settings/', views.settings, name='settings'),
+    
+    # 🧭 Profile Analytics Dashboard
+    path('profile/<int:pk>/dashboard/', views.profile_and_card_dashboard, name='profile_and_card_dashboard'),
 
     # 🌐 Public Profile (⚠️ keep LAST)
     path('user/<slug:username>/', views.public_profile, name='public_profile'),

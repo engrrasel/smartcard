@@ -72,6 +72,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 # 🟨 User Profile Model
 
+from datetime import date
+
 class UserProfile(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=150, blank=True, null=True)
@@ -87,6 +89,12 @@ class UserProfile(models.Model):
     linkedin = models.URLField(blank=True, null=True)
     instagram = models.URLField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
+
+    # 🟢 New Fields for Analytics
+    daily_views = models.PositiveIntegerField(default=0)
+    monthly_views = models.PositiveIntegerField(default=0)
+    yearly_views = models.PositiveIntegerField(default=0)
+    last_viewed = models.DateField(blank=True, null=True)
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -107,13 +115,10 @@ class UserProfile(models.Model):
             self.username = username
         super().save(*args, **kwargs)
 
-    # ✅ Public profile URL
     def get_absolute_url(self):
-        # fallback যদি username না থাকে
         if not self.username:
             return reverse("app_accounts:dashboard")
-        return reverse("app_account:public_profile", args=[self.username])
+        return reverse("app_accounts:public_profile", args=[self.username])
 
     def __str__(self):
         return self.full_name or self.user.email
-

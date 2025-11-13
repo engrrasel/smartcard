@@ -221,17 +221,37 @@ def remove_profile_picture(request, pk):
 # -----------------------------
 # 🟢 Public Profile + QR + vCard
 # -----------------------------
+from datetime import date
+
 def public_profile(request, username):
     profile = get_object_or_404(UserProfile, username=username)
+    today = date.today()
+
+    # 🟢 View Tracking Logic
+    if profile.last_viewed != today:
+        # নতুন দিন শুরু হলে daily views reset হবে
+        profile.daily_views = 1
+        profile.last_viewed = today
+    else:
+        profile.daily_views += 1
+
+    # মাসিক ও বার্ষিক ভিউ আপডেট
+    profile.monthly_views += 1
+    profile.yearly_views += 1
+    profile.save()
+
+    # ✅ Public Profile URL
     profile_url = request.build_absolute_uri(
         reverse("app_accounts:public_profile", args=[username])
     )
 
+    # ✅ Generate QR Code
     qr = qrcode.make(profile_url)
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     qr_code_data = base64.b64encode(buffer.getvalue()).decode()
 
+    # ✅ vCard Data
     vcard_data = f"""BEGIN:VCARD
 VERSION:3.0
 N:{profile.full_name or ""}
@@ -249,7 +269,6 @@ END:VCARD
         "vcard_data": vcard_data,
     }
     return render(request, "accounts/public_profile.html", context)
-
 
 @login_required
 def delete_profile(request, pk):
@@ -305,3 +324,21 @@ def subscription(request):
 
 def settings(request):
     return render(request, "dashboard/settings.html")
+
+
+@login_required
+def profile_and_card_dashboard(request, pk):
+    profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
+    
+    # Dummy data – পরবর্তীতে analytics যুক্ত করতে পারো
+    daily_views = getattr(profile, "daily_views", 15)
+    monthly_views = getattr(profile, "monthly_views", 220)
+    yearly_views = getattr(profile, "yearly_views", 3520)
+    
+    context = {
+        "profile": profile,
+        "daily_views": daily_views,
+        "monthly_views": monthly_views,
+        "yearly_views": yearly_views,
+    }
+    return render(request, "accounts/profile_and_card_dashboard.html", context)
