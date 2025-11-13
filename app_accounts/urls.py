@@ -35,6 +35,11 @@ urlpatterns = [
     # 🧭 Profile Analytics Dashboard
     path('profile/<int:pk>/dashboard/', views.profile_and_card_dashboard, name='profile_and_card_dashboard'),
 
+    path('search/', views.profile_search, name='profile_search'),
+
+    path('toggle-public/<int:profile_id>/', views.toggle_public_view, name='toggle_public'),
+
+
     # 🌐 Public Profile (⚠️ keep LAST)
     path('user/<slug:username>/', views.public_profile, name='public_profile'),
 ]

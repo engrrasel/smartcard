@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Profile Not Found{% endblock %}
+
+{% block content %}
+<style>
+.not-found-container {
+  max-width: 600px;
+  margin: 5rem auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  text-align: center;
+  padding: 3rem 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.not-found-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+}
+
+.not-found-icon {
+  font-size: 4rem;
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.not-found-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.not-found-text {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.btn-back {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.btn-back:hover {
+  background-color: #0056b3;
+}
+</style>
+
+<div class="not-found-container">
+  <div class="not-found-icon">
+    <i class="fa-solid fa-user-slash"></i>
+  </div>
+  <h2 class="not-found-title">Profile Not Found</h2>
+  <p class="not-found-text">
+    This profile is either private or does not exist. <br>
+    Please check the link or contact the profile owner.
+  </p>
+  <a href="{% url 'app_accounts:dashboard' %}" class="btn-back">
+    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+  </a>
+</div>
+{% endblock %}

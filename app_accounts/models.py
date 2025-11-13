@@ -97,7 +97,8 @@ class UserProfile(models.Model):
     last_viewed = models.DateField(blank=True, null=True)
 
     updated_at = models.DateTimeField(auto_now=True)
-
+    is_public = models.BooleanField(default=False)
+    
     class Meta:
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"

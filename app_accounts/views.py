@@ -13,6 +13,12 @@ from django.utils.encoding import force_bytes
 from django.utils.text import slugify
 from django.core.mail import send_mail
 from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import UserProfile as Profile
+from django.views.decorators.http import require_POST
+
+
 
 # ─────────────────────────────────────────────
 # ✅ Third-Party / Utility Imports
@@ -228,38 +234,37 @@ from django.utils import timezone
 
 def public_profile(request, username):
     profile = get_object_or_404(UserProfile, username=username)
+
+    # 🔒 যদি প্রোফাইল পাবলিক না হয়, তাহলে দেখাবে না
+    if not profile.is_public:
+        return render(request, "accounts/profile_not_found.html", status=404)
+
     today = timezone.now().date()
 
-    # ✅ যদি নতুন দিন হয়, তাহলে reset হবে
     if profile.last_viewed != today:
         profile.daily_views = 1
         profile.last_viewed = today
     else:
         profile.daily_views += 1
 
-    # ✅ মাস ও বছর চেক
     if not profile.last_viewed or profile.last_viewed.month != today.month:
         profile.monthly_views = 0
     if not profile.last_viewed or profile.last_viewed.year != today.year:
         profile.yearly_views = 0
 
-    # ✅ মাসিক ও বার্ষিক view বৃদ্ধি
     profile.monthly_views += 1
     profile.yearly_views += 1
     profile.save()
 
-    # ✅ Public profile URL
     profile_url = request.build_absolute_uri(
         reverse("app_accounts:public_profile", args=[username])
     )
 
-    # ✅ QR code
     qr = qrcode.make(profile_url)
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     qr_code_data = base64.b64encode(buffer.getvalue()).decode()
 
-    # ✅ vCard data
     vcard_data = f"""BEGIN:VCARD
 VERSION:3.0
 N:{profile.full_name or ""}
@@ -277,6 +282,7 @@ END:VCARD
         "vcard_data": vcard_data,
     }
     return render(request, "accounts/public_profile.html", context)
+
 
 @login_required
 def delete_profile(request, pk):
@@ -355,3 +361,38 @@ def profile_and_card_dashboard(request, pk):
         "yearly_views": yearly_views,
     }
     return render(request, "accounts/profile_and_card_dashboard.html", context)
+
+
+
+# -----------------------------
+# 🟢 Search Profiles (Fixed ✅)
+# -----------------------------
+@login_required
+def profile_search(request):
+    query = request.GET.get("q", "").strip()
+    results = UserProfile.objects.filter(user=request.user)
+
+    if query:
+        results = results.filter(full_name__icontains=query)
+
+    context = {"results": results, "query": query}
+    return render(request, "dashboard/profile_search.html", context)
+
+
+
+@login_required
+@require_POST
+def toggle_public_view(request, profile_id):
+    try:
+        profile = UserProfile.objects.get(id=profile_id, user=request.user)
+        profile.is_public = not profile.is_public
+        profile.save(update_fields=["is_public"])
+        return JsonResponse({
+            "status": "success",
+            "is_public": profile.is_public
+        })
+    except UserProfile.DoesNotExist:
+        return JsonResponse({
+            "status": "error",
+            "message": "Profile not found"
+        }, status=404)
