@@ -29,19 +29,11 @@ from .models import UserProfile
 
 User = get_user_model()
 
-
 # -----------------------------
 # 🟩 Helper Function
 # -----------------------------
 def get_or_create_profile(user):
-    """
-    Return user's latest profile or create one.
-    - If multiple exist, keep only the latest.
-    - Ensures unique username always.
-    """
     profiles = UserProfile.objects.filter(user=user).order_by("-id")
-
-    # যদি একাধিক প্রোফাইল থাকে, শুধু সর্বশেষটা রাখো
     if profiles.count() > 1:
         main_profile = profiles.first()
         profiles.exclude(id=main_profile.id).delete()
@@ -50,7 +42,6 @@ def get_or_create_profile(user):
     else:
         main_profile = UserProfile.objects.create(user=user)
 
-    # ✅ যদি username না থাকে, সেট করো
     if not main_profile.username:
         base = slugify(main_profile.full_name or user.email.split("@")[0])
         username = base
@@ -65,33 +56,31 @@ def get_or_create_profile(user):
 
 
 # -----------------------------
-# 🟢 Signup (Email Verification Skip in DEBUG Mode)
+# 🟢 Signup
 # -----------------------------
 def signup_view(request):
     if request.user.is_authenticated:
-        return redirect("app_account:dashboard")
+        return redirect("app_accounts:dashboard")
 
     form = SignupForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         user = form.save(commit=False)
 
-        # ✅ Test Mode (DEBUG=True): Skip verification
         if settings.DEBUG:
             user.is_active = True
             user.save()
             login(request, user)
             messages.success(request, "✅ Test Mode: Account created and logged in.")
-            return redirect("app_account:dashboard")
+            return redirect("app_accounts:dashboard")
 
-        # 🚀 Production Mode: Send activation email
         user.is_active = False
         user.save()
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
         activation_link = request.build_absolute_uri(
-            reverse("app_account:activate_account", args=[uid, token])
+            reverse("app_accounts:activate_account", args=[uid, token])
         )
 
         try:
@@ -108,7 +97,7 @@ def signup_view(request):
         except Exception as e:
             messages.error(request, f"⚠️ Failed to send verification email: {e}")
 
-        return redirect("app_account:email_sent")
+        return redirect("app_accounts:email_sent")
 
     return render(request, "accounts/signup.html", {"form": form})
 
@@ -128,7 +117,7 @@ def activate_account(request, uidb64, token):
         user.save()
         login(request, user)
         messages.success(request, "🎉 Email verified successfully!")
-        return redirect("app_account:dashboard")
+        return redirect("app_accounts:dashboard")
 
     return render(request, "accounts/activation_invalid.html")
 
@@ -138,12 +127,20 @@ def activate_account(request, uidb64, token):
 # -----------------------------
 @login_required
 def dashboard(request):
+    return render(request, "accounts/dashboard.html")
+
+
+# -----------------------------
+# 🟢 Profile & Card
+# -----------------------------
+@login_required
+def profile_and_card(request):
     profiles = UserProfile.objects.filter(user=request.user)
     main_profile = profiles.order_by("-updated_at").first()
 
     public_url = (
         request.build_absolute_uri(
-            reverse("app_account:public_profile", args=[main_profile.username])
+            reverse("app_accounts:public_profile", args=[main_profile.username])
         )
         if main_profile and main_profile.username
         else None
@@ -154,22 +151,21 @@ def dashboard(request):
         "main_profile": main_profile,
         "public_url": public_url,
     }
-    return render(request, "accounts/dashboard.html", context)
+    return render(request, "accounts/profile_&_card.html", context)
 
 
 # -----------------------------
-# 🟢 Create Profile (Respect Account Type Limit)
+# 🟢 Create Profile
 # -----------------------------
 @login_required
 def create_profile(request):
     user = request.user
 
-    # ✅ Check account type limits
     if hasattr(user, "can_create_profile") and not user.can_create_profile():
         messages.error(
             request, "⚠️ You’ve reached your profile creation limit. Upgrade your plan!"
         )
-        return redirect("app_account:dashboard")
+        return redirect("app_accounts:dashboard")
 
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES)
@@ -178,7 +174,7 @@ def create_profile(request):
             profile.user = user
             profile.save()
             messages.success(request, "✅ New profile created successfully!")
-            return redirect("app_account:dashboard")
+            return redirect("app_accounts:dashboard")
     else:
         form = ProfileForm()
 
@@ -186,7 +182,7 @@ def create_profile(request):
 
 
 # -----------------------------
-# 🟢 Edit Profile (Specific by PK)
+# 🟢 Edit Profile
 # -----------------------------
 @login_required
 def edit_profile(request, pk):
@@ -197,14 +193,13 @@ def edit_profile(request, pk):
         profile = form.save(commit=False)
         new_email = form.cleaned_data.get("email")
 
-        # update user email if changed
         if new_email and new_email != request.user.email:
             request.user.email = new_email
             request.user.save()
 
         profile.save()
         messages.success(request, "✅ Profile updated successfully!")
-        return redirect("app_account:edit_profile", pk=profile.pk)
+        return redirect("app_accounts:edit_profile", pk=profile.pk)
 
     return render(request, "accounts/edit_profile.html", {"form": form})
 
@@ -215,14 +210,12 @@ def edit_profile(request, pk):
 @login_required
 def remove_profile_picture(request, pk):
     profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
-    
     if profile.profile_picture:
         profile.profile_picture.delete(save=True)
         messages.success(request, "🗑 Profile picture removed successfully!")
     else:
         messages.warning(request, "⚠️ No profile picture to remove.")
-
-    return redirect("app_account:edit_profile", pk=profile.pk)
+    return redirect("app_accounts:edit_profile", pk=profile.pk)
 
 
 # -----------------------------
@@ -231,16 +224,14 @@ def remove_profile_picture(request, pk):
 def public_profile(request, username):
     profile = get_object_or_404(UserProfile, username=username)
     profile_url = request.build_absolute_uri(
-        reverse("app_account:public_profile", args=[username])
+        reverse("app_accounts:public_profile", args=[username])
     )
 
-    # ✅ Generate QR Code
     qr = qrcode.make(profile_url)
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     qr_code_data = base64.b64encode(buffer.getvalue()).decode()
 
-    # ✅ Generate vCard
     vcard_data = f"""BEGIN:VCARD
 VERSION:3.0
 N:{profile.full_name or ""}
@@ -259,39 +250,58 @@ END:VCARD
     }
     return render(request, "accounts/public_profile.html", context)
 
+
 @login_required
 def delete_profile(request, pk):
     profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
     profile.delete()
     messages.success(request, "Profile deleted successfully.")
-    return redirect("app_account:dashboard")
+    return redirect("app_accounts:dashboard")
 
 
-
+@login_required
 def download_qr(request, pk):
     profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
     url = request.build_absolute_uri(profile.get_absolute_url())
 
     qr = qrcode.make(url)
     buffer = BytesIO()
-    qr.save(buffer, format='PNG')
+    qr.save(buffer, format="PNG")
     buffer.seek(0)
 
-    response = HttpResponse(buffer, content_type='image/png')
-    response['Content-Disposition'] = f'attachment; filename="{profile.username or profile.pk}.png"'
+    response = HttpResponse(buffer, content_type="image/png")
+    response["Content-Disposition"] = f'attachment; filename="{profile.username or profile.pk}.png"'
     return response
 
 
+# -----------------------------
+# 🟢 Others
+# -----------------------------
+@login_required
+def dashboard(request):
+    user = request.user
+    profiles = UserProfile.objects.filter(user=user)
 
+    # উদাহরণ ডেটা (এখন static; পরে analytics থেকে আনতে পারো)
+    total_profiles = profiles.count()
+    daily_views = 42
+    monthly_views = 310
+    yearly_views = 5120
 
-def profile_dashboard(request):
-    return render(request, 'accounts/profile_dashboard.html')
+    context = {
+        "profiles": profiles,
+        "total_profiles": total_profiles,
+        "daily_views": daily_views,
+        "monthly_views": monthly_views,
+        "yearly_views": yearly_views,
+    }
+    return render(request, "accounts/dashboard.html", context)
 
 def contacts(request):
-    return render(request, 'dashboard/contacts.html')
+    return render(request, "dashboard/contacts.html")
 
 def subscription(request):
-    return render(request, 'dashboard/subscription.html')
+    return render(request, "dashboard/subscription.html")
 
 def settings(request):
-    return render(request, 'dashboard/settings.html')
+    return render(request, "dashboard/settings.html")

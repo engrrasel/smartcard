@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.contrib.auth.views import LoginView, LogoutView
 from . import views
 
-app_name = "app_accounts"  # ✅ এই নামটা সব জায়গায় consistent রাখো
+app_name = "app_accounts"
 
 urlpatterns = [
     # 🔐 Authentication
@@ -19,18 +19,19 @@ urlpatterns = [
     path('profile/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
     path('profile/<int:pk>/remove-picture/', views.remove_profile_picture, name='remove_profile_picture'),
 
-    # 🆕 Profile Dashboard Page
-    path('profile-dashboard/', views.profile_dashboard, name='profile_dashboard'),
-
-    # 🌐 Public Profile
-    path('<slug:username>/', views.public_profile, name='public_profile'),
+    # 🆕 Profile Dashboard & Card Pages
+    path('profile_and_card/', views.profile_and_card, name='profile_and_card'),
+    path('profile_dashboard/', views.profile_and_card, name='profile_dashboard'),
 
     # 🧾 QR / Delete
     path('profile/<int:pk>/download_qr/', views.download_qr, name='download_qr'),
     path('profile/<int:pk>/delete/', views.delete_profile, name='delete_profile'),
 
-    # 🧍‍♂️ Additional Pages (to be added soon)
+    # 🧍‍♂️ Additional Pages
     path('contacts/', views.contacts, name='contacts'),
     path('subscription/', views.subscription, name='subscription'),
     path('settings/', views.settings, name='settings'),
+
+    # 🌐 Public Profile (⚠️ keep LAST)
+    path('user/<slug:username>/', views.public_profile, name='public_profile'),
 ]
