@@ -1,76 +1,107 @@
 {% extends "dashboard/dashboard_base.html" %}
 {% load widget_tweaks %}
 
+{% block title %}Edit Profile{% endblock %}
+
 {% block content %}
 <div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body px-4 py-5">
 
-    <!-- 🧾 Page Title -->
-    <h3 class="mb-4">Edit Profile</h3>
+            <!-- 🔹 Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-semibold mb-0 text-primary">
+                    <i class="fa-solid fa-user-pen me-2"></i> Edit Profile
+                </h4>
+                <a href="{% url 'app_account:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </a>
+            </div>
 
-    <!-- ✅ Show Messages -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+            <!-- ✅ Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} small shadow-sm rounded-3 py-2 mb-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
 
-    <!-- 🧍 Profile Edit Form -->
-    <form method="POST" enctype="multipart/form-data" class="card shadow-sm p-4">
-        {% csrf_token %}
+            <!-- 🧾 Form -->
+            <form method="post" enctype="multipart/form-data" class="mt-3">
+                {% csrf_token %}
 
-        <div class="row g-3">
+                <!-- 🖼 Profile Picture -->
+                <div class="text-center mb-4">
+                    <div class="position-relative d-inline-block">
+                        <img id="previewImage"
+                             src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}https://via.placeholder.com/140{% endif %}"
+                             class="rounded-circle border border-3 border-light shadow-sm"
+                             width="140" height="140" alt="Profile Picture">
 
-            <!-- 🧩 Profile Picture -->
-            <div class="col-md-12 text-center mb-3">
-                <img id="previewImage"
-                     src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}https://via.placeholder.com/150{% endif %}"
-                     alt="Profile Picture"
-                     class="rounded-circle border"
-                     width="150" height="150">
+                        <label for="id_profile_picture"
+                               class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow"
+                               style="cursor:pointer; border: 3px solid #fff;">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
+                    </div>
+                    <input type="file"
+                           name="profile_picture"
+                           id="id_profile_picture"
+                           class="d-none"
+                           accept="image/*">
+                    <div class="small text-muted mt-2">Click the camera icon to change</div>
 
-                <div class="mt-2">
-                    <input type="file" name="profile_picture" id="id_profile_picture" class="form-control mt-2" accept="image/*">
                     {% if form.instance.profile_picture %}
-                        <a href="{% url 'app_account:remove_profile_picture' pk=form.instance.pk %}" class="btn btn-sm btn-danger mt-2">
+                        <a href="{% url 'app_account:remove_profile_picture' pk=form.instance.pk %}"
+                           class="btn btn-sm btn-outline-danger mt-2 rounded-pill px-3 py-1">
                             🗑 Remove Picture
                         </a>
                     {% endif %}
                 </div>
-            </div>
 
-            <!-- 🧩 Username -->
-            <div class="col-md-6">
-                <label class="form-label">Username</label>
-                {{ form.username|add_class:"form-control" }}
-                {% if form.username.field.disabled %}
-                    <small class="text-muted">Username cannot be changed once set.</small>
-                {% else %}
-                    <small class="text-muted">Choose carefully — this can only be set once.</small>
-                {% endif %}
-            </div>
-
-            <!-- 🧩 Email -->
-            <div class="col-md-6">
-                <label class="form-label">Email</label>
-                {{ form.email|add_class:"form-control" }}
-            </div>
-
-            <!-- 🧩 Other Fields -->
-            {% for field in form %}
-                {% if field.name not in "username,email,profile_picture" %}
+                <!-- 🧾 Two Column Inputs -->
+                <div class="row g-3">
+                    <!-- Username -->
                     <div class="col-md-6">
-                        <label class="form-label">{{ field.label }}</label>
-                        {{ field|add_class:"form-control" }}
+                        <label class="form-label text-muted small mb-1">Username</label>
+                        {{ form.username|add_class:"form-control form-control-sm soft-input" }}
+                        {% if form.username.field.disabled %}
+                            <div class="small text-muted mt-1">Username cannot be changed once set.</div>
+                        {% endif %}
                     </div>
-                {% endif %}
-            {% endfor %}
-        </div>
 
-        <div class="d-flex justify-content-between mt-4">
-            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
-            <a href="{% url 'app_account:dashboard' %}" class="btn btn-outline-secondary">⬅ Back</a>
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small mb-1">Email</label>
+                        {{ form.email|add_class:"form-control form-control-sm soft-input" }}
+                    </div>
+
+                    {% for field in form %}
+                        {% if field.name not in "username,email,profile_picture,daily_views,monthly_views,yearly_views,last_viewed,is_public" %}
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-1">{{ field.label }}</label>
+                                {{ field|add_class:"form-control form-control-sm soft-input" }}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- 🔘 Buttons -->
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <a href="{% url 'app_account:profile_and_card' %}"
+                       class="btn btn-light border rounded-pill px-4 py-2 small shadow-sm">
+                        <i class="fa-solid fa-xmark me-1"></i> Cancel
+                    </a>
+                    <button type="submit"
+                            class="btn btn-success rounded-pill px-4 py-2 small shadow-sm">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 <!-- 🧠 Live Preview Script -->
@@ -83,4 +114,55 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
 });
 </script>
 
+<!-- 🎨 Custom Style -->
+<style>
+    body {
+        font-family: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
+        font-size: 0.9rem;
+        background-color: #f8f9fb;
+        color: #333;
+    }
+
+    h4 {
+        font-size: 1.15rem;
+        letter-spacing: 0.3px;
+    }
+
+    .soft-input {
+        border: 1px solid #e3e6ea !important;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        background-color: #fff !important;
+    }
+
+    .soft-input:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.15);
+    }
+
+    .btn {
+        font-size: 0.85rem !important;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+    }
+
+    .form-label {
+        font-weight: 500;
+    }
+
+    .card {
+        backdrop-filter: blur(8px);
+        background: #ffffffd9;
+    }
+
+    .alert {
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
 {% endblock %}

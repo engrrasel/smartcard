@@ -4,52 +4,80 @@
 {% block title %}Create Profile{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Create Profile</h2>
-    <hr>
+<div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body px-4 py-5">
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+            <!-- 🔹 Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-semibold mb-0 text-primary">
+                    <i class="fa-solid fa-id-card-clip me-2"></i> Create New Profile
+                </h4>
+                <a href="{% url 'app_account:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </a>
+            </div>
 
-    <form method="post" enctype="multipart/form-data" class="mt-3">
-        {% csrf_token %}
-
-        <!-- 🧩 Profile Picture Upload with Preview -->
-        <div class="mb-3 text-center">
-            <img id="previewImage"
-                 src="https://via.placeholder.com/150"
-                 alt="Profile Picture Preview"
-                 class="rounded-circle border mb-2"
-                 width="150" height="150">
-
-            <input type="file"
-                   name="profile_picture"
-                   id="id_profile_picture"
-                   class="form-control mt-2"
-                   accept="image/*">
-        </div>
-
-        <!-- 🧾 Other Form Fields -->
-        {% for field in form %}
-            {% if field.name != "profile_picture" %}
-                <div class="mb-3">
-                    <label class="form-label">{{ field.label }}</label>
-                    {{ field|add_class:"form-control" }}
-                    {% if field.errors %}
-                        <div class="text-danger small">{{ field.errors|join:", " }}</div>
-                    {% endif %}
-                </div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} small shadow-sm rounded-3 py-2 mb-3">{{ message }}</div>
+                {% endfor %}
             {% endif %}
-        {% endfor %}
 
-        <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-success">Create Profile</button>
-            <a href="{% url 'app_account:dashboard' %}" class="btn btn-secondary">Cancel</a>
+            <form method="post" enctype="multipart/form-data" class="mt-3">
+                {% csrf_token %}
+
+                <!-- 🖼 Profile Picture Upload -->
+                <div class="text-center mb-4">
+                    <div class="position-relative d-inline-block">
+                        <img id="previewImage"
+                             src="https://via.placeholder.com/140"
+                             class="rounded-circle border border-3 border-light shadow-sm"
+                             width="140" height="140" alt="Profile Picture">
+
+                        <label for="id_profile_picture"
+                               class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow"
+                               style="cursor:pointer; border: 3px solid #fff;">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
+                    </div>
+                    <input type="file"
+                           name="profile_picture"
+                           id="id_profile_picture"
+                           class="d-none"
+                           accept="image/*">
+                    <div class="small text-muted mt-2">Click the camera icon to upload</div>
+                </div>
+
+                <!-- 🧾 Two Column Inputs -->
+                <div class="row g-3">
+                    {% for field in form %}
+                        {% if field.name != "profile_picture" %}
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-1">{{ field.label }}</label>
+                                {{ field|add_class:"form-control form-control-sm soft-input" }}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- 🔘 Buttons -->
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <a href="{% url 'app_account:dashboard' %}"
+                       class="btn btn-light border rounded-pill px-4 py-2 small shadow-sm">
+                        <i class="fa-solid fa-xmark me-1"></i> Cancel
+                    </a>
+                    <button type="submit"
+                            class="btn btn-success rounded-pill px-4 py-2 small shadow-sm">
+                        <i class="fa-solid fa-check me-1"></i> Create
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 <!-- 🧠 Live Preview Script -->
@@ -61,4 +89,56 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
     }
 });
 </script>
+
+<!-- 🎨 Custom Style -->
+<style>
+    body {
+        font-family: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
+        font-size: 0.9rem;
+        background-color: #f8f9fb;
+        color: #333;
+    }
+
+    h4 {
+        font-size: 1.15rem;
+        letter-spacing: 0.3px;
+    }
+
+    .soft-input {
+        border: 1px solid #e3e6ea !important;
+        border-radius: 4 px;
+        transition: all 0.2s ease;
+        background-color: #fff !important;
+    }
+
+    .soft-input:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.15);
+    }
+
+    .btn {
+        font-size: 0.85rem !important;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+    }
+
+    .form-label {
+        font-weight: 500;
+    }
+
+    .card {
+        backdrop-filter: blur(8px);
+        background: #ffffffd9;
+    }
+
+    .alert {
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
 {% endblock %}

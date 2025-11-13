@@ -179,8 +179,8 @@ def create_profile(request):
             profile = form.save(commit=False)
             profile.user = user
             profile.save()
-            messages.success(request, "✅ New profile created successfully!")
-            return redirect("app_accounts:dashboard")
+            messages.success(request, " New profile created successfully!")
+            return redirect("app_accounts:profile_and_card")
     else:
         form = ProfileForm()
 
@@ -204,8 +204,8 @@ def edit_profile(request, pk):
             request.user.save()
 
         profile.save()
-        messages.success(request, "✅ Profile updated successfully!")
-        return redirect("app_accounts:edit_profile", pk=profile.pk)
+        messages.success(request, " Profile updated successfully!")
+        return redirect("app_accounts:profile_and_card")
 
     return render(request, "accounts/edit_profile.html", {"form": form})
 
@@ -233,6 +233,7 @@ from datetime import date
 from django.utils import timezone
 
 def public_profile(request, username):
+    list(messages.get_messages(request))
     profile = get_object_or_404(UserProfile, username=username)
 
     # 🔒 যদি প্রোফাইল পাবলিক না হয়, তাহলে দেখাবে না
@@ -289,7 +290,7 @@ def delete_profile(request, pk):
     profile = get_object_or_404(UserProfile, pk=pk, user=request.user)
     profile.delete()
     messages.success(request, "Profile deleted successfully.")
-    return redirect("app_accounts:dashboard")
+    return redirect("app_accounts:profile_and_card")
 
 
 @login_required
@@ -333,16 +334,6 @@ def dashboard(request):
     return render(request, "accounts/dashboard.html", context)
 
 
-
-
-def contacts(request):
-    return render(request, "dashboard/contacts.html")
-
-def subscription(request):
-    return render(request, "dashboard/subscription.html")
-
-def settings(request):
-    return render(request, "dashboard/settings.html")
 
 
 @login_required
@@ -396,3 +387,15 @@ def toggle_public_view(request, profile_id):
             "status": "error",
             "message": "Profile not found"
         }, status=404)
+    
+
+
+
+def contacts(request):
+    return render(request, "dashboard/contacts.html")
+
+def subscription(request):
+    return render(request, "dashboard/subscription.html")
+
+def settings(request):
+    return render(request, "dashboard/settings.html")

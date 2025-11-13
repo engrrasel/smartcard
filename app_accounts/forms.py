@@ -27,7 +27,14 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        exclude = ("user",)
+        exclude = (
+            "user",
+            "daily_views",
+            "monthly_views",
+            "yearly_views",
+            "last_viewed",
+            "is_public",
+        )
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Full name"}),
             "job_title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Job title"}),
@@ -60,7 +67,14 @@ class ProfileUpdateForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        exclude = ("user",)
+        exclude = (
+            "user",
+            "daily_views",
+            "monthly_views",
+            "yearly_views",
+            "last_viewed",
+            "is_public",
+        )
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Full name"}),
             "job_title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Job title"}),
