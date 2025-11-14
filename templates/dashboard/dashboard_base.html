@@ -224,9 +224,10 @@
             <i class="fa-solid fa-credit-card"></i> Subscription
         </a>
 
-        <a href="{% url 'app_account:settings' %}" class="{% if 'settings' in request.path %}active{% endif %}">
+        <a href="{% url 'app_settings:settings_home' %}" class="{% if 'settings' in request.path %}active{% endif %}">
             <i class="fa-solid fa-gear"></i> Settings
         </a>
+
     </div>
 
     <form action="{% url 'app_account:logout' %}" method="post" style="margin: 0;">

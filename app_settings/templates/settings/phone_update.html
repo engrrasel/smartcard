@@ -1,0 +1,63 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block title %}Update Phone{% endblock %}
+{% block content %}
+
+<div class="container my-4" style="max-width: 850px;">
+
+    <div class="card shadow-sm border-0 p-4">
+
+        <h4 class="fw-semibold mb-4">
+            <i class="fa-solid fa-phone-volume me-2"></i> Update Phone Number
+        </h4>
+
+        <div class="row g-4">
+
+            <!-- LEFT: Current Phone Info -->
+            <div class="col-md-5">
+                <div class="p-3 border rounded bg-light">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fa-solid fa-circle-info me-1"></i> Current Phone
+                    </h6>
+
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-phone text-success me-2"></i>
+                        <span class="fw-semibold">
+                            {{ profile.phone|default:"Not set" }}
+                        </span>
+                    </div>
+
+                    <p class="small text-muted mt-2 mb-0">
+                        Your current phone number is shown here.  
+                        Enter a new number on the right to update.
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT: Update Phone Form -->
+            <div class="col-md-7">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <label class="form-label fw-semibold">New Phone Number</label>
+                    <input 
+                        type="text" 
+                        name="phone" 
+                        value="{{ profile.phone }}" 
+                        class="form-control mb-3"
+                        placeholder="Enter new phone number"
+                        required
+                    >
+
+                    <button class="btn btn-primary w-100 py-2">
+                        <i class="fa-solid fa-check me-1"></i> Update Phone
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

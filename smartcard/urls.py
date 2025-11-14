@@ -27,8 +27,9 @@ urlpatterns = [
 
     # 🌐 Main App URLs (namespace সহ)
     path('', include(('app_accounts.urls', 'app_account'), namespace='app_account')),
-]
+    path('settings/', include('app_settings.urls')),
 
+]
 # 🖼️ Media files serve (only in DEBUG mode)
 if settings.DEBUG:
     urlpatterns += [

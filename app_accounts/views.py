@@ -399,8 +399,7 @@ def contacts(request):
 def subscription(request):
     return render(request, "dashboard/subscription.html")
 
-def settings(request):
-    return render(request, "dashboard/settings.html")
+
 
 
 

@@ -1,0 +1,60 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block title %}Change Email{% endblock %}
+{% block content %}
+
+<div class="container my-4" style="max-width: 850px;">
+
+    <div class="card shadow-sm border-0 p-4">
+
+        <h4 class="fw-semibold mb-4">
+            <i class="fa-solid fa-envelope-circle-check me-2"></i> Update Email Address
+        </h4>
+
+        <div class="row g-4">
+
+            <!-- LEFT: Current Email Info -->
+            <div class="col-md-5">
+                <div class="p-3 border rounded bg-light">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fa-solid fa-circle-info me-1"></i> Current Email
+                    </h6>
+
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-envelope text-primary me-2"></i>
+                        <span class="fw-semibold">{{ request.user.email }}</span>
+                    </div>
+
+                    <p class="small text-muted mt-2 mb-0">
+                        This is your currently verified account email.  
+                        Enter a new email on the right to update it.
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT: Change Email Form -->
+            <div class="col-md-7">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <label class="form-label fw-semibold">New Email Address</label>
+                    <input 
+                        type="email" 
+                        name="email" 
+                        class="form-control mb-3" 
+                        placeholder="Enter new email"
+                        required
+                    >
+
+                    <button class="btn btn-primary w-100 py-2">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Update Email
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

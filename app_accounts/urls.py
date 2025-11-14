@@ -30,7 +30,7 @@ urlpatterns = [
     # 🧍‍♂️ Additional Pages
     path('contacts/', views.contacts, name='contacts'),
     path('subscription/', views.subscription, name='subscription'),
-    path('settings/', views.settings, name='settings'),
+
     
     # 🧭 Profile Analytics Dashboard
     path('profile/<int:pk>/dashboard/', views.profile_and_card_dashboard, name='profile_and_card_dashboard'),

@@ -1,0 +1,118 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-semibold mb-0 text-primary">
+            <i class="fa-solid fa-gear me-2"></i> Account Settings
+        </h4>
+
+        <a href="{% url 'app_account:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back
+        </a>
+    </div>
+
+    <!-- Settings Cards -->
+    <div class="row g-3">
+
+        <!-- Profile Settings -->
+        <div class="col-md-6">
+            <a href="{% url 'app_settings:profile_settings' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 p-3 setting-item">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3 bg-primary text-white">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-semibold mb-0">Profile Information</h6>
+                            <small class="text-muted">Update your name, gender, age & photo</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Email Update -->
+        <div class="col-md-6">
+            <a href="{% url 'app_settings:email_update' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 p-3 setting-item">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3 bg-info text-white">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-semibold mb-0">Email Address</h6>
+                            <small class="text-muted">Change your account email</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Phone Update -->
+        <div class="col-md-6">
+            <a href="{% url 'app_settings:phone_update' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 p-3 setting-item">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3 bg-success text-white">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-semibold mb-0">Phone Number</h6>
+                            <small class="text-muted">Update your mobile number</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Password Change -->
+        <div class="col-md-6">
+            <a href="{% url 'app_settings:password_change' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 p-3 setting-item">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3 bg-warning text-white">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-semibold mb-0">Password</h6>
+                            <small class="text-muted">Change your account password</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .icon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .setting-item {
+        transition: all .2s;
+        cursor: pointer;
+    }
+
+    .setting-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    }
+
+    h6 {
+        font-size: 0.95rem;
+    }
+</style>
+
+{% endblock %}
