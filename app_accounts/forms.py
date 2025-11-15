@@ -40,6 +40,7 @@ class ProfileForm(forms.ModelForm):
             "job_title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Job title"}),
             "company_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Company name"}),
             "phone": forms.TextInput(attrs={"class": "form-control", "placeholder": "Phone number"}),
+            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email for this card"}),
             "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Short bio"}),
             "facebook": forms.URLInput(attrs={"class": "form-control", "placeholder": "Facebook profile URL"}),
             "linkedin": forms.URLInput(attrs={"class": "form-control", "placeholder": "LinkedIn profile URL"}),

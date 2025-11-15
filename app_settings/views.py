@@ -86,3 +86,6 @@ def phone_update(request):
 @login_required
 def settings_home(request):
     return render(request, "settings/settings_home.html")
+
+
+

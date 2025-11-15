@@ -272,7 +272,7 @@ def public_profile(request, username):
 VERSION:3.0
 N:{profile.full_name or ""}
 TEL:{profile.phone or ""}
-EMAIL:{profile.user.email or ""}
+EMAIL:{profile.email or ""}
 ORG:{profile.company_name or ""}
 TITLE:{profile.job_title or ""}
 URL:{profile.website or ""}
@@ -429,7 +429,7 @@ def download_contact_vcard(request, username):
 
     full_name = profile.full_name or ""
     phone = profile.phone or ""
-    email = profile.user.email or ""
+    email = profile.email or ""
     org = profile.company_name or ""
     title = profile.job_title or ""
     url = profile.website or ""

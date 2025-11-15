@@ -78,7 +78,7 @@ class UserProfile(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=150, blank=True, null=True)
     username = models.SlugField(max_length=100, unique=True, blank=True, null=True)
-
+    email = models.EmailField(blank=True, null=True)
     job_title = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     company_name = models.CharField(max_length=100, blank=True, null=True)
