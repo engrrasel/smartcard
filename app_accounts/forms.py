@@ -118,24 +118,18 @@ class ProfileUpdateForm(forms.ModelForm):
         if qs.exists():
             raise ValidationError("❌ This username is already taken.")
         return username
+def save(self, commit=True):
+    profile = super().save(commit=False)
 
-    def save(self, commit=True):
-        profile = super().save(commit=False)
+    # ✅ Card/Profile এর email নিজস্ব field-এ থাকবে (user.email এ নয়)
+    profile.email = self.cleaned_data.get("email")
 
-        # ✅ Update email in CustomUser
-        new_email = self.cleaned_data.get("email")
-        if new_email and getattr(profile, "user", None):
-            user = profile.user
-            if user.email != new_email:
-                user.email = new_email
-                if commit:
-                    user.save()
+    # Username set করার নিয়ম অপরিবর্তিত
+    username_input = self.cleaned_data.get("username")
+    if username_input and not profile.username:
+        profile.username = username_input
 
-        # ✅ Assign username if not already set
-        username_input = self.cleaned_data.get("username")
-        if username_input and not profile.username:
-            profile.username = username_input
+    if commit:
+        profile.save()
 
-        if commit:
-            profile.save()
-        return profile
+    return profile

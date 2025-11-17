@@ -198,15 +198,14 @@ def edit_profile(request, pk):
     form = ProfileUpdateForm(request.POST or None, request.FILES or None, instance=profile)
 
     if request.method == "POST" and form.is_valid():
-        profile = form.save(commit=False)
-        new_email = form.cleaned_data.get("email")
 
-        if new_email and new_email != request.user.email:
-            request.user.email = new_email
-            request.user.save()
+        # 🔥 Owner user email NEVER changed
+        profile.email = form.cleaned_data.get("email")
 
+        form.save()
         profile.save()
-        messages.success(request, " Profile updated successfully!")
+
+        messages.success(request, "Profile updated successfully!")
         return redirect("app_accounts:profile_and_card")
 
     return render(request, "accounts/edit_profile.html", {"form": form})
@@ -423,7 +422,7 @@ import urllib
 
 from app_accounts.models import UserProfile  # তোমার মডেল অনুসারে ঠিক রাখো
 
-
+@login_required
 def download_contact_vcard(request, username):
     profile = get_object_or_404(UserProfile, username=username)
 
