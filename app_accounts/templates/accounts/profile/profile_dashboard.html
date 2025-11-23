@@ -1,21 +1,30 @@
-{% extends "dashboard/dashboard_base.html" %}
-{% block title %}Profile Dashboard{% endblock %}
-{% block content %}
-<div class="container my-4">
+<div class="profile-card-new d-flex justify-content-between align-items-center mb-3">
 
-    <h3>Welcome, {{ profile.full_name }}</h3>
+    <div class="d-flex align-items-center">
+        <div class="serial-box me-3">{{ forloop.counter }}</div>
 
-    <div class="card p-4 shadow-sm mt-3">
-        <p><strong>Email:</strong> {{ profile.email }}</p>
-        <p><strong>Phone:</strong> {{ profile.phone }}</p>
-        <p><strong>Company:</strong> {{ profile.company_name }}</p>
+        <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/70{% endif %}"
+             class="profile-avatar-new me-3">
 
-        <a href="{{ profile.get_absolute_url }}" class="btn btn-success mt-2">View Public Card</a>
+        <div>
+            <div class="profile-name">{{ profile.full_name|default:"Unnamed Profile" }}</div>
+            <div class="profile-title">{{ profile.job_title|default:"No job title" }}</div>
+        </div>
+    </div>
 
-        <a href="{% url 'app_accounts:profile_logout' %}" class="btn btn-danger mt-2">
-            Logout
-        </a>
+    <div class="d-flex align-items-center gap-2">
+
+        <label class="switch-new">
+            <input type="checkbox" class="toggle-switch" data-id="{{ profile.id }}" {% if profile.is_public %}checked{% endif %}>
+            <span class="slider-new round"></span>
+        </label>
+
+        <a href="{% url 'app_accounts:public_profile' profile.username %}" class="icon-btn"><i class="fa-solid fa-eye"></i></a>
+        <button onclick="copyProfileLink('{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}')" class="icon-btn"><i class="fa-solid fa-link"></i></button>
+        <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn"><i class="fa-solid fa-pen-to-square"></i></a>
+        <a href="{% url 'app_accounts:download_qr' profile.id %}" class="icon-btn"><i class="fa-solid fa-qrcode"></i></a>
+        <a href="{% url 'app_accounts:delete_profile' profile.id %}" class="icon-btn delete"><i class="fa-solid fa-trash"></i></a>
+
     </div>
 
 </div>
-{% endblock %}

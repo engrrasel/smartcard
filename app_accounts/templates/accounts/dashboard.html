@@ -1,61 +1,203 @@
 {% extends "dashboard/dashboard_base.html" %}
-
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container-fluid animate-fade-in">
 
-    <h3 class="fw-bold mb-4">Dashboard Overview</h3>
+    <!-- 🧾 Welcome Section -->
+    <div class="bg-white shadow-sm rounded p-4 mb-4 animate-slide-down">
 
-    <!-- Stats -->
-    <div class="row g-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="fw-bold text-primary mb-1 d-flex align-items-center">
+                    Welcome, {{ user.get_full_name|default:user.email|title }}
+
+                    {% if user.account_type == "starter" %}
+                        <span class="badge plan-badge starter ms-2">Starter</span>
+                    {% elif user.account_type == "pro" %}
+                        <span class="badge plan-badge pro ms-2">Pro</span>
+                    {% elif user.account_type == "elite" %}
+                        <span class="badge plan-badge elite ms-2">Elite</span>
+                    {% endif %}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Glad to see you back! Here’s your account overview.
+                </p>
+            </div>
+
+            <!-- 🔘 Upgrade Button -->
+            {% if user.account_type != "elite" %}
+            <a href="{% url 'app_accounts:subscription' %}"
+               class="btn btn-warning fw-bold shadow-sm px-4 upgrade-btn">
+                <i class="fa-solid fa-rocket me-1"></i> Upgrade
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <!-- 📊 Stats Cards -->
+    <div class="row g-4">
+
+        <!-- Total Profiles -->
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-3 text-center">
-                <h6>Total Profiles</h6>
-                <h2 class="fw-bold">{{ total_profiles }}</h2>
+            <div class="card stat-card text-center shadow-sm border-0 h-100">
+                <div class="card-body py-4">
+                    <div class="icon-bounce mb-3 text-primary">
+                        <i class="fa-solid fa-id-card fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold">Total Profiles</h5>
+                    <h2 class="fw-bolder counter text-dark" data-target="{{ total_profiles|default:0 }}">0</h2>
+                    <p class="text-muted small">Created under your account</p>
+                </div>
             </div>
         </div>
 
+        <!-- Daily Views -->
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-3 text-center">
-                <h6>Monthly Views</h6>
-                <h2 class="fw-bold">{{ monthly_views }}</h2>
+            <div class="card stat-card text-center shadow-sm border-0 h-100">
+                <div class="card-body py-4">
+                    <div class="icon-bounce mb-3 text-success">
+                        <i class="fa-solid fa-calendar-day fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold">Today's Views</h5>
+                    <h2 class="fw-bolder counter text-dark" data-target="{{ daily_views|default:0 }}">0</h2>
+                    <p class="text-muted small">Views in last 24 hours</p>
+                </div>
             </div>
         </div>
 
+        <!-- Monthly Views -->
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 p-3 text-center">
-                <h6>Yearly Views</h6>
-                <h2 class="fw-bold">{{ yearly_views }}</h2>
+            <div class="card stat-card text-center shadow-sm border-0 h-100">
+                <div class="card-body py-4">
+                    <div class="icon-bounce mb-3 text-warning">
+                        <i class="fa-solid fa-calendar-alt fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold">Monthly Views</h5>
+                    <h2 class="fw-bolder counter text-dark" data-target="{{ monthly_views|default:0 }}">0</h2>
+                    <p class="text-muted small">Views this month</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Profile List -->
-    <h5 class="fw-bold mb-3">Your Profiles</h5>
+    <!-- 📈 Yearly Stats + Create Button -->
+    <div class="row mt-4">
 
-    {% for p in profiles %}
-        <div class="card p-3 shadow-sm border-0 mb-2">
-            <div class="d-flex justify-content-between align-items-center">
-
-                <div>
-                    <h6 class="mb-0 fw-bold">{{ p.full_name|default:"Unnamed Profile" }}</h6>
-                    <small class="text-muted">
-                        {{ p.job_title|default:"No title" }} — {{ p.company_name|default:"" }}
-                    </small>
+        <!-- Yearly Views -->
+        <div class="col-md-6">
+            <div class="card stat-card text-center shadow-sm border-0 h-100">
+                <div class="card-body py-4">
+                    <div class="icon-bounce mb-3 text-info">
+                        <i class="fa-solid fa-chart-line fa-3x"></i>
+                    </div>
+                    <h5 class="fw-bold">Yearly Views</h5>
+                    <h2 class="fw-bolder counter text-dark" data-target="{{ yearly_views|default:0 }}">0</h2>
+                    <p class="text-muted small">Total views this year</p>
                 </div>
-
-                <!-- Correct URL for single profile dashboard -->
-                <a href="{% url 'app_accounts:profile_and_card_dashboard' p.id %}"
-                   class="btn btn-primary btn-sm">
-                    View
-                </a>
             </div>
         </div>
 
-    {% empty %}
-        <p class="text-muted">No profiles yet. Create one now.</p>
-    {% endfor %}
+        <!-- Create Profile -->
+        <div class="col-md-6">
+            <div class="card add-card bg-light text-center shadow-sm border-0 h-100 d-flex align-items-center justify-content-center">
+                <div class="animate-pop">
+                    <i class="fa-solid fa-plus-circle fa-3x text-primary mb-3 pulse"></i>
+                    <h5 class="fw-bold">Create New Profile</h5>
+                    <p class="text-muted small">Add a new business or personal profile</p>
+                    <a href="{% url 'app_accounts:create_profile' %}" class="btn btn-primary px-4">
+                        <i class="fa-solid fa-plus me-1"></i> Create Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 </div>
+
+
+<!-- 🎨 CSS -->
+<style>
+
+.plan-badge {
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 12px;
+    color: #fff;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+.plan-badge.starter {
+    background: linear-gradient(135deg, #6c757d, #868e96);
+}
+
+.plan-badge.pro {
+    background: linear-gradient(135deg, #0061ff, #0048d6);
+}
+
+.plan-badge.elite {
+    background: linear-gradient(135deg, #ffbf00, #ff9f1c);
+    color: #000;
+    font-weight: 800;
+    box-shadow: 0 0 15px rgba(255, 159, 28, .6);
+}
+
+/* Upgrade Button */
+.upgrade-btn {
+    border-radius: 30px;
+    font-size: 14px;
+    padding: 8px 20px;
+}
+
+/* Animations */
+.animate-fade-in { animation: fadeIn 1s ease-in-out; }
+@keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+
+.animate-slide-down { animation: slideDown .8s ease-out; }
+@keyframes slideDown { from {opacity:0; transform:translateY(-20px);} to {opacity:1;} }
+
+.icon-bounce i { animation: bounce 2s infinite; }
+@keyframes bounce { 50% {transform:translateY(-6px);} }
+
+.pulse { animation: pulse 1.8s infinite; }
+@keyframes pulse { 
+    50% {transform:scale(1.15); opacity:.7;} 
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    transition: 0.3s;
+}
+
+</style>
+
+
+<!-- 🔢 Counter Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".counter").forEach(counter => {
+    const target = +counter.dataset.target;
+    let current = 0;
+    const step = Math.ceil(target / 60);
+
+    function update() {
+      if (current < target) {
+        current += step;
+        counter.innerText = current;
+        requestAnimationFrame(update);
+      } else {
+        counter.innerText = target;
+      }
+    }
+    update();
+  });
+});
+</script>
+
 {% endblock %}

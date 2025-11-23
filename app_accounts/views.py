@@ -97,6 +97,7 @@ def dashboard(request):
     ).order_by("-updated_at")
 
     context = {
+        "user": user,   # ← সবচেয়ে গুরুত্বপূর্ণ লাইন
         "profiles": profiles,
         "total_profiles": profiles.count(),
         "daily_views": sum(p.daily_views for p in profiles),

@@ -8,83 +8,69 @@
     </div>
 
     {% for profile in profiles %}
-        <div class="profile-card position-relative p-2 mb-2 shadow-sm rounded bg-white 
-                    d-flex justify-content-between align-items-center animate-fade-in"
-             onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'"
-             style="cursor: pointer;">
+    <div class="profile-box" onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
 
-            <div class="d-flex align-items-center">
-                <div class="serial-number me-3">{{ forloop.counter }}</div>
+        <!-- Left Section -->
+        <div class="d-flex align-items-center">
 
-                <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}
-                         {% else %}https://via.placeholder.com/70{% endif %}"
-                     class="rounded-circle me-3 border profile-avatar">
+            <div class="profile-rank">{{ forloop.counter }}</div>
 
-                <div>
-                    <strong class="fs-6 text-dark">
-                        {{ profile.full_name|default:"Unnamed Profile" }}
-                    </strong><br>
-                    <small class="text-muted">
-                        {{ profile.job_title|default:"No job title" }}
-                    </small>
-                </div>
-            </div>
+            <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}" 
+                 class="profile-photo">
 
-            <div class="d-flex align-items-center gap-1 flex-shrink-0">
-
-                <!-- 🔘 Toggle Public -->
-                <div class="form-check form-switch mb-0 me-2">
-                    <input class="form-check-input toggle-switch"
-                           type="checkbox"
-                           data-id="{{ profile.id }}"
-                           {% if profile.is_public %}checked{% endif %}
-                           onclick="event.stopPropagation();">
-                </div>
-
-                <!-- 👁 View -->
-                <a href="{% url 'app_accounts:public_profile' profile.username %}"
-                   class="btn btn-outline-dark btn-sm z-3"
-                   onclick="event.stopPropagation();">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
-
-                <!-- 🔗 Copy Link -->
-                <button class="btn btn-outline-dark btn-sm z-3"
-                        onclick="event.stopPropagation(); copyProfileLink(
-                        '{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}', this)">
-                    <i class="fa-solid fa-link"></i>
-                </button>
-
-                <!-- ✏️ Edit -->
-                <a href="{% url 'app_accounts:edit_profile' profile.id %}"
-                   class="btn btn-outline-dark btn-sm z-3"
-                   onclick="event.stopPropagation();">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </a>
-
-                <!-- 🧾 QR -->
-                <a href="{% url 'app_accounts:download_qr' profile.id %}"
-                   class="btn btn-outline-dark btn-sm z-3"
-                   onclick="event.stopPropagation();">
-                    <i class="fa-solid fa-qrcode"></i>
-                </a>
-
-                <!-- 🗑 Delete -->
-                <a href="{% url 'app_accounts:delete_profile' profile.id %}"
-                   class="btn btn-outline-dark btn-sm z-3"
-                   onclick="event.stopPropagation(); return confirm('Are you sure?');">
-                    <i class="fa-solid fa-trash"></i>
-                </a>
-
+            <div class="ms-3">
+                <div class="profile-name">{{ profile.full_name|default:"Unnamed Profile" }}</div>
+                <div class="profile-role">{{ profile.job_title|default:"No job title" }}</div>
             </div>
         </div>
+
+        <!-- Right Section Buttons -->
+        <div class="action-buttons">
+
+            <!-- Toggle -->
+            <label class="switch">
+                <input type="checkbox" class="toggle-switch"
+                       data-id="{{ profile.id }}"
+                       {% if profile.is_public %}checked{% endif %}
+                       onclick="event.stopPropagation();">
+                <span class="slider"></span>
+            </label>
+
+            <!-- View -->
+            <a onclick="event.stopPropagation();" href="{% url 'app_accounts:public_profile' profile.username %}" class="icon-btn">
+                <i class="fa-solid fa-eye"></i>
+            </a>
+
+            <!-- Copy Link -->
+            <button onclick="event.stopPropagation(); copyProfileLink('{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}', this)" 
+                    class="icon-btn">
+                <i class="fa-solid fa-link"></i>
+            </button>
+
+            <!-- Edit -->
+            <a onclick="event.stopPropagation();" href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+
+            <!-- QR -->
+            <a onclick="event.stopPropagation();" href="{% url 'app_accounts:download_qr' profile.id %}" class="icon-btn">
+                <i class="fa-solid fa-qrcode"></i>
+            </a>
+
+            <!-- Delete -->
+            <a onclick="event.stopPropagation(); return confirm('Are you sure?');" 
+               href="{% url 'app_accounts:delete_profile' profile.id %}" 
+               class="icon-btn delete-btn">
+                <i class="fa-solid fa-trash"></i>
+            </a>
+        </div>
+
+    </div>
     {% empty %}
-        <div class="text-center text-muted mt-5">
-            You haven’t created any profiles yet.
-        </div>
+        <div class="text-center text-muted mt-5">You haven’t created any profiles yet.</div>
     {% endfor %}
 
-    <!-- Create Button -->
+    <!-- Floating Button -->
     <a href="{% url 'app_accounts:create_profile' %}"
        class="floating-btn btn btn-primary rounded-pill shadow-lg">
         <i class="fa-solid fa-plus me-1"></i> Create New Profile
@@ -93,19 +79,140 @@
 
 
 <style>
-/* তোমার CSS অপরিবর্তিত রাখা হলো */
-.animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
-.profile-card { transition: .25s; border-left: 3px solid transparent; padding: .75rem 1rem!important; }
-.profile-card:hover { transform: translateY(-3px); border-left-color: var(--bs-primary); }
-.serial-number { font-weight: 700; font-size: 1.1rem; color: var(--bs-primary); width: 28px; text-align: center; }
-.profile-avatar { width: 65px; height: 65px; object-fit: cover; border-radius: 50%; }
-.floating-btn { position: fixed; bottom: 25px; right: 30px; z-index: 1000; }
+/* MAIN CARD */
+.profile-box {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 16px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    transition: .25s;
+    cursor: pointer;
+    border: 1px solid rgba(200, 200, 200, 0.3);
+}
+.profile-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+}
+
+/* Left Rank Badge */
+.profile-rank {
+    width: 36px;
+    height: 36px;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight: 700;
+    margin-right: 14px;
+}
+
+/* Profile Photo */
+.profile-photo {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #d4e3ff;
+    transition: .25s;
+}
+.profile-box:hover .profile-photo {
+    transform: scale(1.07);
+    border-color: #007bff;
+}
+
+/* Text */
+.profile-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.profile-role {
+    font-size: .85rem;
+    color: #6c757d;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.icon-btn {
+    width: 38px;
+    height: 38px;
+    background: #f3f5f9;
+    border-radius: 10px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size: 16px;
+    color:#222;
+    transition:.25s;
+    border: 1px solid rgba(180,180,180,0.4);
+}
+.icon-btn:hover {
+    background:#000;
+    color:#fff;
+}
+.delete-btn:hover {
+    background:#d9534f;
+    color:white;
+}
+
+/* Toggle Button */
+.switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  background-color: #bdbdbd;
+  border-radius: 26px;
+  inset: 0;
+  transition: .3s;
+}
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .3s;
+}
+input:checked + .slider {
+  background-color: #007bff;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* Create Button */
+.floating-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 30px;
+    z-index: 1000;
+}
 </style>
 
 
 <script>
-/* Toggle Public (same logic, fixed URL) */
+/* Toggle public ON/OFF */
 function getCookie(name) {
     let cookieValue = null;
     const cookies = document.cookie.split(';');
@@ -120,21 +227,9 @@ function getCookie(name) {
 
 document.querySelectorAll(".toggle-switch").forEach(toggle => {
     toggle.addEventListener("change", function() {
-        const profileId = this.dataset.id;
-
-        fetch(`/toggle-public/${profileId}/`, {
+        fetch(`/toggle-public/${this.dataset.id}/`, {
             method: "POST",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken"),
-                "Accept": "application/json"
-            },
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === "success") {
-                this.closest('.profile-card').style.borderLeftColor =
-                    data.is_public ? "green" : "transparent";
-            }
+            headers: { "X-CSRFToken": getCookie("csrftoken") }
         });
     });
 });
