@@ -382,3 +382,19 @@ def download_contact_vcard(request, username):
     response = HttpResponse(text, content_type="text/vcard; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+@login_required
+def remove_card(request, pk):
+    profile = get_object_or_404(User, pk=pk)
+
+    # Only parent can unlink child
+    if profile.parent_user != request.user:
+        return HttpResponse("Forbidden", status=403)
+
+    # ❗ Delete না করে শুধু unlink করা হবে
+    profile.parent_user = None
+    profile.save(update_fields=["parent_user"])
+
+    messages.success(request, "Profile removed from your account. It is no longer linked to you.")
+    return redirect("app_accounts:profile_and_card")

@@ -59,7 +59,7 @@
 
             <!-- Delete -->
             <a onclick="event.stopPropagation(); return confirm('Are you sure?');" 
-               href="{% url 'app_accounts:delete_profile' profile.id %}" 
+                href="{% url 'app_accounts:remove_card' profile.id %}"
                class="icon-btn delete-btn">
                 <i class="fa-solid fa-trash"></i>
             </a>

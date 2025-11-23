@@ -23,6 +23,9 @@ urlpatterns = [
     # ➕ Create Profile
     path('profile/create/', views.create_profile, name='create_profile'),
 
+    #remove card
+    path('profile/remove-card/<int:pk>/', views.remove_card, name='remove_card'),
+
     # ✏️ Edit Profile (PK required)
     path('profile/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
 
