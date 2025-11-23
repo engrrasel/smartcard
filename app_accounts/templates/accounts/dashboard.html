@@ -1,181 +1,61 @@
 {% extends "dashboard/dashboard_base.html" %}
+
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid animate-fade-in">
+<div class="container py-4">
 
-    <!-- 🧾 Welcome Section -->
-    <div class="bg-white shadow-sm rounded p-4 mb-4 animate-slide-down">
-        <h3 class="fw-bold text-primary mb-1">
-            Welcome, {{ user.get_full_name|default:user.email|title }}
-        </h3>
-        <p class="text-muted mb-0">
-            Glad to see you back! Here’s your account overview.
-        </p>
-    </div>
+    <h3 class="fw-bold mb-4">Dashboard Overview</h3>
 
-    <!-- 📊 Stats Cards -->
-    <div class="row g-4">
-
-        <!-- Total Profiles -->
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
         <div class="col-md-4">
-            <div class="card stat-card border-0 shadow-sm h-100 text-center">
-                <div class="card-body py-4">
-                    <div class="icon-bounce mb-3 text-primary">
-                        <i class="fa-solid fa-id-card fa-3x"></i>
-                    </div>
-                    <h5 class="fw-bold">Total Profiles</h5>
-                    <h2 class="fw-bolder text-dark counter" data-target="{{ total_profiles|default:0 }}">0</h2>
-                    <p class="text-muted small mb-0">Created under your account</p>
-                </div>
+            <div class="card shadow-sm border-0 p-3 text-center">
+                <h6>Total Profiles</h6>
+                <h2 class="fw-bold">{{ total_profiles }}</h2>
             </div>
         </div>
 
-        <!-- Daily Views -->
         <div class="col-md-4">
-            <div class="card stat-card border-0 shadow-sm h-100 text-center">
-                <div class="card-body py-4">
-                    <div class="icon-bounce mb-3 text-success">
-                        <i class="fa-solid fa-calendar-day fa-3x"></i>
-                    </div>
-                    <h5 class="fw-bold">Today’s Views</h5>
-                    <h2 class="fw-bolder text-dark counter" data-target="{{ daily_views|default:0 }}">0</h2>
-                    <p class="text-muted small mb-0">Profiles viewed in last 24 hours</p>
-                </div>
+            <div class="card shadow-sm border-0 p-3 text-center">
+                <h6>Monthly Views</h6>
+                <h2 class="fw-bold">{{ monthly_views }}</h2>
             </div>
         </div>
 
-        <!-- Monthly Views -->
         <div class="col-md-4">
-            <div class="card stat-card border-0 shadow-sm h-100 text-center">
-                <div class="card-body py-4">
-                    <div class="icon-bounce mb-3 text-warning">
-                        <i class="fa-solid fa-calendar-alt fa-3x"></i>
-                    </div>
-                    <h5 class="fw-bold">Monthly Views</h5>
-                    <h2 class="fw-bolder text-dark counter" data-target="{{ monthly_views|default:0 }}">0</h2>
-                    <p class="text-muted small mb-0">Profiles viewed this month</p>
-                </div>
+            <div class="card shadow-sm border-0 p-3 text-center">
+                <h6>Yearly Views</h6>
+                <h2 class="fw-bold">{{ yearly_views }}</h2>
             </div>
         </div>
     </div>
 
-    <!-- 📈 Yearly Stats -->
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card stat-card shadow-sm border-0 h-100 text-center">
-                <div class="card-body py-4">
-                    <div class="icon-bounce mb-3 text-info">
-                        <i class="fa-solid fa-chart-line fa-3x"></i>
-                    </div>
-                    <h5 class="fw-bold">Yearly Views</h5>
-                    <h2 class="fw-bolder text-dark counter" data-target="{{ yearly_views|default:0 }}">0</h2>
-                    <p class="text-muted small mb-0">Total views this year</p>
+    <!-- Profile List -->
+    <h5 class="fw-bold mb-3">Your Profiles</h5>
+
+    {% for p in profiles %}
+        <div class="card p-3 shadow-sm border-0 mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <h6 class="mb-0 fw-bold">{{ p.full_name|default:"Unnamed Profile" }}</h6>
+                    <small class="text-muted">
+                        {{ p.job_title|default:"No title" }} — {{ p.company_name|default:"" }}
+                    </small>
                 </div>
+
+                <!-- Correct URL for single profile dashboard -->
+                <a href="{% url 'app_accounts:profile_and_card_dashboard' p.id %}"
+                   class="btn btn-primary btn-sm">
+                    View
+                </a>
             </div>
         </div>
 
-        <!-- Add New Profile Shortcut -->
-        <div class="col-md-6">
-            <div class="card add-card shadow-sm border-0 h-100 bg-light d-flex align-items-center justify-content-center text-center">
-                <div class="animate-pop">
-                    <i class="fa-solid fa-plus-circle fa-3x text-primary mb-3 pulse"></i>
-                    <h5 class="fw-bold">Create New Profile</h5>
-                    <p class="text-muted small mb-2">Easily add a new business or personal card</p>
-                    <a href="{% url 'app_accounts:create_profile' %}" class="btn btn-primary px-4">
-                        <i class="fa-solid fa-plus me-1"></i> Create Profile
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% empty %}
+        <p class="text-muted">No profiles yet. Create one now.</p>
+    {% endfor %}
+
 </div>
-
-<!-- 🎨 Animation & Counter Styles -->
-<style>
-/* Fade In Effect */
-.animate-fade-in {
-    animation: fadeIn 1s ease-in-out;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Slide Down for Header */
-.animate-slide-down {
-    animation: slideDown 0.8s ease-out;
-}
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Pop-in Animation for Create Card */
-.animate-pop {
-    animation: popIn 1s ease-in-out;
-}
-@keyframes popIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* Bouncing Icons */
-.icon-bounce i {
-    animation: bounce 2s infinite;
-}
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-}
-
-/* Pulsing Create Icon */
-.pulse {
-    animation: pulse 1.8s infinite;
-}
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.15); opacity: 0.7; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* Hover Effects for Cards */
-.stat-card {
-    transition: all 0.3s ease-in-out;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.8rem 1.5rem rgba(0,0,0,0.1);
-}
-
-/* Animated Number Counter */
-.counter {
-    transition: color 0.3s;
-}
-.counter:hover {
-    color: var(--bs-primary);
-}
-</style>
-
-<!-- 🔢 Animated Counter Script -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const counters = document.querySelectorAll(".counter");
-  counters.forEach(counter => {
-    const updateCount = () => {
-      const target = +counter.getAttribute("data-target");
-      const count = +counter.innerText;
-      const speed = 40; // smaller = faster
-      const increment = Math.ceil(target / 100);
-      if (count < target) {
-        counter.innerText = count + increment;
-        setTimeout(updateCount, speed);
-      } else {
-        counter.innerText = target;
-      }
-    };
-    updateCount();
-  });
-});
-</script>
 {% endblock %}

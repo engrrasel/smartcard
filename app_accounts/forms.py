@@ -1,12 +1,13 @@
+# Updated forms.py according to new CustomUser + parent_user system
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
-from .models import CustomUser, UserProfile
+from .models import CustomUser
 
-
-# -----------------------------
-# 🟢 Signup Form
-# -----------------------------
+# --------------------------------------------------
+# 🟢 Signup Form (Root account only)
+# --------------------------------------------------
 class SignupForm(UserCreationForm):
     class Meta:
         model = CustomUser
@@ -15,121 +16,101 @@ class SignupForm(UserCreationForm):
             "email": forms.EmailInput(attrs={
                 "class": "form-control",
                 "placeholder": "Enter your email"
-            }),
+            })
         }
 
 
-# -----------------------------
-# 🟢 Profile Creation Form
-# -----------------------------
-class ProfileForm(forms.ModelForm):
-    """Used for creating a new UserProfile."""
-
-    class Meta:
-        model = UserProfile
-        exclude = (
-            "user",
-            "daily_views",
-            "monthly_views",
-            "yearly_views",
-            "last_viewed",
-            "is_public",
-        )
-        widgets = {
-            "full_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Full name"}),
-            "job_title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Job title"}),
-            "company_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Company name"}),
-            "phone": forms.TextInput(attrs={"class": "form-control", "placeholder": "Phone number"}),
-            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email for this card"}),
-            "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Short bio"}),
-            "facebook": forms.URLInput(attrs={"class": "form-control", "placeholder": "Facebook profile URL"}),
-            "linkedin": forms.URLInput(attrs={"class": "form-control", "placeholder": "LinkedIn profile URL"}),
-            "instagram": forms.URLInput(attrs={"class": "form-control", "placeholder": "Instagram profile URL"}),
-            "website": forms.URLInput(attrs={"class": "form-control", "placeholder": "Website URL"}),
-            "profile_picture": forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/*"}),
-        }
-
-
-# -----------------------------
-# 🟢 Profile Update Form
-# -----------------------------
-class ProfileUpdateForm(forms.ModelForm):
-    """Used for editing existing UserProfile (with email + username support)."""
-
-    email = forms.EmailField(
-        required=True,
-        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Enter your email"}),
-    )
-
-    username = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Unique username"}),
-    )
-
-    class Meta:
-        model = UserProfile
-        exclude = (
-            "user",
-            "daily_views",
-            "monthly_views",
-            "yearly_views",
-            "last_viewed",
-            "is_public",
-        )
-        widgets = {
-            "full_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Full name"}),
-            "job_title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Job title"}),
-            "company_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Company name"}),
-            "phone": forms.TextInput(attrs={"class": "form-control", "placeholder": "Phone number"}),
-            "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Short bio"}),
-            "facebook": forms.URLInput(attrs={"class": "form-control", "placeholder": "Facebook profile URL"}),
-            "linkedin": forms.URLInput(attrs={"class": "form-control", "placeholder": "LinkedIn profile URL"}),
-            "instagram": forms.URLInput(attrs={"class": "form-control", "placeholder": "Instagram profile URL"}),
-            "website": forms.URLInput(attrs={"class": "form-control", "placeholder": "Website URL"}),
-            "profile_picture": forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/*"}),
-        }
+# --------------------------------------------------
+# 🟢 Child Profile Create Form (Premium/Unlimited users)
+# --------------------------------------------------
+class ChildProfileCreateForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Force enable fields
+        self.fields['email'].disabled = False
+        self.fields['password1'].disabled = False
+        self.fields['password2'].disabled = False
 
-        # ✅ Pre-fill email field
-        if self.instance and getattr(self.instance, "user", None):
-            self.fields["email"].initial = self.instance.user.email
+    class Meta:
+        model = CustomUser
+        fields = [
+            "email",
+            "password1",
+            "password2",
+            "full_name",
+            "job_title",
+            "phone",
+            "company_name",
+            "bio",
+            "profile_picture",
+            "facebook",
+            "linkedin",
+            "instagram",
+            "website",
+        ]
 
-        # ✅ Username logic
-        if self.instance and getattr(self.instance, "username", None):
-            self.fields["username"].disabled = True
-            self.fields["username"].help_text = "Username already set (cannot be changed)."
-        else:
-            self.fields["username"].help_text = "Choose a unique username (only once)."
 
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        if not username:
-            return getattr(self.instance, "username", None)
+# --------------------------------------------------
+# 🟢 Profile Setup (first time or create mode)
+# --------------------------------------------------
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = [
+            "full_name",
+            "job_title",
+            "phone",
+            "company_name",
+            "bio",
+            "profile_picture",
+            "facebook",
+            "linkedin",
+            "instagram",
+            "website",
+        ]
+        widgets = {
+            "full_name": forms.TextInput(attrs={"class": "form-control"}),
+            "job_title": forms.TextInput(attrs={"class": "form-control"}),
+            "phone": forms.TextInput(attrs={"class": "form-control"}),
+            "company_name": forms.TextInput(attrs={"class": "form-control"}),
+            "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "facebook": forms.URLInput(attrs={"class": "form-control"}),
+            "linkedin": forms.URLInput(attrs={"class": "form-control"}),
+            "instagram": forms.URLInput(attrs={"class": "form-control"}),
+            "website": forms.URLInput(attrs={"class": "form-control"}),
+            "profile_picture": forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/*"}),
+        }
 
-        username = username.strip().lower()
 
-        # ✅ Check if username already exists
-        qs = UserProfile.objects.filter(username__iexact=username)
-        if self.instance and self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
+# --------------------------------------------------
+# 🟢 Profile Update Form
+# --------------------------------------------------
+class ProfileUpdateForm(forms.ModelForm):
 
-        if qs.exists():
-            raise ValidationError("❌ This username is already taken.")
-        return username
-def save(self, commit=True):
-    profile = super().save(commit=False)
-
-    # ✅ Card/Profile এর email নিজস্ব field-এ থাকবে (user.email এ নয়)
-    profile.email = self.cleaned_data.get("email")
-
-    # Username set করার নিয়ম অপরিবর্তিত
-    username_input = self.cleaned_data.get("username")
-    if username_input and not profile.username:
-        profile.username = username_input
-
-    if commit:
-        profile.save()
-
-    return profile
+    class Meta:
+        model = CustomUser
+        fields = [
+            "full_name",
+            "job_title",
+            "phone",
+            "company_name",
+            "bio",
+            "facebook",
+            "linkedin",
+            "instagram",
+            "website",
+            "profile_picture",
+        ]
+        widgets = {
+            "full_name": forms.TextInput(attrs={"class": "form-control"}),
+            "job_title": forms.TextInput(attrs={"class": "form-control"}),
+            "phone": forms.TextInput(attrs={"class": "form-control"}),
+            "company_name": forms.TextInput(attrs={"class": "form-control"}),
+            "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "facebook": forms.URLInput(attrs={"class": "form-control"}),
+            "linkedin": forms.URLInput(attrs={"class": "form-control"}),
+            "instagram": forms.URLInput(attrs={"class": "form-control"}),
+            "website": forms.URLInput(attrs={"class": "form-control"}),
+            "profile_picture": forms.ClearableFileInput(attrs={"class": "form-control"}),
+        }

@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, UserProfile
-
+from .models import CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -22,17 +21,3 @@ class CustomUserAdmin(UserAdmin):
             "fields": ("email", "password1", "password2", "account_type", "is_active"),
         }),
     )
-
-
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "full_name", "username", "company_name", "updated_at")
-    search_fields = ("user__email", "full_name", "username", "company_name")
-    list_filter = ("updated_at",)
-    readonly_fields = ("updated_at",)
-
-    # ✅ username locked after first set
-    def get_readonly_fields(self, request, obj=None):
-        if obj and obj.username:  # আগে username থাকলে
-            return self.readonly_fields + ("username",)
-        return self.readonly_fields

@@ -1,84 +1,90 @@
 {% extends "dashboard/dashboard_base.html" %}
-{% block title %}Profile & Card{% endblock %}
+{% block title %}{{ profile.full_name }} — Dashboard{% endblock %}
 {% block content %}
 
-<div class="container py-3">
+<div class="container py-4">
 
-    <!-- 🔹 Header + Search -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-semibold mb-2">Your Profiles</h4>
-        <div class="d-flex align-items-center gap-2">
-            <input type="text" id="profileSearch" class="form-control form-control-sm" placeholder="🔍 Search profiles..." style="min-width: 250px;">
-            <a href="{% url 'app_accounts:create_profile' %}" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-plus"></i> Create New Profile
-            </a>
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/100{% endif %}"
+             class="rounded-circle border me-3" width="100" height="100" alt="Profile Picture">
+        <div>
+            <h3 class="fw-bold text-primary mb-1">{{ profile.full_name|default:"Unnamed Profile" }}</h3>
+            <p class="text-muted mb-0">{{ profile.job_title|default:"No designation" }} — {{ profile.company_name|default:"N/A" }}</p>
         </div>
     </div>
 
-    <!-- 🧍 Profile Cards -->
-    <div id="profileList">
-        {% for profile in profiles %}
-            <div class="profile-card mb-3 shadow-sm p-3 rounded d-flex justify-content-between align-items-center">
-                <div class="profile-info d-flex align-items-center">
-                    <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/60{% endif %}" 
-                         alt="Profile Picture" class="rounded-circle me-3" width="60" height="60">
-                    <div>
-                        <strong class="profile-name d-block text-dark">{{ profile.full_name|default:"Unnamed Profile" }}</strong>
-                        <small class="text-muted">{{ profile.job_title|default:"No job title" }}</small>
-                    </div>
-                </div>
-
-                <div>
-                    <a href="{% url 'app_accounts:public_profile' profile.username %}" class="icon-btn view"><i class="fa-solid fa-eye"></i></a>
-                    <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn edit"><i class="fa-solid fa-pen-to-square"></i></a>
-                    <a href="{% url 'app_accounts:download_qr' profile.id %}" class="icon-btn qr"><i class="fa-solid fa-qrcode"></i></a>
-                    <a href="{% url 'app_accounts:delete_profile' profile.id %}" class="icon-btn delete" 
-                       onclick="return confirm('Are you sure you want to delete this profile?');"><i class="fa-solid fa-trash"></i></a>
+    <!-- Stats Cards -->
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card stat-card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <i class="fa-solid fa-eye fa-2x text-primary mb-2"></i>
+                    <h6 class="fw-bold text-muted">Today</h6>
+                    <h2 class="counter text-dark" data-target="{{ daily_views }}">0</h2>
                 </div>
             </div>
-        {% empty %}
-            <div class="text-muted mt-4">You haven’t created any profiles yet.</div>
-        {% endfor %}
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <i class="fa-solid fa-calendar fa-2x text-success mb-2"></i>
+                    <h6 class="fw-bold text-muted">This Month</h6>
+                    <h2 class="counter text-dark" data-target="{{ monthly_views }}">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <i class="fa-solid fa-chart-line fa-2x text-warning mb-2"></i>
+                    <h6 class="fw-bold text-muted">This Year</h6>
+                    <h2 class="counter text-dark" data-target="{{ yearly_views }}">0</h2>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Back Button -->
+    <div class="text-center mt-4">
+        <a href="{% url 'app_accounts:profile_and_card' %}" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Profiles
+        </a>
+    </div>
+
 </div>
 
-<!-- ✨ Styles -->
 <style>
-.profile-card {
+.stat-card {
     transition: all 0.3s ease;
 }
-.profile-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.8rem 1.5rem rgba(0,0,0,0.08);
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.8rem 1.5rem rgba(0,0,0,0.1);
 }
-.icon-btn {
-    color: #555;
-    margin-left: 6px;
-    transition: 0.2s;
-}
-.icon-btn:hover {
-    color: var(--bs-primary);
-}
-#profileSearch {
-    border-radius: 20px;
-    padding: 6px 12px;
+.counter {
+    font-weight: 700;
+    font-size: 2rem;
 }
 </style>
 
-<!-- 🔍 Live Search Script -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const searchInput = document.getElementById("profileSearch");
-    const profiles = document.querySelectorAll(".profile-card");
-
-    searchInput.addEventListener("keyup", function() {
-        const query = this.value.toLowerCase();
-        profiles.forEach(card => {
-            const name = card.querySelector(".profile-name").textContent.toLowerCase();
-            card.style.display = name.includes(query) ? "flex" : "none";
-        });
-    });
+  const counters = document.querySelectorAll(".counter");
+  counters.forEach(counter => {
+    const updateCount = () => {
+      const target = +counter.getAttribute("data-target");
+      const count = +counter.innerText;
+      const increment = Math.max(1, target / 60);
+      if (count < target) {
+        counter.innerText = Math.ceil(count + increment);
+        setTimeout(updateCount, 25);
+      } else {
+        counter.innerText = target;
+      }
+    };
+    updateCount();
+  });
 });
 </script>
-
 {% endblock %}

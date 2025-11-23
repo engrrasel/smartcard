@@ -13,7 +13,7 @@
                 <h4 class="fw-semibold mb-0 text-primary">
                     <i class="fa-solid fa-id-card-clip me-2"></i> Create New Profile
                 </h4>
-                <a href="{% url 'app_account:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <a href="{% url 'app_accounts:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-arrow-left me-1"></i> Back
                 </a>
             </div>
@@ -41,18 +41,44 @@
                             <i class="fa-solid fa-camera"></i>
                         </label>
                     </div>
-                    <input type="file"
-                           name="profile_picture"
-                           id="id_profile_picture"
-                           class="d-none"
-                           accept="image/*">
+                    <input type="file" name="profile_picture" id="id_profile_picture"
+                           class="d-none" accept="image/*">
                     <div class="small text-muted mt-2">Click the camera icon to upload</div>
                 </div>
 
                 <!-- 🧾 Two Column Inputs -->
                 <div class="row g-3">
+
+                    <!-- ⭐ Email -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small mb-1">Email</label>
+                        {{ form.email|add_class:"form-control form-control-sm soft-input" }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ⭐ Password -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small mb-1">Password</label>
+                        {{ form.password1|add_class:"form-control form-control-sm soft-input" }}
+                        {% if form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ form.password1.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ⭐ Confirm Password -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small mb-1">Confirm Password</label>
+                        {{ form.password2|add_class:"form-control form-control-sm soft-input" }}
+                        {% if form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ form.password2.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Other Profile Fields -->
                     {% for field in form %}
-                        {% if field.name != "profile_picture" %}
+                        {% if field.name not in "email,password1,password2,profile_picture" %}
                             <div class="col-md-6">
                                 <label class="form-label text-muted small mb-1">{{ field.label }}</label>
                                 {{ field|add_class:"form-control form-control-sm soft-input" }}
@@ -66,7 +92,7 @@
 
                 <!-- 🔘 Buttons -->
                 <div class="d-flex justify-content-end mt-4 gap-2">
-                    <a href="{% url 'app_account:dashboard' %}"
+                    <a href="{% url 'app_accounts:dashboard' %}"
                        class="btn btn-light border rounded-pill px-4 py-2 small shadow-sm">
                         <i class="fa-solid fa-xmark me-1"></i> Cancel
                     </a>
@@ -80,7 +106,6 @@
     </div>
 </div>
 
-<!-- 🧠 Live Preview Script -->
 <script>
 document.getElementById("id_profile_picture").addEventListener("change", function() {
     const file = this.files[0];
@@ -90,7 +115,6 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
 });
 </script>
 
-<!-- 🎨 Custom Style -->
 <style>
     body {
         font-family: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
@@ -98,47 +122,14 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
         background-color: #f8f9fb;
         color: #333;
     }
-
-    h4 {
-        font-size: 1.15rem;
-        letter-spacing: 0.3px;
-    }
-
     .soft-input {
-        border: 1px solid #e3e6ea !important;
-        border-radius: 4 px;
-        transition: all 0.2s ease;
-        background-color: #fff !important;
+        border: 1px solid #e3e6ea!important;
+        border-radius: 4px;
+        background-color: #fff!important;
     }
-
     .soft-input:focus {
-        border-color: #007bff !important;
-        box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.15);
-    }
-
-    .btn {
-        font-size: 0.85rem !important;
-        font-weight: 500;
-        letter-spacing: 0.2px;
-    }
-
-    .form-label {
-        font-weight: 500;
-    }
-
-    .card {
-        backdrop-filter: blur(8px);
-        background: #ffffffd9;
-    }
-
-    .alert {
-        font-size: 0.85rem;
-    }
-
-    @media (max-width: 576px) {
-        .card-body {
-            padding: 1.5rem;
-        }
+        border-color: #007bff!important;
+        box-shadow: 0 0 0 0.15rem rgba(0,123,255,0.15);
     }
 </style>
 {% endblock %}

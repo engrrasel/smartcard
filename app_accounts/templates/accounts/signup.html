@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load widget_tweaks %}
 
+{% block title %}Sign Up | Smart NFC Card{% endblock %}
+
 {% block content %}
 <div class="container py-5">
   <div class="card shadow p-4" style="max-width: 400px; margin: auto;">
@@ -28,7 +30,7 @@
 
       <p class="text-center mt-3">
         Already have an account?
-        <a href="{% url 'app_account:login' %}">Login</a>
+        <a href="{% url 'app_accounts:login' %}">Login</a>
       </p>
     </form>
   </div>

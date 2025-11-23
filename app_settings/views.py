@@ -5,12 +5,20 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 
 from .forms import UserSettingsForm, ProfileSettingsForm
-from app_accounts.models import UserProfile
+from django.contrib.auth import get_user_model
 
+CustomUser = get_user_model()
+
+
+# --------------------------------------------------
+# 🔵 Profile Settings (Parent or Child Profile)
+# --------------------------------------------------
 @login_required
 def profile_settings(request):
     user = request.user
-    profile = UserProfile.objects.filter(user=user).first()
+
+    # Option B: Profile = Current user itself
+    profile = user  
 
     u_form = UserSettingsForm(request.POST or None, instance=user)
     p_form = ProfileSettingsForm(request.POST or None, request.FILES or None, instance=profile)
@@ -29,6 +37,9 @@ def profile_settings(request):
     })
 
 
+# --------------------------------------------------
+# 🔵 Password Change
+# --------------------------------------------------
 @login_required
 def password_change(request):
     form = PasswordChangeForm(request.user, request.POST or None)
@@ -42,7 +53,9 @@ def password_change(request):
     return render(request, "settings/change_password.html", {"form": form})
 
 
-
+# --------------------------------------------------
+# 🔵 Email Update
+# --------------------------------------------------
 @login_required
 def email_update(request):
     if request.method == "POST":
@@ -61,10 +74,12 @@ def email_update(request):
     return render(request, "settings/email_update.html")
 
 
+# --------------------------------------------------
+# 🔵 Phone Update (Now updates CustomUser directly)
+# --------------------------------------------------
 @login_required
 def phone_update(request):
     user = request.user
-    profile = UserProfile.objects.filter(user=user).first()
 
     if request.method == "POST":
         phone = request.POST.get("phone")
@@ -73,19 +88,18 @@ def phone_update(request):
             messages.error(request, "Phone number cannot be empty.")
             return redirect("app_settings:phone_update")
 
-        profile.phone = phone
-        profile.save()
+        user.phone = phone
+        user.save()
 
         messages.success(request, "Phone number updated successfully!")
         return redirect("app_settings:phone_update")
 
-    return render(request, "settings/phone_update.html", {"profile": profile})
+    return render(request, "settings/phone_update.html", {"profile": user})
 
 
-
+# --------------------------------------------------
+# 🔵 Settings Home
+# --------------------------------------------------
 @login_required
 def settings_home(request):
     return render(request, "settings/settings_home.html")
-
-
-

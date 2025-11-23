@@ -13,7 +13,7 @@
                 <h4 class="fw-semibold mb-0 text-primary">
                     <i class="fa-solid fa-user-pen me-2"></i> Edit Profile
                 </h4>
-                <a href="{% url 'app_account:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <a href="{% url 'app_accounts:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-arrow-left me-1"></i> Back
                 </a>
             </div>
@@ -43,15 +43,17 @@
                             <i class="fa-solid fa-camera"></i>
                         </label>
                     </div>
+
                     <input type="file"
                            name="profile_picture"
                            id="id_profile_picture"
                            class="d-none"
                            accept="image/*">
+
                     <div class="small text-muted mt-2">Click the camera icon to change</div>
 
                     {% if form.instance.profile_picture %}
-                        <a href="{% url 'app_account:remove_profile_picture' pk=form.instance.pk %}"
+                        <a href="{% url 'app_accounts:remove_profile_picture' form.instance.pk %}"
                            class="btn btn-sm btn-outline-danger mt-2 rounded-pill px-3 py-1">
                             🗑 Remove Picture
                         </a>
@@ -60,6 +62,7 @@
 
                 <!-- 🧾 Two Column Inputs -->
                 <div class="row g-3">
+
                     <!-- Username -->
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-1">Username</label>
@@ -69,10 +72,11 @@
                         {% endif %}
                     </div>
 
-                    <!-- Email -->
+                    <!-- Email (readonly) -->
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-1">Email</label>
-                        {{ form.email|add_class:"form-control form-control-sm soft-input" }}
+                        <input type="email" class="form-control form-control-sm soft-input" value="{{ form.instance.email }}" disabled>
+                        <div class="small text-muted mt-1">Email cannot be changed.</div>
                     </div>
 
                     {% for field in form %}
@@ -86,11 +90,12 @@
                             </div>
                         {% endif %}
                     {% endfor %}
+
                 </div>
 
                 <!-- 🔘 Buttons -->
                 <div class="d-flex justify-content-end mt-4 gap-2">
-                    <a href="{% url 'app_account:profile_and_card' %}"
+                    <a href="{% url 'app_accounts:profile_and_card' %}"
                        class="btn btn-light border rounded-pill px-4 py-2 small shadow-sm">
                         <i class="fa-solid fa-xmark me-1"></i> Cancel
                     </a>
@@ -99,6 +104,7 @@
                         <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
                     </button>
                 </div>
+
             </form>
         </div>
     </div>
@@ -114,7 +120,7 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
 });
 </script>
 
-<!-- 🎨 Custom Style -->
+<!-- 🎨 Custom Style (unchanged) -->
 <style>
     body {
         font-family: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
@@ -122,47 +128,16 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
         background-color: #f8f9fb;
         color: #333;
     }
-
-    h4 {
-        font-size: 1.15rem;
-        letter-spacing: 0.3px;
-    }
-
+    h4 { font-size: 1.15rem; letter-spacing: 0.3px; }
     .soft-input {
-        border: 1px solid #e3e6ea !important;
+        border: 1px solid #e3e6ea!important;
         border-radius: 4px;
         transition: all 0.2s ease;
-        background-color: #fff !important;
+        background-color: #fff!important;
     }
-
     .soft-input:focus {
-        border-color: #007bff !important;
-        box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.15);
-    }
-
-    .btn {
-        font-size: 0.85rem !important;
-        font-weight: 500;
-        letter-spacing: 0.2px;
-    }
-
-    .form-label {
-        font-weight: 500;
-    }
-
-    .card {
-        backdrop-filter: blur(8px);
-        background: #ffffffd9;
-    }
-
-    .alert {
-        font-size: 0.85rem;
-    }
-
-    @media (max-width: 576px) {
-        .card-body {
-            padding: 1.5rem;
-        }
+        border-color: #007bff!important;
+        box-shadow: 0 0 0 0.15rem rgba(0,123,255,0.15);
     }
 </style>
 {% endblock %}
