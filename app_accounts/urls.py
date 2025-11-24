@@ -23,23 +23,29 @@ urlpatterns = [
     # ➕ Create Profile
     path('profile/create/', views.create_profile, name='create_profile'),
 
-    #remove card
-    path('profile/remove-card/<int:pk>/', views.remove_card, name='remove_card'),
+    # 🔗 Unlink child profile
+    path('profile/unlink/<int:pk>/', views.unlink_profile, name='unlink_profile'),
 
-    # ✏️ Edit Profile (PK required)
+    # 🗑 Delete Card (This is correct)
+    #path("profile/<int:pk>/delete-card/", views.delete_card, name="delete_card"),
+
+    # ❌ ❗ remove-card (REMOVED because function does not exist)
+    # path('profile/remove-card/<int:pk>/', views.remove_card, name='remove_card'),
+
+    # ✏️ Edit Profile
     path('profile/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
 
     # 🖼 Remove Profile Picture
     path('profile/<int:pk>/remove-picture/', views.remove_profile_picture, name='remove_profile_picture'),
 
-    # 📊 Profile Analytics Dashboard
+
+    # 📊 Profile Dashboard
     path('profile/<int:pk>/dashboard/', views.profile_and_card_dashboard, name='profile_and_card_dashboard'),
 
     # 🧾 Download QR
     path('profile/<int:pk>/download_qr/', views.download_qr, name='download_qr'),
 
     # 🗑 Delete Profile
-    path('profile/<int:pk>/delete/', views.delete_profile, name='delete_profile'),
 
     # 🔍 Search Profiles
     path('search/', views.profile_search, name='profile_search'),
@@ -51,9 +57,10 @@ urlpatterns = [
     path('contacts/', views.contacts, name='contacts'),
     path('subscription/', views.subscription, name='subscription'),
 
-    # 🌐 Public Profile + Download Contact
+    # 🌐 Public Profile
     path('user/<slug:username>/', views.public_profile, name='public_profile'),
 
+    # 📥 Download Contact VCard
     path(
         'user/<slug:username>/download-contact/',
         views.download_contact_vcard,

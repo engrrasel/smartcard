@@ -24,7 +24,7 @@ User = get_user_model()
 
 
 # ───────────────────────────────────────────────
-# ✅ Signup
+# SIGNUP
 # ───────────────────────────────────────────────
 def signup_view(request):
     if request.user.is_authenticated:
@@ -42,7 +42,6 @@ def signup_view(request):
             messages.success(request, "Account created & logged in!")
             return redirect("app_accounts:dashboard")
 
-        # Live mode – email activation
         user.is_active = False
         user.save()
 
@@ -66,7 +65,7 @@ def signup_view(request):
 
 
 # ───────────────────────────────────────────────
-# ✅ Email Activation
+# EMAIL ACTIVATION
 # ───────────────────────────────────────────────
 def activate_account(request, uidb64, token):
     try:
@@ -86,7 +85,7 @@ def activate_account(request, uidb64, token):
 
 
 # ───────────────────────────────────────────────
-# ✅ Dashboard
+# DASHBOARD
 # ───────────────────────────────────────────────
 @login_required
 def dashboard(request):
@@ -97,7 +96,7 @@ def dashboard(request):
     ).order_by("-updated_at")
 
     context = {
-        "user": user,   # ← সবচেয়ে গুরুত্বপূর্ণ লাইন
+        "user": user,
         "profiles": profiles,
         "total_profiles": profiles.count(),
         "daily_views": sum(p.daily_views for p in profiles),
@@ -108,23 +107,25 @@ def dashboard(request):
 
 
 # ───────────────────────────────────────────────
-# ✅ Profile & Card List
+# PROFILE LIST
 # ───────────────────────────────────────────────
 @login_required
 def profile_and_card(request):
     user = request.user
-    profiles = User.objects.filter(
-        Q(pk=user.pk) | Q(parent_user=user)
-    ).order_by("-updated_at")
 
-    context = {
-        "profiles": profiles,
-    }
-    return render(request, "accounts/profile_&_card.html", context)
+    # MAIN CARD (parent_user = None)
+    main_profile = user
 
+    # CHILD CARDS (parent_user = user)
+    child_profiles = User.objects.filter(parent_user=user).order_by("-updated_at")
+
+    return render(request, "accounts/profile_&_card.html", {
+        "main_profile": main_profile,
+        "child_profiles": child_profiles,
+    })
 
 # ───────────────────────────────────────────────
-# ✅ Create Child Profile (Email + Password OK)
+# CREATE CHILD PROFILE
 # ───────────────────────────────────────────────
 @login_required
 def create_profile(request):
@@ -151,7 +152,7 @@ def create_profile(request):
 
 
 # ───────────────────────────────────────────────
-# ✅ Edit Profile
+# EDIT PROFILE
 # ───────────────────────────────────────────────
 @login_required
 def edit_profile(request, pk):
@@ -171,7 +172,7 @@ def edit_profile(request, pk):
 
 
 # ───────────────────────────────────────────────
-# ✅ Remove Profile Picture
+# REMOVE PROFILE PICTURE
 # ───────────────────────────────────────────────
 @login_required
 def remove_profile_picture(request, pk):
@@ -188,10 +189,14 @@ def remove_profile_picture(request, pk):
 
 
 # ───────────────────────────────────────────────
-# ✅ Public Profile
+# PUBLIC PROFILE
 # ───────────────────────────────────────────────
 def public_profile(request, username):
     profile = get_object_or_404(User, username=username, is_active=True)
+
+    # ❗ If card deleted → public profile not allowed
+    if profile.username.startswith("deleted_"):
+        return render(request, "accounts/profile_not_found.html", status=404)
 
     if not profile.is_public:
         return render(request, "accounts/profile_not_found.html", status=404)
@@ -209,8 +214,8 @@ def public_profile(request, username):
     profile.save()
 
     url = request.build_absolute_uri(profile.get_absolute_url())
-
     qr = qrcode.make(url)
+
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     qr_data = base64.b64encode(buffer.getvalue()).decode()
@@ -220,24 +225,8 @@ def public_profile(request, username):
         "qr_code_data": qr_data,
     })
 
-
 # ───────────────────────────────────────────────
-# ✅ Delete Profile
-# ───────────────────────────────────────────────
-@login_required
-def delete_profile(request, pk):
-    profile = get_object_or_404(User, pk=pk)
-
-    if profile != request.user and profile.parent_user != request.user:
-        return HttpResponse("Forbidden", status=403)
-
-    profile.delete()
-    messages.success(request, "Profile deleted.")
-    return redirect("app_accounts:profile_and_card")
-
-
-# ───────────────────────────────────────────────
-# ✅ Download QR
+# DOWNLOAD QR
 # ───────────────────────────────────────────────
 @login_required
 def download_qr(request, pk):
@@ -247,19 +236,19 @@ def download_qr(request, pk):
         return HttpResponse("Forbidden", status=403)
 
     url = request.build_absolute_uri(profile.get_absolute_url())
-
     qr = qrcode.make(url)
+
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     buffer.seek(0)
 
     response = HttpResponse(buffer, content_type="image/png")
-    response["Content-Disposition"] = f'attachment; filename="{profile.username}.png"'
+    response["Content-Disposition"] = f'attachment; filename=\"{profile.username}.png\"'
     return response
 
 
 # ───────────────────────────────────────────────
-# ✅ Profile Analytics Dashboard
+# PROFILE DASHBOARD
 # ───────────────────────────────────────────────
 @login_required
 def profile_and_card_dashboard(request, pk):
@@ -268,22 +257,18 @@ def profile_and_card_dashboard(request, pk):
     if profile != request.user and profile.parent_user != request.user:
         return HttpResponse("Forbidden", status=403)
 
-    return render(request, "accounts/profile_and_card_dashboard.html", {
-        "profile": profile,
-    })
+    return render(request, "accounts/profile_and_card_dashboard.html", {"profile": profile})
 
 
 # ───────────────────────────────────────────────
-# ✅ Search Profiles
+# SEARCH PROFILE
 # ───────────────────────────────────────────────
 @login_required
 def profile_search(request):
     query = request.GET.get("q", "").strip()
     user = request.user
 
-    profiles = User.objects.filter(
-        Q(pk=user.pk) | Q(parent_user=user)
-    )
+    profiles = User.objects.filter(Q(pk=user.pk) | Q(parent_user=user))
 
     if query:
         profiles = profiles.filter(full_name__icontains=query)
@@ -295,7 +280,7 @@ def profile_search(request):
 
 
 # ───────────────────────────────────────────────
-# ✅ Toggle Public View
+# TOGGLE PUBLIC
 # ───────────────────────────────────────────────
 @login_required
 @require_POST
@@ -308,6 +293,7 @@ def toggle_public_view(request, profile_id):
 
         profile.is_public = not profile.is_public
         profile.save()
+
         return JsonResponse({"status": "success", "is_public": profile.is_public})
 
     except User.DoesNotExist:
@@ -315,86 +301,88 @@ def toggle_public_view(request, profile_id):
 
 
 # ───────────────────────────────────────────────
-# Static Pages
+# UNLINK CHILD PROFILE
 # ───────────────────────────────────────────────
+@login_required
+def unlink_profile(request, pk):
+    profile = get_object_or_404(User, pk=pk)
+
+    if profile.parent_user != request.user:
+        return HttpResponse("Forbidden", status=403)
+
+    profile.parent_user = None
+    profile.save(update_fields=["parent_user"])
+
+    messages.success(request, "Child profile unlinked.")
+    return redirect("app_accounts:profile_and_card")
+
+
+# ───────────────────────────────────────────────
+# DELETE MOTHER CARD (not user)
+"""@login_required
+def delete_card(request, pk):
+    profile = get_object_or_404(User, pk=pk)
+
+    # Only allow deleting own card (main or child)
+    if request.user.pk != profile.pk:
+        return HttpResponse("Forbidden", status=403)
+
+    # reset profile data
+    profile.full_name = None
+    profile.job_title = None
+    profile.phone = None
+    profile.company_name = None
+    profile.bio = None
+    profile.facebook = None
+    profile.linkedin = None
+    profile.instagram = None
+    profile.website = None
+
+    # delete profile picture
+    if profile.profile_picture:
+        profile.profile_picture.delete(save=False)
+        profile.profile_picture = None
+
+    # hide public visibility
+    profile.is_public = False
+
+    # mark username as deleted
+    import uuid
+    profile.username = f"deleted_{uuid.uuid4().hex[:10]}"
+
+    profile.save()
+
+    messages.success(request, "Card deleted successfully.")
+    return redirect("app_accounts:profile_and_card")
+"""
+
+@login_required
+def download_contact_vcard(request, username):
+    profile = get_object_or_404(User, username=username)
+
+    vcard = f"""
+BEGIN:VCARD
+VERSION:3.0
+FN:{profile.full_name}
+TEL:{profile.phone}
+EMAIL:{profile.email}
+ORG:{profile.company_name}
+TITLE:{profile.job_title}
+URL:{profile.website}
+END:VCARD
+""".strip()
+
+    response = HttpResponse(vcard, content_type='text/vcard')
+    response['Content-Disposition'] = f'attachment; filename="{profile.username}.vcf"'
+    return response
+
+
+
+
+
+
 def contacts(request):
     return render(request, "dashboard/contacts.html")
 
 def subscription(request):
     return render(request, "dashboard/subscription.html")
-
-
-
-# -----------------------------------------
-# 🟢 Download Contact vCard (public)
-# -----------------------------------------
-def download_contact_vcard(request, username):
-    profile = get_object_or_404(User, username=username)
-
-    full_name = profile.full_name or ""
-    phone = profile.phone or ""
-    email = profile.email or ""
-    org = profile.company_name or ""
-    job = profile.job_title or ""
-    website = profile.website or ""
-
-    # Split name
-    parts = full_name.split(" ", 1)
-    first = parts[0]
-    last = parts[1] if len(parts) > 1 else ""
-
-    # Photo
-    photo_line = ""
-    if profile.profile_picture:
-        try:
-            with open(profile.profile_picture.path, "rb") as f:
-                encoded = base64.b64encode(f.read()).decode()
-                photo_line = f"PHOTO;ENCODING=b;TYPE=JPEG:{encoded}"
-        except:
-            pass
-
-    vcard = [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        f"N:{last};{first};;;",
-        f"FN:{full_name}",
-    ]
-
-    if org:
-        vcard.append(f"ORG:{org}")
-    if job:
-        vcard.append(f"TITLE:{job}")
-    if email:
-        vcard.append(f"EMAIL;TYPE=INTERNET:{email}")
-    if phone:
-        vcard.append(f"TEL;TYPE=CELL:{phone}")
-    if website:
-        vcard.append(f"URL:{website}")
-    if photo_line:
-        vcard.append(photo_line)
-
-    vcard.append("END:VCARD")
-
-    text = "\r\n".join(vcard)
-
-    filename = urllib.parse.quote(f"{profile.username}.vcf")
-
-    response = HttpResponse(text, content_type="text/vcard; charset=utf-8")
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    return response
-
-
-@login_required
-def remove_card(request, pk):
-    profile = get_object_or_404(User, pk=pk)
-
-    # Only parent can unlink child
-    if profile.parent_user != request.user:
-        return HttpResponse("Forbidden", status=403)
-
-    # ❗ Delete না করে শুধু unlink করা হবে
-    profile.parent_user = None
-    profile.save(update_fields=["parent_user"])
-
-    messages.success(request, "Profile removed from your account. It is no longer linked to you.")
-    return redirect("app_accounts:profile_and_card")

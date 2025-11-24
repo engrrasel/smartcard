@@ -3,72 +3,153 @@
 {% block content %}
 
 <div class="container py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-semibold mb-0">Your Profiles</h4>
+
+    <!-- Toggle Buttons -->
+    <div class="toggle-wrapper mb-4 d-flex gap-2 justify-content-center">
+        <button id="toggleMain" class="btn btn-primary px-4 py-2 fw-semibold">
+            Main Card
+        </button>
+        <button id="toggleChild" class="btn btn-outline-primary px-4 py-2 fw-semibold">
+            Other Cards
+        </button>
     </div>
 
-    {% for profile in profiles %}
-    <div class="profile-box" onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
+    <!-- MAIN CARD SECTION -->
+    <div id="mainSection">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-semibold mb-0">Your Main Card</h4>
+        </div>
 
-        <!-- Left Section -->
-        <div class="d-flex align-items-center">
+        <div class="profile-box">
+            <!-- Left area -->
+            <div class="left-area"
+                 onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}'">
+                <div class="d-flex align-items-center">
+                    <img src="{% if main_profile.profile_picture %}{{ main_profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}"
+                         class="profile-photo">
 
-            <div class="profile-rank">{{ forloop.counter }}</div>
+                    <div class="ms-3">
+                        <div class="profile-name">
+                            {{ main_profile.full_name|default:"Unnamed Profile" }}
+                        </div>
+                        <div class="profile-role">
+                            {{ main_profile.job_title|default:"No job title" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}" 
-                 class="profile-photo">
+            <!-- Buttons -->
+            <div class="action-buttons">
+                <!-- Toggle Public -->
+                <label class="switch" title="Public On/Off">
+                    <input type="checkbox"
+                           class="toggle-switch"
+                           data-id="{{ main_profile.id }}"
+                           {% if main_profile.is_public %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
 
-            <div class="ms-3">
-                <div class="profile-name">{{ profile.full_name|default:"Unnamed Profile" }}</div>
-                <div class="profile-role">{{ profile.job_title|default:"No job title" }}</div>
+                <!-- View -->
+                <a href="{% url 'app_accounts:public_profile' main_profile.username %}"
+                   class="icon-btn" title="View Profile">
+                    <i class="fa-solid fa-eye"></i>
+                </a>
+
+                <!-- Copy Link -->
+                <button class="icon-btn"
+                        onclick="copyProfileLink('{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' main_profile.username %}', this)"
+                        title="Copy Link">
+                    <i class="fa-solid fa-link"></i>
+                </button>
+
+                <!-- Edit -->
+                <a href="{% url 'app_accounts:edit_profile' main_profile.id %}"
+                   class="icon-btn" title="Edit Profile">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+
+                <!-- QR -->
+                <a href="{% url 'app_accounts:download_qr' main_profile.id %}"
+                   class="icon-btn" title="Download QR">
+                    <i class="fa-solid fa-qrcode"></i>
+                </a>
             </div>
         </div>
-
-        <!-- Right Section Buttons -->
-        <div class="action-buttons">
-
-            <!-- Toggle -->
-            <label class="switch">
-                <input type="checkbox" class="toggle-switch"
-                       data-id="{{ profile.id }}"
-                       {% if profile.is_public %}checked{% endif %}
-                       onclick="event.stopPropagation();">
-                <span class="slider"></span>
-            </label>
-
-            <!-- View -->
-            <a onclick="event.stopPropagation();" href="{% url 'app_accounts:public_profile' profile.username %}" class="icon-btn">
-                <i class="fa-solid fa-eye"></i>
-            </a>
-
-            <!-- Copy Link -->
-            <button onclick="event.stopPropagation(); copyProfileLink('{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}', this)" 
-                    class="icon-btn">
-                <i class="fa-solid fa-link"></i>
-            </button>
-
-            <!-- Edit -->
-            <a onclick="event.stopPropagation();" href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn">
-                <i class="fa-solid fa-pen-to-square"></i>
-            </a>
-
-            <!-- QR -->
-            <a onclick="event.stopPropagation();" href="{% url 'app_accounts:download_qr' profile.id %}" class="icon-btn">
-                <i class="fa-solid fa-qrcode"></i>
-            </a>
-
-            <!-- Delete -->
-            <a onclick="event.stopPropagation(); return confirm('Are you sure?');" 
-                href="{% url 'app_accounts:remove_card' profile.id %}"
-               class="icon-btn delete-btn">
-                <i class="fa-solid fa-trash"></i>
-            </a>
-        </div>
-
     </div>
-    {% empty %}
-        <div class="text-center text-muted mt-5">You haven’t created any profiles yet.</div>
-    {% endfor %}
+
+
+    <!-- CHILD CARDS SECTION -->
+    <div id="childSection" class="mt-4">
+        <h4 class="fw-semibold mb-3">Your Other Cards</h4>
+
+        {% for profile in child_profiles %}
+        <div class="profile-box">
+            <!-- Left -->
+            <div class="left-area"
+                 onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
+                <div class="d-flex align-items-center">
+                    <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}"
+                         class="profile-photo">
+
+                    <div class="ms-3">
+                        <div class="profile-name">
+                            {{ profile.full_name|default:"Unnamed Profile" }}
+                        </div>
+                        <div class="profile-role">
+                            {{ profile.job_title|default:"No job title" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right buttons -->
+            <div class="action-buttons">
+                <!-- Toggle Public -->
+                <label class="switch" title="Public On/Off">
+                    <input type="checkbox"
+                           class="toggle-switch"
+                           data-id="{{ profile.id }}"
+                           {% if profile.is_public %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+
+                <!-- View -->
+                <a href="{% url 'app_accounts:public_profile' profile.username %}"
+                   class="icon-btn" title="View Profile">
+                    <i class="fa-solid fa-eye"></i>
+                </a>
+
+                <!-- Copy Link -->
+                <button class="icon-btn"
+                        onclick="copyProfileLink('{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}', this)"
+                        title="Copy Link">
+                    <i class="fa-solid fa-link"></i>
+                </button>
+
+                <!-- Edit -->
+                <a href="{% url 'app_accounts:edit_profile' profile.id %}"
+                   class="icon-btn" title="Edit Profile">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+
+                <!-- QR -->
+                <a href="{% url 'app_accounts:download_qr' profile.id %}"
+                   class="icon-btn" title="Download QR">
+                    <i class="fa-solid fa-qrcode"></i>
+                </a>
+
+                <!-- Unlink -->
+                <a href="{% url 'app_accounts:unlink_profile' profile.id %}"
+                   class="icon-btn delete-btn unlink-btn" title="Unlink Card">
+                    <i class="fa-solid fa-link-slash"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+            <p class="text-muted">You have no child cards.</p>
+        {% endfor %}
+    </div>
 
     <!-- Floating Button -->
     <a href="{% url 'app_accounts:create_profile' %}"
@@ -79,51 +160,36 @@
 
 
 <style>
-/* MAIN CARD */
+/* Layout */
 .profile-box {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(14px);
+    background: rgba(255,255,255,0.95);
     border-radius: 18px;
-    padding: 16px 22px;
+    padding: 18px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 14px;
-    transition: .25s;
-    cursor: pointer;
-    border: 1px solid rgba(200, 200, 200, 0.3);
+    border: 1px solid rgba(220,220,220,0.7);
+    transition: 0.25s ease;
 }
 .profile-box:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.07);
 }
+.left-area { width: 70%; cursor: pointer; }
 
-/* Left Rank Badge */
-.profile-rank {
-    width: 36px;
-    height: 36px;
-    background: #007bff;
-    color: white;
-    border-radius: 50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-weight: 700;
-    margin-right: 14px;
-}
-
-/* Profile Photo */
+/* Photo */
 .profile-photo {
-    width: 65px;
-    height: 65px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #d4e3ff;
+    border: 3px solid #d7e1ff;
     transition: .25s;
 }
 .profile-box:hover .profile-photo {
     transform: scale(1.07);
-    border-color: #007bff;
+    border-color: #4b7bff;
 }
 
 /* Text */
@@ -136,49 +202,47 @@
     color: #6c757d;
 }
 
-/* Action Buttons */
+/* Buttons on right */
 .action-buttons {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 .icon-btn {
-    width: 38px;
-    height: 38px;
-    background: #f3f5f9;
-    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    background: #f3f5fb;
+    border-radius: 12px;
     display:flex;
     justify-content:center;
     align-items:center;
     font-size: 16px;
     color:#222;
     transition:.25s;
-    border: 1px solid rgba(180,180,180,0.4);
+    border: 1px solid rgba(190,190,190,0.4);
 }
 .icon-btn:hover {
-    background:#000;
+    background:#4b7bff;
     color:#fff;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(75,123,255,0.5);
 }
 .delete-btn:hover {
     background:#d9534f;
     color:white;
 }
 
-/* Toggle Button */
+/* Toggle switch */
 .switch {
   position: relative;
   width: 48px;
   height: 26px;
 }
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.switch input { opacity: 0; }
 .slider {
   position: absolute;
   cursor: pointer;
-  background-color: #bdbdbd;
+  background-color: #c9d1ff;
   border-radius: 26px;
   inset: 0;
   transition: .3s;
@@ -194,14 +258,32 @@
   border-radius: 50%;
   transition: .3s;
 }
-input:checked + .slider {
-  background-color: #007bff;
+input:checked + .slider { background-color: #4a7aff; }
+input:checked + .slider:before { transform: translateX(22px); }
+
+/* Toggle Buttons */
+.toggle-wrapper button {
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
-input:checked + .slider:before {
-  transform: translateX(22px);
+.toggle-wrapper .btn-primary {
+    background: linear-gradient(135deg,#4b7bff,#4cc3ff);
+    border: none;
+}
+.toggle-wrapper .btn-outline-primary {
+    border-width: 2px;
+    border-color: #4b7bff;
+    color: #4b7bff;
+}
+.toggle-wrapper .btn-outline-primary:hover {
+    background:#4b7bff;
+    color:#fff;
 }
 
-/* Create Button */
+/* Floating Button */
 .floating-btn {
     position: fixed;
     bottom: 25px;
@@ -210,26 +292,63 @@ input:checked + .slider:before {
 }
 </style>
 
-
 <script>
-/* Toggle public ON/OFF */
-function getCookie(name) {
-    let cookieValue = null;
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        }
-    }
-    return cookieValue;
-}
+// toggle main / child sections
+document.addEventListener("DOMContentLoaded", function () {
+    const mainBtn  = document.getElementById('toggleMain');
+    const childBtn = document.getElementById('toggleChild');
+    const mainSec  = document.getElementById('mainSection');
+    const childSec = document.getElementById('childSection');
 
-document.querySelectorAll(".toggle-switch").forEach(toggle => {
-    toggle.addEventListener("change", function() {
-        fetch(`/toggle-public/${this.dataset.id}/`, {
-            method: "POST",
-            headers: { "X-CSRFToken": getCookie("csrftoken") }
+    function showMain() {
+        mainSec.style.display  = 'block';
+        childSec.style.display = 'none';
+        mainBtn.classList.add('btn-primary');
+        mainBtn.classList.remove('btn-outline-primary');
+        childBtn.classList.remove('btn-primary');
+        childBtn.classList.add('btn-outline-primary');
+    }
+    function showChild() {
+        mainSec.style.display  = 'none';
+        childSec.style.display = 'block';
+        childBtn.classList.add('btn-primary');
+        childBtn.classList.remove('btn-outline-primary');
+        mainBtn.classList.remove('btn-primary');
+        mainBtn.classList.add('btn-outline-primary');
+    }
+
+    mainBtn.addEventListener('click', showMain);
+    childBtn.addEventListener('click', showChild);
+
+    // default: show main only
+    showMain();
+
+    // stop propagation on buttons (so parent click না খায়)
+    document.querySelectorAll('.icon-btn, .unlink-btn, button').forEach(btn => {
+        btn.addEventListener('click', function(e){ e.stopPropagation(); });
+    });
+
+    // public toggle AJAX hit (same as আগে ছিল)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let c of cookies) {
+                c = c.trim();
+                if (c.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(c.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    document.querySelectorAll(".toggle-switch").forEach(toggle => {
+        toggle.addEventListener("change", function () {
+            fetch(`/toggle-public/${this.dataset.id}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": getCookie("csrftoken") }
+            });
         });
     });
 });

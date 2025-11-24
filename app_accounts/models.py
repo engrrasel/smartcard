@@ -1,6 +1,4 @@
-# ─────────────────────────────────────────────
-# ✅ Imports
-# ─────────────────────────────────────────────
+# Fixed and fully prepared models.py with username delete-safe logic
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from django.utils import timezone
@@ -8,11 +6,7 @@ from django.utils.text import slugify
 from django.urls import reverse
 
 
-# ─────────────────────────────────────────────
-# ✅ Custom User Manager
-# ─────────────────────────────────────────────
 class CustomUserManager(BaseUserManager):
-
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email is required.")
@@ -22,7 +16,6 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
@@ -37,19 +30,13 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-# ─────────────────────────────────────────────
-# ✅ Custom User Model
-# ─────────────────────────────────────────────
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-
-    # LOGIN FIELDS
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     activation_date = models.DateTimeField(null=True, blank=True)
 
-    # PARENT USER (for child profiles)
     parent_user = models.ForeignKey(
         "self",
         null=True,
@@ -58,11 +45,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         related_name="child_profiles"
     )
 
-    # SUBSCRIPTION PLANS (Starter / Pro / Elite)
     ACCOUNT_TYPE_CHOICES = [
-        ("starter", "Starter"),     # old 'free'
-        ("pro", "Pro"),             # old 'premium'
-        ("elite", "Elite"),         # old 'unlimited'
+        ("starter", "Starter"),
+        ("pro", "Pro"),
+        ("elite", "Elite"),
     ]
     account_type = models.CharField(
         max_length=20,
@@ -70,7 +56,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         default="starter"
     )
 
-    # PROFILE INFO
     full_name = models.CharField(max_length=150, blank=True, null=True)
     username = models.SlugField(max_length=100, unique=True, blank=True, null=True)
     job_title = models.CharField(max_length=100, blank=True, null=True)
@@ -79,13 +64,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to="profile_pics/", blank=True, null=True)
 
-    # SOCIAL PROFILES
     facebook = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     instagram = models.URLField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
 
-    # ANALYTICS
     daily_views = models.PositiveIntegerField(default=0)
     monthly_views = models.PositiveIntegerField(default=0)
     yearly_views = models.PositiveIntegerField(default=0)
@@ -94,7 +77,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     is_public = models.BooleanField(default=True)
 
-    # DJANGO REQUIRED
     objects = CustomUserManager()
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -107,27 +89,28 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.full_name or self.email
 
-
-    # PUBLIC PROFILE URL
     def get_absolute_url(self):
-        if not self.username:
+        # If username removed / card deleted → no public profile
+        if not self.username or self.username.startswith("deleted_"):
             return reverse("app_accounts:dashboard")
+
         return reverse("app_accounts:public_profile", args=[self.username])
 
-
-    # PROFILE LIMIT BASED ON PLAN
     def can_create_profile(self):
         count = self.child_profiles.count()
-
-        if self.account_type == "elite":     # unlimited profiles
+        if self.account_type == "elite":
             return True
-        if self.account_type == "pro":       # up to 10 profiles
+        if self.account_type == "pro":
             return count < 10
-        return count < 1                      # starter = 1 profile limit
+        return count < 0
 
-
-    # AUTO GENERATE UNIQUE USERNAME
     def save(self, *args, **kwargs):
+        # Prevent regenerating username if card was deleted
+        if self.username and self.username.startswith("deleted_"):
+            super().save(*args, **kwargs)
+            return
+
+        # Auto-generate username
         if not self.username:
             base = slugify(self.full_name or self.email.split("@")[0])
             username = base or "user"
