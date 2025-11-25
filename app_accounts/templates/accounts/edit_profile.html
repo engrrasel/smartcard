@@ -35,7 +35,7 @@
                         <img id="previewImage"
                              src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}https://via.placeholder.com/140{% endif %}"
                              class="rounded-circle border border-3 border-light shadow-sm"
-                             width="140" height="140" alt="Profile Picture">
+                             width="140" height="140">
 
                         <label for="id_profile_picture"
                                class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow"
@@ -44,11 +44,7 @@
                         </label>
                     </div>
 
-                    <input type="file"
-                           name="profile_picture"
-                           id="id_profile_picture"
-                           class="d-none"
-                           accept="image/*">
+                    <input type="file" name="profile_picture" id="id_profile_picture" class="d-none" accept="image/*">
 
                     <div class="small text-muted mt-2">Click the camera icon to change</div>
 
@@ -63,22 +59,15 @@
                 <!-- 🧾 Two Column Inputs -->
                 <div class="row g-3">
 
-                    <!-- Username -->
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small mb-1">Username</label>
-                        {{ form.username|add_class:"form-control form-control-sm soft-input" }}
-                        {% if form.username.field.disabled %}
-                            <div class="small text-muted mt-1">Username cannot be changed once set.</div>
-                        {% endif %}
-                    </div>
-
                     <!-- Email (readonly) -->
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-1">Email</label>
-                        <input type="email" class="form-control form-control-sm soft-input" value="{{ form.instance.email }}" disabled>
+                        <input type="email" class="form-control form-control-sm soft-input"
+                               value="{{ form.instance.email }}" disabled>
                         <div class="small text-muted mt-1">Email cannot be changed.</div>
                     </div>
 
+                    <!-- All other fields (auto) -->
                     {% for field in form %}
                         {% if field.name not in "username,email,profile_picture,daily_views,monthly_views,yearly_views,last_viewed,is_public" %}
                             <div class="col-md-6">
@@ -90,13 +79,19 @@
                             </div>
                         {% endif %}
                     {% endfor %}
-
-                </div>
-                <div class="mb-3">
-                    <label>Username</label>
-                    {{ form.username }}
                 </div>
 
+                <!-- ✔ Username (single correct placed field) -->
+                <div class="mb-3 mt-3">
+                    <label class="form-label text-muted small mb-1">Username</label>
+                    {{ form.username|add_class:"form-control form-control-sm soft-input" }}
+
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.username.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
 
                 <!-- 🔘 Buttons -->
                 <div class="d-flex justify-content-end mt-4 gap-2">
@@ -104,6 +99,7 @@
                        class="btn btn-light border rounded-pill px-4 py-2 small shadow-sm">
                         <i class="fa-solid fa-xmark me-1"></i> Cancel
                     </a>
+
                     <button type="submit"
                             class="btn btn-success rounded-pill px-4 py-2 small shadow-sm">
                         <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
@@ -111,6 +107,7 @@
                 </div>
 
             </form>
+
         </div>
     </div>
 </div>
@@ -125,7 +122,7 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
 });
 </script>
 
-<!-- 🎨 Custom Style (unchanged) -->
+<!-- 🎨 Custom Style -->
 <style>
     body {
         font-family: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
@@ -145,4 +142,5 @@ document.getElementById("id_profile_picture").addEventListener("change", functio
         box-shadow: 0 0 0 0.15rem rgba(0,123,255,0.15);
     }
 </style>
+
 {% endblock %}

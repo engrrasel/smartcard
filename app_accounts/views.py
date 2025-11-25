@@ -132,30 +132,48 @@ def profile_and_card(request):
 def create_profile(request):
     user = request.user
 
+    # Profile limit check
     if not user.can_create_profile():
         messages.error(request, "You reached your profile limit.")
         return redirect("app_accounts:dashboard")
 
     if request.method == "POST":
         form = ChildProfileCreateForm(request.POST, request.FILES)
+
         if form.is_valid():
             child = form.save(commit=False)
             child.parent_user = user
             child.is_active = True
 
-            # ⭐ Username user না দিলে auto-generate হবে
-            if not child.username:
-                child.username = None
+            # ⭐ Default password set
+            default_password = "12345678"
+            child.set_password(default_password)
+
+            # ⭐ Username user না দিলে auto generate
+            if not child.username or child.username == "":
+                # Auto generate unique username
+                base_username = child.email.split("@")[0]
+                new_username = base_username
+                counter = 1
+
+                # check existing username
+                from app_accounts.models import CustomUser
+                while CustomUser.objects.filter(username=new_username).exists():
+                    new_username = f"{base_username}{counter}"
+                    counter += 1
+
+                child.username = new_username
 
             child.save()
 
-            messages.success(request, "Profile created successfully!")
+            messages.success(request, f"Profile created successfully!")
+
             return redirect("app_accounts:profile_and_card")
+
     else:
         form = ChildProfileCreateForm()
 
     return render(request, "accounts/profile_create.html", {"form": form})
-
 
 # ───────────────────────────────────────────────
 # EDIT PROFILE

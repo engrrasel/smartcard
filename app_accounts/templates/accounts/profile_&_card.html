@@ -1,6 +1,9 @@
 {% extends "dashboard/dashboard_base.html" %}
+{% load static %}
 {% block title %}Profile & Card{% endblock %}
 {% block content %}
+
+<link rel="stylesheet" href="{% static 'accounts/profile_&_card.css' %}">
 
 <div class="container py-3">
 
@@ -12,14 +15,12 @@
 
     <!-- MAIN CARD SECTION -->
     <div id="mainSection">
-        <h4 class="fw-semibold mb-3">Your Main Card</h4>
+        <h4 class="fw-semibold mb-3">Your Card</h4>
 
-        <div class="profile-box">
+        <div class="profile-box"
+             onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}'">
 
-            <!-- LEFT -->
-            <div class="left-area"
-                onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}'">
-                
+            <div class="left-content">
                 <div class="d-flex align-items-center">
                     <img src="{% if main_profile.profile_picture %}{{ main_profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}"
                         class="profile-photo">
@@ -32,81 +33,69 @@
             </div>
 
             <!-- RIGHT BUTTONS -->
-            <div class="action-buttons">
+            <div class="action-buttons" onclick="event.stopPropagation();">
 
-                <!-- Public Toggle -->
-                <label class="switch" title="Public On/Off">
-                    <input type="checkbox" class="toggle-switch" data-id="{{ main_profile.id }}"
-                        {% if main_profile.is_public %}checked{% endif %}>
+                <label class="switch">
+                    <input type="checkbox" class="toggle-switch"
+                           data-id="{{ main_profile.id }}"
+                           {% if main_profile.is_public %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
 
-                <!-- View -->
                 <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="icon-btn">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
-                <!-- Copy -->
-                <button class="icon-btn link-clean" onclick="toggleCopyMenu('copyMain')" title="Copy Link">
+                <button class="icon-btn link-clean" onclick="toggleCopyMenu('copyMain')">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-
-                <!-- Copy Menu -->
                 <div class="copy-menu" id="copyMain">
-
-                    <!-- Username public link -->
                     <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' main_profile.username %}', 'copyMain')">
                         Copy Username
                     </div>
 
-                    <!-- Permanent ID public link -->
                     <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}', 'copyMain')">
                         Copy Permanent
                     </div>
-
                 </div>
 
-                <!-- Edit -->
                 <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="icon-btn">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </a>
 
-                <!-- QR -->
                 <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="icon-btn">
                     <i class="fa-solid fa-qrcode"></i>
                 </a>
+
             </div>
         </div>
     </div>
 
-    <!-- CHILD CARDS ALWAYS VISIBLE -->
-    <div id="childSection" class="mt-4" style="display:none;">
 
+    <!-- CHILD CARDS -->
+    <div id="childSection" class="mt-4" style="display:none;">
         <h4 class="fw-semibold mb-3">Your Other Cards</h4>
 
         {% for profile in child_profiles %}
-        <div class="profile-box">
+        <div class="profile-box"
+             onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
 
-            <!-- Left -->
-            <div class="left-area"
-                onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
-                
+            <div class="left-content">
                 <div class="d-flex align-items-center">
                     <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}"
                         class="profile-photo">
 
                     <div class="ms-3">
-                        <div class="profile-name">{{ profile.full_name|default:"Unnamed Profile" }}</div>
-                        <div class="profile-role">{{ profile.job_title|default:"No job title" }}</div>
+                        <div class="profile-name">{{ profile.full_name }}</div>
+                        <div class="profile-role">{{ profile.job_title }}</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right -->
-            <div class="action-buttons">
+            <!-- RIGHT -->
+            <div class="action-buttons" onclick="event.stopPropagation();">
 
-                <!-- Toggle -->
                 <label class="switch">
                     <input type="checkbox" class="toggle-switch" data-id="{{ profile.id }}"
                         {% if profile.is_public %}checked{% endif %}>
@@ -122,8 +111,12 @@
                 </button>
 
                 <div class="copy-menu" id="copy{{ profile.id }}">
-                    <div onclick="copyAndHide('{{ request.build_absolute_uri|slice:'-1' }}{% url 'app_accounts:public_profile' profile.username %}', 'copy{{ profile.id }}')">Copy Username </div>
-                    <div onclick="copyAndHide('{{ profile.get_permanent_url }}', 'copy{{ profile.id }}')">Copy Permanent </div>
+                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' profile.username %}', 'copy{{ profile.id }}')">
+                        Copy Username
+                    </div>
+                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' profile.public_id %}', 'copy{{ profile.id }}')">
+                        Copy Permanent
+                    </div>
                 </div>
 
                 <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn">
@@ -134,331 +127,21 @@
                     <i class="fa-solid fa-qrcode"></i>
                 </a>
 
-                <a href="{% url 'app_accounts:unlink_profile' profile.id %}" class="icon-btn delete-btn">
+                <a href="{% url 'app_accounts:unlink_profile' profile.id %}" 
+                class="icon-btn delete-btn"
+                onclick="return confirm('This profile will no longer be linked to your account. Continue?');">
                     <i class="fa-solid fa-link-slash"></i>
                 </a>
+
+
             </div>
         </div>
-        {% empty %}
-        <p class="text-muted">You have no child cards.</p>
         {% endfor %}
-    </div>
 
-    <!-- Floating Create Button -->
-    <a href="{% url 'app_accounts:create_profile' %}" class="floating-btn btn btn-primary rounded-pill shadow-lg">
-        <i class="fa-solid fa-plus me-1"></i> Create New Profile
-    </a>
+    </div>
 
 </div>
 
-
-
-<style>
-/* Remove background & border only for link button */
-.icon-btn.link-clean {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* Keep hover effect clean */
-.icon-btn.link-clean:hover {
-    background: transparent !important;
-    border: none !important;
-    color: #ff0000 !important;
-    transform: scale(1.2);
-}
-
-/* Allow JS click event to work */
-.icon-btn.link-clean i {
-    pointer-events: none;
-}
-
-
-/* Remove background + border only for link button */
-.link-btn {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.link-btn:hover {
-    background: transparent !important;
-    border: none !important;
-    color: #4b7bff !important;   /* Hover এ শুধু নীল হবে */
-    transform: scale(1.15);      /* সুন্দর hover animation */
-}
-
-/* =====================================
-   ALL BUTTONS SAME AS link-clean
-===================================== */
-
-/* সব বাটন: (.btn, .icon-btn, button, a.btn) */
-.btn:not(.logout-btn),
-button:not(.logout-btn),
-.icon-btn:not(.logout-btn),
-a.btn:not(.logout-btn),
-a.icon-btn:not(.logout-btn) {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    color: #000 !important; 
-    transition: 0.25s ease;
-    padding: 8px;
-}
-
-.btn:not(.logout-btn):hover,
-button:not(.logout-btn):hover,
-.icon-btn:not(.logout-btn):hover,
-a.btn:not(.logout-btn):hover,
-a.icon-btn:not(.logout-btn):hover {
-    background: transparent !important;
-    border: none !important;
-    color: #4b7bff !important;
-    transform: scale(1.20);
-}
-
-.btn:not(.logout-btn):active,
-button:not(.logout-btn):active,
-.icon-btn:not(.logout-btn):active {
-    transform: scale(0.95);
-}
-
-/* hover effect — ঠিক link-clean এর মতো */
-.btn:hover,
-button:hover,
-.icon-btn:hover,
-a.btn:hover,
-a.icon-btn:hover {
-    background: transparent !important;
-    border: none !important;
-    color: #4b7bff !important;   /* hover color (নীল) */
-    transform: scale(1.20);       /* hover animation */
-}
-
-/* active (clicked) effect */
-.btn:active,
-button:active,
-.icon-btn:active {
-    transform: scale(0.95);
-}
-
-/* আইকনের pointer fix */
-.icon-btn i,
-.btn i {
-    pointer-events: none;
-}
-
-
-
-/* ---------------- CARD DESIGN ---------------- */
-.profile-box {
-    background: white;
-    border-radius: 18px;
-    padding: 18px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-    border: 1px solid #e4e4e4;
-    position: relative;
-    transition: .25s;
-    overflow: visible !important; /* ⭐ popup যেন কাটা না পড়ে */
-    z-index: 2;  
-}
-.profile-box:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-/* PROFILE PHOTO */
-.profile-photo {
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #d7e1ff;
-    transition: .25s;
-}
-.profile-box:hover .profile-photo {
-    transform: scale(1.12);
-    border-color: #4b7bff;
-}
-
-/* BUTTONS */
-.action-buttons { 
-    display: flex;
-    flex-direction: row;   /* HORIZONTAL */
-    gap: 15px;
-    align-items: center;
-    position: relative;
-}
-
-
-/* ---------------- COPY MENU ---------------- */
-.copy-menu {
-    position: fixed !important;   /* ⭐ container break করে body-তে ভাসবে */
-    transform: translateX(-20px); /* বাটনের নিচে সুন্দর অবস্থান */
-    background: #fff;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    width: 180px;
-    display: none;
-    padding: 6px 0;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-
-    z-index: 999999999 !important; /* ⭐ সবকিছুর উপরে */
-}
-
-
-.copy-menu div {
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: .15s;
-}
-.copy-menu div:hover {
-    background: #eef3ff;
-}
-
-/* ---------------- TOGGLE BUTTON ---------------- */
-.switch {
-    position: relative;
-    width: 48px;
-    height: 28px;
-}
-
-.switch input { 
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: #c9d1ff;
-    border-radius: 28px;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;     /* vertical center */
-    padding: 4px;            /* horizontal spacing for the knob */
-}
-
-.slider:before {
-    content: "";
-    height: 20px;
-    width: 20px;
-    background-color: white;
-    border-radius: 50%;
-    transition: 0.3s;
-}
-
-
-input:checked + .slider {
-    background: #4b7bff;
-    border-color: #4b7bff;
-    box-shadow: 0 0 10px rgba(75,123,255,0.5);
-}
-
-input:checked + .slider::before {
-    transform: translateX(22px);
-}
-
-/* Floating create button */
-.floating-btn {
-    position: fixed;
-    bottom: 25px;
-    right: 30px;
-    z-index: 1000;
-}
-
-</style>
-
-
-
-<script>
-
-document.getElementById("toggleMain").onclick = () => {
-    document.getElementById("mainSection").style.display = "block";
-    document.getElementById("childSection").style.display = "none";
-
-    document.getElementById("toggleMain").classList.add("btn-primary");
-    document.getElementById("toggleMain").classList.remove("btn-outline-primary");
-    document.getElementById("toggleChild").classList.remove("btn-primary");
-    document.getElementById("toggleChild").classList.add("btn-outline-primary");
-};
-
-document.getElementById("toggleChild").onclick = () => {
-    document.getElementById("mainSection").style.display = "none";
-    document.getElementById("childSection").style.display = "block";
-
-    document.getElementById("toggleChild").classList.add("btn-primary");
-    document.getElementById("toggleChild").classList.remove("btn-outline-primary");
-    document.getElementById("toggleMain").classList.remove("btn-primary");
-    document.getElementById("toggleMain").classList.add("btn-outline-primary");
-};
-
-
-
-/* -------- Toggle Copy Menu -------- */
-function toggleCopyMenu(id) {
-    let menu = document.getElementById(id);
-    let all = document.querySelectorAll(".copy-menu");
-
-    all.forEach(m => {
-        if (m !== menu) m.style.display = "none";
-    });
-
-    menu.style.display = (menu.style.display === "block") ? "none" : "block";
-}
-
-/* -------- Copy and Hide -------- */
-function copyAndHide(text, id) {
-    navigator.clipboard.writeText(text);
-    document.getElementById(id).style.display = "none";
-}
-
-/* -------- Click Outside to Hide Copy Menu -------- */
-document.addEventListener("click", function (e) {
-    document.querySelectorAll(".copy-menu").forEach(menu => {
-        if (!menu.contains(e.target) && !e.target.closest(".icon-btn")) {
-            menu.style.display = "none";
-        }
-    });
-});
-
-
-/* ------- PUBLIC PRIVATE AJAX ------- */
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-document.querySelectorAll(".toggle-switch").forEach(toggle => {
-    toggle.addEventListener("change", function () {
-
-        fetch(`/toggle-public/${this.dataset.id}/`, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken"),
-            },
-        });
-    });
-});
-
-</script>
-
+<script src="{% static 'accounts/profile_&_card.js' %}"></script>
 
 {% endblock %}
-
