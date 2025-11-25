@@ -38,8 +38,6 @@ body {
   object-fit: cover;
   background: #f0f0f0;
 }
-
-/* (বাকিগুলো সব একই) */
 </style>
 
 
@@ -62,7 +60,8 @@ body {
     <!-- ACTION BUTTONS -->
     <div class="btn-area">
 
-      <a href="{% url 'add_contact' profile.id %}" class="btn btn-primary">
+      <!-- ✅ Corrected URL here -->
+      <a href="{% url 'app_contacts:add_contact' profile.id %}" class="btn btn-primary">
           Connect
       </a>
 
@@ -90,14 +89,12 @@ body {
 
   </div>
 
-  <!-- ACTIVITY -->
   <div class="section">
     <h5>Activity</h5>
     <p>👥 Followers: <strong>1,362</strong></p>
     <p>Latest post or update will appear here…</p>
   </div>
 
-  <!-- EXPERIENCE -->
   <div class="section">
     <h5>Experience</h5>
     {% if profile.job_title %}

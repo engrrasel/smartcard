@@ -1,0 +1,14 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block content %}
+<h3>Pending Requests</h3>
+
+{% for r in requests_received %}
+    <div class="alert alert-light border mb-2">
+        <strong>{{ r.sender.full_name }}</strong> wants to connect with you.<br>
+        <small>{{ r.created_at }}</small>
+    </div>
+{% empty %}
+    <p>No pending requests.</p>
+{% endfor %}
+{% endblock %}
