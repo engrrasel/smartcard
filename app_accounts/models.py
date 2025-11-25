@@ -116,12 +116,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return count < 0
 
     def save(self, *args, **kwargs):
-        # Prevent regenerating username if card was deleted
-        if self.username and self.username.startswith("deleted_"):
-            super().save(*args, **kwargs)
-            return
 
-        # Auto-generate username
+        # যদি username empty থাকে → auto generate
         if not self.username:
             base = slugify(self.full_name or self.email.split("@")[0])
             username = base or "user"
@@ -137,4 +133,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
             self.username = username
 
+        # যদি username আগে থেকেই থাকে → client যেটা update দিয়েছে সেটা রাখতে হবে
         super().save(*args, **kwargs)
+

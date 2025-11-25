@@ -27,15 +27,23 @@ class ChildProfileCreateForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Force enable fields
+
+        # Enable fields if needed
         self.fields['email'].disabled = False
         self.fields['password1'].disabled = False
         self.fields['password2'].disabled = False
+
+        # Username design (optional)
+        self.fields['username'].widget.attrs.update({
+            "class": "form-control",
+            "placeholder": "Choose a username (optional)"
+        })
 
     class Meta:
         model = CustomUser
         fields = [
             "email",
+            "username",      # ⭐ এখানে যোগ করতে হবে
             "password1",
             "password2",
             "full_name",
@@ -49,6 +57,7 @@ class ChildProfileCreateForm(UserCreationForm):
             "instagram",
             "website",
         ]
+
 
 
 # --------------------------------------------------
@@ -68,6 +77,7 @@ class ProfileForm(forms.ModelForm):
             "linkedin",
             "instagram",
             "website",
+            "username",     # ⭐ ADD THIS
         ]
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
@@ -80,8 +90,8 @@ class ProfileForm(forms.ModelForm):
             "instagram": forms.URLInput(attrs={"class": "form-control"}),
             "website": forms.URLInput(attrs={"class": "form-control"}),
             "profile_picture": forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/*"}),
+            "username": forms.TextInput(attrs={"class": "form-control"}),  # ⭐ Input design
         }
-
 
 # --------------------------------------------------
 # 🟢 Profile Update Form
@@ -101,7 +111,9 @@ class ProfileUpdateForm(forms.ModelForm):
             "instagram",
             "website",
             "profile_picture",
+            "username",     # ⭐ যোগ করতে হবে
         ]
+
         widgets = {
             "full_name": forms.TextInput(attrs={"class": "form-control"}),
             "job_title": forms.TextInput(attrs={"class": "form-control"}),
@@ -113,4 +125,5 @@ class ProfileUpdateForm(forms.ModelForm):
             "instagram": forms.URLInput(attrs={"class": "form-control"}),
             "website": forms.URLInput(attrs={"class": "form-control"}),
             "profile_picture": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "username": forms.TextInput(attrs={"class": "form-control"}),  # ⭐ input box style
         }

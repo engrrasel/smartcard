@@ -57,12 +57,12 @@
 
                     <!-- Username public link -->
                     <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' main_profile.username %}', 'copyMain')">
-                        Copy Username Link
+                        Copy Username
                     </div>
 
                     <!-- Permanent ID public link -->
                     <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}', 'copyMain')">
-                        Copy Permanent Link
+                        Copy Permanent
                     </div>
 
                 </div>
@@ -122,8 +122,8 @@
                 </button>
 
                 <div class="copy-menu" id="copy{{ profile.id }}">
-                    <div onclick="copyAndHide('{{ request.build_absolute_uri|slice:'-1' }}{% url 'app_accounts:public_profile' profile.username %}', 'copy{{ profile.id }}')">Copy Username Link</div>
-                    <div onclick="copyAndHide('{{ profile.get_permanent_url }}', 'copy{{ profile.id }}')">Copy Permanent Link</div>
+                    <div onclick="copyAndHide('{{ request.build_absolute_uri|slice:'-1' }}{% url 'app_accounts:public_profile' profile.username %}', 'copy{{ profile.id }}')">Copy Username </div>
+                    <div onclick="copyAndHide('{{ profile.get_permanent_url }}', 'copy{{ profile.id }}')">Copy Permanent </div>
                 </div>
 
                 <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn">
@@ -263,6 +263,8 @@ button:active,
     border: 1px solid #e4e4e4;
     position: relative;
     transition: .25s;
+    overflow: visible !important; /* ⭐ popup যেন কাটা না পড়ে */
+    z-index: 2;  
 }
 .profile-box:hover {
     transform: translateY(-5px);
@@ -295,17 +297,20 @@ button:active,
 
 /* ---------------- COPY MENU ---------------- */
 .copy-menu {
-    position: absolute;
-    right: 0;
-    top: 50px;
-    width: 180px;
+    position: fixed !important;   /* ⭐ container break করে body-তে ভাসবে */
+    transform: translateX(-20px); /* বাটনের নিচে সুন্দর অবস্থান */
     background: #fff;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border: 1px solid #e4e4e4;
+    border: 1px solid #ddd;
+    width: 180px;
     display: none;
-    z-index: 9999;
+    padding: 6px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+
+    z-index: 999999999 !important; /* ⭐ সবকিছুর উপরে */
 }
+
+
 .copy-menu div {
     padding: 10px 14px;
     cursor: pointer;

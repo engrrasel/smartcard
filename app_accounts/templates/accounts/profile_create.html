@@ -53,8 +53,14 @@
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-1">Email</label>
                         {{ form.email|add_class:"form-control form-control-sm soft-input" }}
-                        {% if form.email.errors %}
-                            <div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>
+                    </div>
+
+                    <!-- ⭐ Username -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small mb-1">Username (optional)</label>
+                        {{ form.username|add_class:"form-control form-control-sm soft-input" }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors|join:", " }}</div>
                         {% endif %}
                     </div>
 
@@ -62,23 +68,17 @@
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-1">Password</label>
                         {{ form.password1|add_class:"form-control form-control-sm soft-input" }}
-                        {% if form.password1.errors %}
-                            <div class="text-danger small mt-1">{{ form.password1.errors|join:", " }}</div>
-                        {% endif %}
                     </div>
 
                     <!-- ⭐ Confirm Password -->
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-1">Confirm Password</label>
                         {{ form.password2|add_class:"form-control form-control-sm soft-input" }}
-                        {% if form.password2.errors %}
-                            <div class="text-danger small mt-1">{{ form.password2.errors|join:", " }}</div>
-                        {% endif %}
                     </div>
 
                     <!-- Other Profile Fields -->
                     {% for field in form %}
-                        {% if field.name not in "email,password1,password2,profile_picture" %}
+                        {% if field.name not in "email,password1,password2,profile_picture,username" %}
                             <div class="col-md-6">
                                 <label class="form-label text-muted small mb-1">{{ field.label }}</label>
                                 {{ field|add_class:"form-control form-control-sm soft-input" }}

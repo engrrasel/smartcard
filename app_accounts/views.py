@@ -142,6 +142,11 @@ def create_profile(request):
             child = form.save(commit=False)
             child.parent_user = user
             child.is_active = True
+
+            # ⭐ Username user না দিলে auto-generate হবে
+            if not child.username:
+                child.username = None
+
             child.save()
 
             messages.success(request, "Profile created successfully!")
@@ -236,7 +241,11 @@ def download_qr(request, pk):
     if profile != request.user and profile.parent_user != request.user:
         return HttpResponse("Forbidden", status=403)
 
-    url = request.build_absolute_uri(profile.get_absolute_url())
+    # ⭐ Permanent ID based QR Link
+    url = request.build_absolute_uri(
+        reverse("app_accounts:public_profile_by_id", args=[profile.public_id])
+    )
+
     qr = qrcode.make(url)
 
     buffer = BytesIO()
