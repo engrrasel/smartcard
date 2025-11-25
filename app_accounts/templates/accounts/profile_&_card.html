@@ -51,10 +51,20 @@
                     <i class="fa-solid fa-link"></i>
                 </button>
 
+
                 <!-- Copy Menu -->
                 <div class="copy-menu" id="copyMain">
-                    <div onclick="copyAndHide('{{ request.build_absolute_uri|slice:'-1' }}{% url 'app_accounts:public_profile' main_profile.username %}', 'copyMain')">Copy Username Link</div>
-                    <div onclick="copyAndHide('{{ main_profile.get_permanent_url }}', 'copyMain')">Copy Permanent Link</div>
+
+                    <!-- Username public link -->
+                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' main_profile.username %}', 'copyMain')">
+                        Copy Username Link
+                    </div>
+
+                    <!-- Permanent ID public link -->
+                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}', 'copyMain')">
+                        Copy Permanent Link
+                    </div>
+
                 </div>
 
                 <!-- Edit -->

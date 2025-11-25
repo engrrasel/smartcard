@@ -12,6 +12,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.db.models import Q
+from .models import CustomUser
 
 import qrcode
 import base64
@@ -389,11 +390,11 @@ def subscription(request):
 
 
 
-def public_profile_by_id(request, public_id):
-    profile = get_object_or_404(User, public_id=public_id, is_public=True)
 
-    # deleted হলে প্রোফাইল দেখাবে না
-    if profile.username.startswith("deleted_"):
+def public_profile_by_id(request, public_id):
+    profile = CustomUser.objects.filter(public_id=public_id, is_public=True).first()
+
+    if profile is None:
         return render(request, "accounts/profile_not_found.html", status=404)
 
-    return public_profile(request, profile.username)
+    return render(request, "accounts/public_profile.html", {"profile": profile})
