@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 from django.urls import reverse
+import uuid   # <<<<<< ADD THIS
 
 
 class CustomUserManager(BaseUserManager):
@@ -31,6 +32,10 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+
+    # ✅ Permanent Public ID (Never changes)
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -95,6 +100,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             return reverse("app_accounts:dashboard")
 
         return reverse("app_accounts:public_profile", args=[self.username])
+
+
+    # ⭐ Permanent unchangeable public URL
+    def get_permanent_url(self):
+        return reverse("app_accounts:public_profile_by_id", args=[self.public_id])
+
 
     def can_create_profile(self):
         count = self.child_profiles.count()

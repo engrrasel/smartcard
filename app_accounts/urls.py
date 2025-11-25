@@ -66,4 +66,9 @@ urlpatterns = [
         views.download_contact_vcard,
         name='download_contact_vcard'
     ),
+
+
+    # Permanent profile URL
+    path("p/<slug:public_id>/", views.public_profile_by_id, name="public_profile_by_id"),
+
 ]

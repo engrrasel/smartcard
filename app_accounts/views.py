@@ -386,3 +386,14 @@ def contacts(request):
 
 def subscription(request):
     return render(request, "dashboard/subscription.html")
+
+
+
+def public_profile_by_id(request, public_id):
+    profile = get_object_or_404(User, public_id=public_id, is_public=True)
+
+    # deleted হলে প্রোফাইল দেখাবে না
+    if profile.username.startswith("deleted_"):
+        return render(request, "accounts/profile_not_found.html", status=404)
+
+    return public_profile(request, profile.username)
