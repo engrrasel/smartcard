@@ -35,35 +35,30 @@
             <!-- RIGHT BUTTONS -->
             <div class="action-buttons" onclick="event.stopPropagation();">
 
+                <!-- Toggle -->
                 <label class="switch">
-                    <input type="checkbox" class="toggle-switch"
-                           data-id="{{ main_profile.id }}"
-                           {% if main_profile.is_public %}checked{% endif %}>
+                    <input type="checkbox" class="toggle-switch" data-id="{{ main_profile.id }}"
+                        {% if main_profile.is_public %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
 
+                <!-- View -->
                 <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="icon-btn">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
-                <button class="icon-btn link-clean" onclick="toggleCopyMenu('copyMain')">
+                <!-- Copy Permanent -->
+                <button class="icon-btn"
+                        onclick="copyText('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}')">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <div class="copy-menu" id="copyMain">
-                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' main_profile.username %}', 'copyMain')">
-                        Copy Username
-                    </div>
-
-                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}', 'copyMain')">
-                        Copy Permanent
-                    </div>
-                </div>
-
+                <!-- Edit -->
                 <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="icon-btn">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </a>
 
+                <!-- QR -->
                 <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="icon-btn">
                     <i class="fa-solid fa-qrcode"></i>
                 </a>
@@ -96,43 +91,40 @@
             <!-- RIGHT -->
             <div class="action-buttons" onclick="event.stopPropagation();">
 
+                <!-- Toggle -->
                 <label class="switch">
                     <input type="checkbox" class="toggle-switch" data-id="{{ profile.id }}"
                         {% if profile.is_public %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
 
+                <!-- View -->
                 <a href="{% url 'app_accounts:public_profile' profile.username %}" class="icon-btn">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
-                <button class="icon-btn" onclick="toggleCopyMenu('copy{{ profile.id }}')">
+                <!-- Copy Permanent -->
+                <button class="icon-btn"
+                        onclick="copyText('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' profile.public_id %}')">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <div class="copy-menu" id="copy{{ profile.id }}">
-                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' profile.username %}', 'copy{{ profile.id }}')">
-                        Copy Username
-                    </div>
-                    <div onclick="copyAndHide('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' profile.public_id %}', 'copy{{ profile.id }}')">
-                        Copy Permanent
-                    </div>
-                </div>
-
+                <!-- Edit -->
                 <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </a>
 
+                <!-- QR -->
                 <a href="{% url 'app_accounts:download_qr' profile.id %}" class="icon-btn">
                     <i class="fa-solid fa-qrcode"></i>
                 </a>
 
-                <a href="{% url 'app_accounts:unlink_profile' profile.id %}" 
-                class="icon-btn delete-btn"
-                onclick="return confirm('This profile will no longer be linked to your account. Continue?');">
+                <!-- Unlink -->
+                <a href="{% url 'app_accounts:unlink_profile' profile.id %}"
+                   class="icon-btn delete-btn"
+                   onclick="return confirm('This profile will no longer be linked to your account. Continue?');">
                     <i class="fa-solid fa-link-slash"></i>
                 </a>
-
 
             </div>
         </div>
@@ -142,13 +134,20 @@
 
 </div>
 
-<!-- Floating Create Button at Bottom (Centered) -->
+<!-- Floating Create Button -->
 <a href="{% url 'app_accounts:create_profile' %}" class="floating-create-btn">
     <i class="fa-solid fa-plus"></i> Create New
 </a>
 
 
-
+<!-- JS -->
 <script src="{% static 'accounts/profile_&_card.js' %}"></script>
+
+<script>
+function copyText(text) {
+    navigator.clipboard.writeText(text);
+    alert("Permanent link copied!");
+}
+</script>
 
 {% endblock %}

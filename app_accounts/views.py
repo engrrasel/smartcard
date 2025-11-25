@@ -218,36 +218,47 @@ def remove_profile_picture(request, pk):
 def public_profile(request, username):
     profile = get_object_or_404(User, username=username, is_active=True)
 
-    # ❗ If card deleted → public profile not allowed
+    # ❗ Deleted card handle
     if profile.username.startswith("deleted_"):
         return render(request, "accounts/profile_not_found.html", status=404)
 
+    # ❗ Private profile handle
     if not profile.is_public:
         return render(request, "accounts/profile_not_found.html", status=404)
 
+    # -----------------------------
+    # ⭐ VIEW COUNT (ONLY PUBLIC PAGE)
+    # -----------------------------
     today = timezone.now().date()
 
+    # First visit today
     if profile.last_viewed != today:
         profile.daily_views = 1
     else:
         profile.daily_views += 1
 
+    # Monthly & yearly counters always increase
     profile.monthly_views += 1
     profile.yearly_views += 1
+
     profile.last_viewed = today
     profile.save()
+    # --------------------------------------------
 
+    # -------- QR Code Generate ----------
     url = request.build_absolute_uri(profile.get_absolute_url())
     qr = qrcode.make(url)
 
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     qr_data = base64.b64encode(buffer.getvalue()).decode()
+    # -------------------------------------
 
     return render(request, "accounts/public_profile.html", {
         "profile": profile,
         "qr_code_data": qr_data,
     })
+
 
 # ───────────────────────────────────────────────
 # DOWNLOAD QR
@@ -428,3 +439,22 @@ def public_profile_by_id(request, public_id):
 
     # 🔥 Redirect browser to username-based URL
     return redirect("app_accounts:public_profile", username=profile.username)
+
+
+
+@login_required
+def profile_and_card_dashboard(request, pk):
+    profile = get_object_or_404(User, pk=pk)
+
+    # ❗ এখানে কোনো ভিউ কাউন্ট হবে না
+    # ❗ এখানে public_profile() কখনো কল করবেন না
+    # ❗ এখানে profile.get_absolute_url() ব্যবহার করবেন না
+
+    context = {
+        "profile": profile,
+        "daily_views": profile.daily_views,
+        "monthly_views": profile.monthly_views,
+        "yearly_views": profile.yearly_views,
+    }
+
+    return render(request, "accounts/profile_and_card_dashboard.html", context)
