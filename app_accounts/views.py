@@ -392,9 +392,12 @@ def subscription(request):
 
 
 def public_profile_by_id(request, public_id):
+
+    # Find the profile using permanent public ID
     profile = CustomUser.objects.filter(public_id=public_id, is_public=True).first()
 
     if profile is None:
         return render(request, "accounts/profile_not_found.html", status=404)
 
-    return render(request, "accounts/public_profile.html", {"profile": profile})
+    # 🔥 Redirect browser to username-based URL
+    return redirect("app_accounts:public_profile", username=profile.username)
