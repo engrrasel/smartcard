@@ -62,25 +62,23 @@ body {
     <!-- ACTION BUTTONS -->
     <div class="btn-area">
 
-      <!-- Connect (Email) -->
-      <a href="mailto:{{ profile.email }}" class="btn-connect">
-        <i class="fa-solid fa-user-plus"></i> Connect
+      <a href="{% url 'add_contact' profile.id %}" class="btn btn-primary">
+          Connect
       </a>
 
-      <!-- Call -->
       {% if profile.phone %}
       <a href="tel:{{ profile.phone }}" class="btn-call">
-        <i class="fa-solid fa-phone"></i> Call
+          <i class="fa-solid fa-phone"></i> Call
       </a>
       {% endif %}
 
-      <!-- Save Contact (vCard Download) -->
       <a href="{% url 'app_accounts:download_contact_vcard' profile.username %}"
-         class="btn-save-contact">
-        <i class="fa-solid fa-floppy-disk"></i> Save
+        class="btn-save-contact">
+          <i class="fa-solid fa-floppy-disk"></i> Save
       </a>
 
     </div>
+
 
     <!-- SOCIAL LINKS -->
     <div class="social-links">

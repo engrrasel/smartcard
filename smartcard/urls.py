@@ -8,6 +8,9 @@ from django.views.static import serve
 urlpatterns = [
     # 🧩 Django Admin
     path('admin/', admin.site.urls),
+    
+    path('contacts/', include('app_contacts.urls')),
+
 
     # 🔐 Authentication
     path(
