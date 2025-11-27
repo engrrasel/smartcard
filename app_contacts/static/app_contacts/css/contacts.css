@@ -1,30 +1,86 @@
-.card-custom {
-    border-radius: 16px;
-    padding: 18px;
-    background: #ffffff;
-    border: 1px solid #eef0f3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: 0.18s;
+.card-custom{
+    border-radius:16px;
+    padding:18px;
+    background:#ffffff;
+    border:1px solid #eef0f3;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:.18s;
 }
-.card-custom:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+.card-custom:hover{ box-shadow:0 10px 30px rgba(0,0,0,0.06); }
 
-.contact-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.card-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    object-fit: cover;
+.contact-grid{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
 }
 
-.card-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.card-avatar{
+    width:64px;height:64px;
+    border-radius:50%;
+    object-fit:cover;
+}
+.card-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+
+/*==================== DESKTOP DEFAULT ====================*/
+.desktop-tabs{ display:block; }
+.mobile-nav{ display:none; }
+
+
+/*==================== MOBILE VERSION ====================*/
+@media(max-width:768px){
+
+    /* Desktop Menu Hide */
+    .desktop-tabs{ display:none !important; }
+
+    /* Bottom Navigation */
+    .mobile-nav{
+        display:flex !important;
+        justify-content:space-around;
+        background:#ffffff;
+        border-top:1px solid #ddd;
+        padding:9px 0 12px;
+        position:fixed;
+        bottom:0; left:0; right:0;
+        z-index:9999;
+    }
+
+    .mobile-nav a{
+        text-align:center;
+        font-size:13px;
+        text-decoration:none;
+        color:#333;
+        position:relative;
+    }
+    .mobile-nav a.active{
+        color:#0d6efd;
+        font-weight:700;
+    }
+
+    .mobile-nav i{
+        display:block;
+        font-size:19px;
+        margin-bottom:2px;
+    }
+
+    /* 🔥 Notification Red Dot */
+    .alert-dot{
+        width:9px;height:9px;
+        background:red;
+        border-radius:50%;
+        position:absolute;
+        top:3px;right:14px;
+    }
+
+    /* Prevent Content from Hiding Behind Nav */
+    body, .container{
+        padding-bottom:95px !important;
+        overflow-x:hidden !important;
+    }
 }

@@ -1,0 +1,104 @@
+/* ===============================
+   CONTACT LIST — NEXT LEVEL UI
+   ===============================*/
+
+/* Card */
+.contact-flat-card{
+    background:#ffffff;
+    padding:16px 22px;
+    border-radius:14px;
+    border:1px solid #e6e6e6;
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
+    transition:.25s ease;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:12px;
+    cursor:pointer;
+}
+.contact-flat-card:hover{
+    box-shadow:0 8px 22px rgba(0,0,0,0.07);
+    transform:translateY(-3px);
+}
+
+/* Avatar */
+.avatar-box{ position:relative; }
+.flat-avatar{
+    width:52px;height:52px;border-radius:50%;
+    object-fit:cover;border:2px solid #ddd;
+    transition:.25s;
+}
+.contact-flat-card:hover .flat-avatar{
+    transform:scale(1.08); border-color:#0d6efd;
+}
+.online-dot{
+    width:14px;height:14px;background:#00e676;
+    border-radius:50%;position:absolute;
+    bottom:-1px;right:-1px;border:2px solid #fff;
+}
+
+/* Contact Info */
+.contact-info h6{font-size:17px;font-weight:600;margin-bottom:1px;}
+.contact-info small{color:#555;display:block;font-size:14px;}
+
+/* Action Buttons */
+.action-icons{ display:flex; gap:10px; align-items:center; }
+.contact-btn{
+    background:#f3f3f3;padding:7px 10px;border-radius:8px;
+    font-size:17px;color:#222;transition:.25s;
+}
+.contact-btn.call:hover   { background:#16c47f;color:#fff; }
+.contact-btn.email:hover  { background:#0d6efd;color:#fff; }
+.contact-btn.note:hover   { background:#ffb300;color:#fff; }
+.contact-btn.delete:hover { background:#d90429;color:#fff; }
+
+
+/* ===============================
+   NOTE MODAL
+   ===============================*/
+.modal-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(3px);
+    justify-content:center;align-items:center;
+    z-index:9999;
+}
+.modal-box{
+    background:#fff;padding:22px;border-radius:14px;
+    width:380px;max-width:92%;
+}
+
+/* ===============================
+   📱 FULL RESPONSIVE MODE
+   ===============================*/
+
+@media (max-width: 768px){
+    h3.fw-bold{
+        flex-direction:column;
+        align-items:flex-start !important;
+        gap:8px;
+    }
+    #searchBox{
+        width:100% !important;
+        font-size:16px;padding:10px 14px;
+    }
+    .contact-flat-card{
+        flex-direction:column !important;
+        align-items:flex-start;
+        width:100%;
+        gap:15px;
+    }
+    .flat-avatar{width:60px;height:60px;}
+    .action-icons{
+        width:100%;
+        display:flex;
+        justify-content:space-between;
+    }
+    .contact-btn{
+        flex:1;
+        padding:10px;
+        font-size:18px;
+        border-radius:10px;
+    }
+}

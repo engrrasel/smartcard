@@ -4,8 +4,8 @@
 
 <link rel="stylesheet" href="{% static 'app_contacts/css/contacts_base.css' %}">
 
-<div class="container mt-4">
-
+<!-- 🔷 DESKTOP NAV -->
+<div class="desktop-tabs">
    <div class="d-flex gap-3 fw-semibold mb-4">
 
       <a href="{% url 'app_contacts:contact_dashboard' %}"
@@ -19,20 +19,44 @@
       </a>
 
       <a href="{% url 'app_contacts:contact_request' %}"
-   class="nav-btn {% if request.resolver_match.url_name == 'contact_request' %}active{% endif %}">
-    Requests 
-    {% if pending_request_count > 0 %}
-         <span class="badge bg-danger ms-1">{{ pending_request_count }}</span>
-    {% endif %}
-</a>
-
+         class="nav-btn {% if request.resolver_match.url_name == 'contact_request' %}active{% endif %}">
+         Requests 
+         {% if pending_request_count > 0 %}
+            <span class="badge bg-danger ms-1">{{ pending_request_count }}</span>
+         {% endif %}
+      </a>
 
       <span class="nav-btn disabled opacity-75">Pending (Coming Soon)</span>
-
    </div>
+</div>
 
-   {% block connect_content %}{% endblock %}
 
+<!-- ✅ Main Content (Mobile + Desktop visible) -->
+<div class="container mt-4">
+    {% block connect_content %}{% endblock %}
+</div>
+
+
+<!-- 🔥 MOBILE BOTTOM NAV -->
+<div class="mobile-nav">
+    <a href="{% url 'app_contacts:contact_dashboard' %}" 
+       class="{% if request.resolver_match.url_name == 'contact_dashboard' %}active{% endif %}">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+    </a>
+
+    <a href="{% url 'app_contacts:all_connects' %}" 
+       class="{% if request.resolver_match.url_name == 'all_connects' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i>
+        <span>Connects</span>
+    </a>
+
+    <a href="{% url 'app_contacts:contact_request' %}" 
+       class="{% if request.resolver_match.url_name == 'contact_request' %}active{% endif %}">
+        <i class="fa-solid fa-bell"></i>
+        <span>Requests</span>
+        {% if pending_request_count > 0 %}<b class="alert-dot"></b>{% endif %}
+    </a>
 </div>
 
 {% endblock %}

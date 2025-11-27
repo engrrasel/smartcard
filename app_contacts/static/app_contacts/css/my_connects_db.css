@@ -1,101 +1,142 @@
-/* Background + Layout */
+/* ===============================
+   GLASS UI + PREMIUM LAYOUT
+   ===============================*/
 .glass-container{
-    max-width:800px;
+    max-width:850px;
     margin:auto;
-    padding:30px;
+    padding:28px;
 }
 
-/* Glass + Neumorphism Effect */
+/* Smooth Glass Card */
 .glass-card{
-    background:rgba(255,255,255,0.55);
-    backdrop-filter:blur(18px) saturate(160%);
+    background:rgba(255,255,255,.55);
+    backdrop-filter:blur(20px) saturate(160%);
     border-radius:22px;
-    padding:22px; margin-bottom:18px;
-    box-shadow:10px 10px 25px rgba(0,0,0,.08),
-               -6px -6px 18px rgba(255,255,255,.65);
+    padding:26px;
+    margin-bottom:20px;
     border:1px solid rgba(255,255,255,.45);
+    box-shadow:10px 10px 25px rgba(0,0,0,.07),
+               -6px -6px 16px rgba(255,255,255,.7);
+    transition:.25s ease;
+}
+.glass-card:hover{
+    transform:translateY(-3px);
+    box-shadow:12px 12px 35px rgba(0,0,0,.10);
 }
 
-/* Profile Layout */
+/* ===============================
+   PROFILE SECTION
+   ===============================*/
 .profile-box{
     display:flex;
-    align-items:center;
     justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
 }
+.profile-left{ display:flex; align-items:center; gap:18px; }
 
-.profile-left{ display:flex; gap:18px; align-items:center; }
 .profile-photo{
-    width:115px;height:115px;border-radius:50%;
-    object-fit:cover;border:3px solid rgba(255,255,255,.6);
-    box-shadow:0 0 18px rgba(0,0,0,.12);
+    width:120px;height:120px;border-radius:50%;
+    object-fit:cover;
+    border:3px solid rgba(255,255,255,.7);
+    box-shadow:0 0 20px rgba(0,0,0,.12);
+    transition:.30s;
+}
+.profile-photo:hover{
+    transform:scale(1.06);
+    box-shadow:0 0 30px rgba(0,0,0,.15);
 }
 
-/* Stat Bar Premium */
-.stat-bar{
-    display:flex; gap:12px;
-}
+/* ===============================
+   CONTACT COUNTER / STATS
+   ===============================*/
+.stat-bar{ display:flex; gap:14px;flex-wrap:wrap; }
 .stat-box{
-    padding:12px 18px;
+    padding:12px 20px;border-radius:14px;
     background:rgba(255,255,255,.65);
-    border-radius:14px;
     font-weight:600;
-    box-shadow: inset 3px 3px 8px rgba(0,0,0,.12),
-                inset -4px -4px 12px rgba(255,255,255,.8);
+    box-shadow:inset 3px 3px 8px rgba(0,0,0,.10),
+               inset -4px -4px 12px rgba(255,255,255,.85);
 }
 
-/* Neumorphism Buttons */
+.stat-vertical{
+    display:flex;flex-direction:column;gap:12px;
+    margin-left:auto;
+}
+.stat-row{
+    background:rgba(255,255,255,.75);
+    padding:10px 20px;border-radius:12px;
+    font-size:15px;font-weight:600;
+    border:1px solid rgba(255,255,255,.60);
+    box-shadow:inset 3px 3px 7px rgba(0,0,0,.08),
+               inset -3px -3px 9px rgba(255,255,255,.95);
+}
+.stat-row b{ color:#0066ff;font-weight:700; }
+
+/* ===============================
+   BUTTONS — Neomorphic
+   ===============================*/
 .neo-btn{
-    padding:10px 20px;
-    border-radius:12px;
-    border:none;
-    font-size:15px;
-    background:#f5f5f5;
+    padding:10px 14px;border-radius:12px;
+    background:#f4f4f4;border:none;font-size:15px;
+    transition:.25s;cursor:pointer;
     box-shadow:6px 6px 14px rgba(0,0,0,.12),
                -6px -6px 14px rgba(255,255,255,.9);
-    transition:.25s;
-    cursor:pointer;
 }
 .neo-btn:hover{
     transform:scale(1.05);
-    box-shadow:inset 4px 4px 10px rgba(0,0,0,.18),
-               inset -4px -4px 10px rgba(255,255,255,.75);
+    box-shadow:inset 4px 4px 10px rgba(0,0,0,.20),
+               inset -4px -4px 10px rgba(255,255,255,.8);
 }
-.action-area{ display:flex; gap:12px; margin-top:20px; }
+.action-area{
+    display:flex; gap:12px;margin-top:22px;flex-wrap:wrap;
+}
 
-/* Notes Slide Box */
-.note-panel.hidden{ display:none; }
+/* ===============================
+   NOTE PANEL + MODAL FIX 🔥
+   ===============================*/
+.note-panel.hidden{display:none;}
 .note-input{
-    width:100%; padding:12px; border-radius:12px;
-    border:none; outline:none;
-    background:#fff; box-shadow:inset 4px 4px 12px rgba(0,0,0,.12),
-                           inset -4px -4px 12px rgba(255,255,255,.9);
-    font-size:15px;
+    width:100%;padding:14px;border-radius:14px;border:none;
+    background:#fff;font-size:15px;
+    box-shadow:inset 4px 4px 12px rgba(0,0,0,.12),
+               inset -4px -4px 12px rgba(255,255,255,.95);
 }
 .note-item{
-    margin-top:10px;
-    padding:14px;
-    border-left:5px solid #007bff;
+    margin-top:10px;padding:14px;border-radius:6px;
+    border-left:5px solid #007bff;background:#f8fbff;
 }
-.save-note{ background:#007bff; color:white; }
 
-/* 🔥 Always Visible Counter (Not hidden anymore) */
-.stat-vertical{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-left:20px;
+/* 100% WORKING MODAL 🔥 */
+.modal-overlay{
+    display:none;                /* <-- Now modal works */
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(5px);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
 }
-.stat-row{
-    background: rgba(255,255,255,0.70);
-    padding:10px 18px;
-    border-radius:10px;
-    font-size:15.5px;
-    font-weight:600;
-    border:1px solid rgba(255,255,255,0.55);
-    box-shadow:inset 3px 3px 7px rgba(0,0,0,.08),
-               inset -3px -3px 7px rgba(255,255,255,.9);
+.modal-box{
+    background:#fff;padding:22px;border-radius:14px;
+    width:380px;max-width:92%;
 }
-.stat-row b{
-    color:#0066ff;
-    font-weight:700;
+
+
+ /* ===============================
+   FULL MOBILE RESPONSIVE (FINAL)
+   ===============================*/
+@media(max-width:900px){
+    .glass-container{padding:14px!important;}
+    .glass-card{padding:18px!important;margin-top:10px;}
+
+    .profile-box{flex-direction:column;text-align:center;gap:10px!important;}
+    .profile-left{flex-direction:column;gap:10px!important;}
+    .profile-photo{width:95px!important;height:95px!important;}
+
+    .stat-vertical{margin:auto;width:100%;max-width:260px;}
+
+    .action-area{width:100%;justify-content:space-between;gap:6px!important;margin-top:14px!important;}
+    .neo-btn{flex:1;font-size:17px;padding:13px!important;}
 }
