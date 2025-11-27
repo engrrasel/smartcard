@@ -1,28 +1,47 @@
-{% extends "dashboard/dashboard_base.html" %}
-{% block content %}
+{% extends "contacts/connects_base.html" %}
+{% load static %}
 
-<div class="container mt-4">
+{% block connect_content %}
 
-    <!-- 🔥 Navigation only -->
-    <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 mb-3 fw-semibold">
-        <a href="{% url 'app_contacts:contact_dashboard' %}" class="text-primary">Dashboard</a>
-        <a href="{% url 'app_contacts:all_connects' %}" class="text-success">All Connects</a>
-        <a href="{% url 'app_contacts:contact_request' %}" class="text-info">Request</a>
-        <span class="text-secondary">Pending <small>(Coming Soon)</small></span>
+<link rel="stylesheet" href="{% static 'app_contacts/css/request.css' %}">
+
+<h2 class="title">🔔 Pending Connection Requests</h2>
+
+<div class="request-container">
+
+{% if requests %}
+
+    {% for r in requests %}
+    <div class="request-card glass-card">
+
+        <div class="left-info">
+            <img src="{% if r.visitor.profile_picture %}{{ r.visitor.profile_picture.url }}{% else %}https://via.placeholder.com/60{% endif %}" class="avatar">
+            
+            <div class="user-info">
+                <h4>{{ r.visitor.full_name|default:r.visitor.username }}</h4>
+                <small>{{ r.visitor.email }}</small>
+            </div>
+        </div>
+
+        <div class="actions">
+            <!-- ACCEPT -->
+            <a href="{% url 'app_contacts:accept_request' r.id %}" class="btn accept">Accept</a>
+
+            <!-- REJECT -->
+            <a href="{% url 'app_contacts:reject_request' r.id %}" class="btn reject">Reject</a>
+        </div>
+
+    </div>
+    {% endfor %}
+
+{% else %}
+
+    <div class="no-request">
+        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" width="120">
+        <p>No new connection requests 🙏</p>
     </div>
 
-    <h4 class="mb-3">Requests Sent To You</h4>
-
-    {% if requests %}
-        {% for r in requests %}
-            <div class="p-3 border rounded mb-2">
-                <strong>{{ r.owner.full_name }}</strong><br>
-                <small>{{ r.owner.email }}</small>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p class="text-muted mt-3">No incoming request yet.</p>
-    {% endif %}
+{% endif %}
 
 </div>
 

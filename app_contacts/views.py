@@ -5,6 +5,8 @@ from django.core.paginator import Paginator
 from .models import Contact
 from django.http import JsonResponse
 from .models import ContactNote
+from django.db.models import Q
+
 
 User = get_user_model()
 
@@ -34,18 +36,52 @@ def delete_contact(request, contact_id):
 
 @login_required
 def add_contact(request, user_id):
-    userA = request.user                          # Connector
-    userB = get_object_or_404(User, id=user_id)   # The person being added
 
-    # 1️⃣ A → B add if not exist
-    if not Contact.objects.filter(owner=userA, visitor=userB).exists():
-        Contact.objects.create(owner=userA, visitor=userB)
+    sender = request.user                        # B = requester
+    receiver = get_object_or_404(User, id=user_id)  # A = profile owner
 
-    # 2️⃣ B → A reverse contact auto-add
-    if not Contact.objects.filter(owner=userB, visitor=userA).exists():
-        Contact.objects.create(owner=userB, visitor=userA)
+    # Already pending request exists?
+    if Contact.objects.filter(owner=receiver, visitor=sender, status="pending").exists():
+        return redirect('app_accounts:public_profile', username=receiver.username)
 
-    return redirect('app_accounts:public_profile', username=userB.username)
+    # If already accepted, don't duplicate
+    if Contact.objects.filter(owner=receiver, visitor=sender, status="accepted").exists():
+        return redirect('app_accounts:public_profile', username=receiver.username)
+
+    # Send request → Only one way
+    Contact.objects.create(owner=receiver, visitor=sender, status="pending")
+
+    return redirect('app_accounts:public_profile', username=receiver.username)
+
+
+@login_required
+def request_view(request):
+    requests = Contact.objects.filter(owner=request.user, status="pending")
+    return render(request, "contacts/request.html", {"requests": requests})
+
+
+@login_required
+def accept_request(request, id):
+    req = get_object_or_404(Contact, id=id, owner=request.user, status="pending")
+
+    req.status = "accepted"
+    req.save()
+
+    # Reverse contact for requester 🔥
+    Contact.objects.get_or_create(
+        owner=req.visitor,   # B now gets A
+        visitor=req.owner,   # A also becomes visible to B
+        status="accepted"
+    )
+
+    return redirect("app_contacts:request_view")
+
+
+@login_required
+def reject_request(request, id):
+    req = get_object_or_404(Contact, id=id, owner=request.user, status="pending")
+    req.delete()
+    return redirect("app_contacts:request_view")
 
 
 # ==========================
@@ -65,15 +101,20 @@ def contact_dashboard(request):
 # ==========================
 # ALL CONTACTS PAGE
 # ==========================
-def all_connects(request):
-    contact_list = Contact.objects.filter(owner=request.user).order_by('-created_at')
-    paginator = Paginator(contact_list, 10)
-    page = request.GET.get("page")
-    contacts = paginator.get_page(page)
+@login_required
+def add_contact(request, user_id):
 
-    return render(request, "contacts/my_connects.html", {
-        "contacts": contacts
-    })
+    userA = request.user  # Request sender
+    userB = get_object_or_404(User, id=user_id)
+
+    # Request Already Exists?
+    if Contact.objects.filter(owner=userB, visitor=userA, status="pending").exists():
+        return redirect('app_accounts:public_profile', username=userB.username)
+
+    # Create connection request only B side
+    Contact.objects.create(owner=userB, visitor=userA, status="pending")
+
+    return redirect('app_accounts:public_profile', username=userB.username)
 
 
 # ==========================
@@ -81,8 +122,27 @@ def all_connects(request):
 # ==========================
 @login_required
 def request_view(request):
-    requests = Contact.objects.filter(visitor=request.user).order_by("-created_at")
+    requests = Contact.objects.filter(owner=request.user, status="pending")  # 🔥 only pending
     return render(request, "contacts/request.html", {"requests": requests})
+
+
+@login_required
+def accept_request(request, id):
+    req = get_object_or_404(Contact, id=id, owner=request.user, status="pending")
+    req.status = "accepted"
+    req.save()
+
+    # Reverse contact add
+    Contact.objects.get_or_create(owner=req.visitor, visitor=request.user, status="accepted")
+
+    return redirect("app_contacts:contact_request")
+
+
+@login_required
+def reject_request(request, id):
+    req = get_object_or_404(Contact, id=id, owner=request.user, status="pending")
+    req.delete()
+    return redirect("app_contacts:contact_request")
 
 
 # ==========================
@@ -189,3 +249,13 @@ def get_last_note(request, contact_id):
             "time": note.created_at.strftime("%d %b %Y — %I:%M %p")
         })
     return JsonResponse({"exists": False})
+
+
+@login_required
+def all_connects(request):
+    contacts = Contact.objects.filter(
+        (Q(owner=request.user) | Q(visitor=request.user)),
+        status="accepted"
+    ).order_by("-created_at")
+
+    return render(request, "contacts/my_connects.html", {"contacts": contacts})
