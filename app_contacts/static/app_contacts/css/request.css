@@ -1,64 +1,19 @@
-.title{
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 18px;
+.req-list { display: flex; flex-direction: column; gap: 12px; }
+.req-card {
+    background:#fff;
+    padding:14px;
+    border-radius:10px;
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
 }
+.req-avatar{ width:55px;height:55px;border-radius:50%;margin-right:12px;object-fit:cover; }
+.flex{ display:flex;align-items:center;gap:10px; }
 
-.request-container{
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.btn-area button{
+    padding:6px 12px;border:none;border-radius:6px;
+    font-weight:600;cursor:pointer;
 }
-
-.request-card{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding:14px 20px;
-    border-radius:14px;
-    background: rgba(255,255,255,0.25);
-    backdrop-filter: blur(10px);
-    border:1px solid rgba(255,255,255,0.4);
-}
-
-.left-info{
-    display:flex;
-    align-items:center;
-    gap:15px;
-}
-
-.avatar{
-    width:60px;height:60px;border-radius:50%;
-    object-fit: cover;border:2px solid #fff;
-}
-
-.user-info h4{margin:0;font-size:18px;font-weight:600;color:#222;}
-.user-info small{font-size:14px;color:#444;}
-
-.actions{
-    display:flex;
-    gap:10px;
-}
-
-.btn{
-    padding:6px 14px;
-    border-radius:8px;
-    font-size:14px;
-    font-weight:600;
-    text-decoration:none;
-    color:white;
-}
-
-.accept{background:#2ECC71;}
-.reject{background:#E74C3C;}
-
-.no-request{
-    text-align:center;
-    padding-top:40px;
-    opacity:0.8;
-}
-
-.no-request p{
-    font-size:18px;
-    margin-top:12px;
-}
+.btn-accept{ background:#00d26a;color:#fff;margin-right:6px; }
+.btn-reject{ background:#ff3b3b;color:#fff; }

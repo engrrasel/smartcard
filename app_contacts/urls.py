@@ -23,7 +23,7 @@ urlpatterns = [
     path("connect/<int:id>/", views.my_connects_db, name="my_connects_db"),
 
     # Request System
-    path("requests/", views.request_view, name="request_view"),
+    path("request/", views.request_view, name="contact_request"),
     path("accept/<int:id>/", views.accept_request, name="accept_request"),
     path("reject/<int:id>/", views.reject_request, name="reject_request"),
 
