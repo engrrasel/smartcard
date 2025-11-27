@@ -34,13 +34,18 @@ def delete_contact(request, contact_id):
 
 @login_required
 def add_contact(request, user_id):
-    owner = get_object_or_404(User, id=user_id)
-    visitor = request.user
+    userA = request.user                          # Connector
+    userB = get_object_or_404(User, id=user_id)   # The person being added
 
-    if not Contact.objects.filter(owner=owner, visitor=visitor).exists():
-        Contact.objects.create(owner=owner, visitor=visitor)
+    # 1️⃣ A → B add if not exist
+    if not Contact.objects.filter(owner=userA, visitor=userB).exists():
+        Contact.objects.create(owner=userA, visitor=userB)
 
-    return redirect('app_accounts:public_profile', username=owner.username)
+    # 2️⃣ B → A reverse contact auto-add
+    if not Contact.objects.filter(owner=userB, visitor=userA).exists():
+        Contact.objects.create(owner=userB, visitor=userA)
+
+    return redirect('app_accounts:public_profile', username=userB.username)
 
 
 # ==========================
