@@ -54,7 +54,6 @@ urlpatterns = [
     path('toggle-public/<int:profile_id>/', views.toggle_public_view, name='toggle_public'),
 
     # 🧍 Additional Pages
-    path('contacts/', views.contacts, name='contacts'),
     path('subscription/', views.subscription, name='subscription'),
 
     # 🌐 Public Profile

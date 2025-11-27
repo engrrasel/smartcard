@@ -1,0 +1,98 @@
+{% extends "contacts/connects_base.html" %}
+{% load static %}
+{% block connect_content %}
+
+<link rel="stylesheet" href="{% static 'app_contacts/css/my_contacts.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'app_contacts/js/my_contacts.js' %}" defer></script>
+
+<h3 class="fw-bold mb-4 d-flex justify-content-between align-items-center">
+    Saved Contacts
+    <input id="searchBox" class="form-control w-25" placeholder="Search contact... 🔍">
+</h3>
+
+{% if contacts %}
+<div id="contactContainer" class="row">
+
+{% for c in contacts %}
+<div class="col-12 contact-row" data-name="{{ c.visitor.full_name|default:c.visitor.username|lower }}">
+
+    <!-- MAIN CARD (PROFILE CLICK) -->
+    <div class="contact-flat-card pointer"
+         onclick="window.location='{% url 'app_contacts:my_connects_db' c.id %}'">
+
+        <!-- LEFT INFO -->
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-box">
+                <img src="{% if c.visitor.profile_picture %}{{ c.visitor.profile_picture.url }}{% else %}https://via.placeholder.com/70{% endif %}" 
+                     class="flat-avatar">
+                <span class="online-dot"></span>
+            </div>
+
+            <div class="contact-info">
+                <h6>{{ c.visitor.full_name|default:c.visitor.username }}</h6>
+                <small>{{ c.visitor.email }}</small>
+                {% if c.visitor.phone %}
+                <small><i class="fa-solid fa-phone"></i> {{ c.visitor.phone }}</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ACTION PANEL (STOP CARD REDIRECT) -->
+        <div class="action-icons">
+
+            {% if c.visitor.phone %}
+            <button class="contact-btn call" onclick="event.stopPropagation();" data-phone="{{ c.visitor.phone }}">
+                <i class="fa-solid fa-phone"></i>
+            </button>
+            {% endif %}
+
+            <button class="contact-btn email" onclick="event.stopPropagation();" data-email="{{ c.visitor.email }}">
+                <i class="fa-solid fa-envelope"></i>
+            </button>
+
+            <button class="contact-btn note" onclick="event.stopPropagation();" data-id="{{ c.id }}" data-name="{{ c.visitor.full_name }}">
+                <i class="fa-regular fa-note-sticky"></i>
+            </button>
+
+            <button class="contact-btn delete" onclick="event.stopPropagation();" data-id="{{ c.id }}">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+
+        </div>
+
+    </div>
+</div>
+{% endfor %}
+</div>
+
+{% else %}
+<div class="alert alert-warning text-center">No Contacts Found.</div>
+{% endif %}
+
+<!-- ⭐ ONLY ONE FINAL WORKING NOTE MODAL -->
+<div id="noteModal" class="modal-overlay">
+
+    <div class="modal-box">
+
+        <h4>✍ Add Note</h4>
+
+        <!-- New Note Input -->
+        <textarea id="newNote" class="form-control" rows="2" placeholder="Write new note..."></textarea>
+
+        <!-- Last Saved Note -->
+        <div class="last-note-box mt-3">
+            <label>Last Note:</label>
+            <p id="lastNoteText">{{ contacts.first.notes.last.text|default:"No notes yet" }}</p>
+            <small>{{ contacts.first.notes.last.created_at|date:"d M Y, h:i A" }}</small>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-3">
+            <button class="btn btn-secondary" onclick="closeNote()">Close</button>
+            <button id="saveNoteBtn" class="btn btn-primary">Save</button>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <!-- 🔥 Navigation only -->
+    <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 mb-3 fw-semibold">
+        <a href="{% url 'app_contacts:contact_dashboard' %}" class="text-primary">Dashboard</a>
+        <a href="{% url 'app_contacts:all_connects' %}" class="text-success">All Connects</a>
+        <a href="{% url 'app_contacts:contact_request' %}" class="text-info">Request</a>
+        <span class="text-secondary">Pending <small>(Coming Soon)</small></span>
+    </div>
+
+    <h4 class="mb-3">Requests Sent To You</h4>
+
+    {% if requests %}
+        {% for r in requests %}
+            <div class="p-3 border rounded mb-2">
+                <strong>{{ r.owner.full_name }}</strong><br>
+                <small>{{ r.owner.email }}</small>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted mt-3">No incoming request yet.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}

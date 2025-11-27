@@ -1,0 +1,12 @@
+<h3>All Notes ({{ contact.note_count }})</h3>
+
+{% for n in notes %}
+<div class="note-box">
+    <p>{{ n.text }}</p>
+    <small>{{ n.created_at|date:"d M Y h:i A" }}</small>
+</div>
+{% empty %}
+<p>No notes found.</p>
+{% endfor %}
+
+<button onclick="history.back()" class="btn btn-secondary mt-3">⬅ Back</button>

@@ -1,0 +1,33 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'app_contacts/css/contacts_base.css' %}">
+
+<div class="container mt-4">
+
+    <div class="d-flex gap-3 fw-semibold mb-4">
+
+        <a href="{% url 'app_contacts:contact_dashboard' %}"
+           class="nav-btn {% if request.resolver_match.url_name == 'contact_dashboard' %}active{% endif %}">
+           Dashboard
+        </a>
+
+        <a href="{% url 'app_contacts:all_connects' %}"
+           class="nav-btn {% if request.resolver_match.url_name == 'all_connects' %}active{% endif %}">
+           All Connects
+        </a>
+
+        <a href="{% url 'app_contacts:contact_request' %}"
+           class="nav-btn {% if request.resolver_match.url_name == 'contact_request' %}active{% endif %}">
+           Request
+        </a>
+
+        <span class="nav-btn disabled opacity-75">Pending (Coming Soon)</span>
+
+    </div>
+
+    {% block connect_content %}{% endblock %}
+</div>
+
+{% endblock %}

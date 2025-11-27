@@ -416,13 +416,6 @@ END:VCARD
     return response
 
 
-
-
-
-
-def contacts(request):
-    return render(request, "dashboard/contacts.html")
-
 def subscription(request):
     return render(request, "dashboard/subscription.html")
 

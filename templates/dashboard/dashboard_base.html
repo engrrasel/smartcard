@@ -141,9 +141,9 @@
             <i class="fa-solid fa-id-badge"></i> Profile & Card
         </a>
 
-        <a href="{% url 'app_accounts:contacts' %}"
-           class="{% if request.resolver_match.url_name == 'contacts' %}active{% endif %}">
-            <i class="fa-solid fa-address-book"></i> Contacts
+        <a href="{% url 'app_contacts:contact_dashboard' %}"
+        class="{% if request.resolver_match.url_name == 'contact_dashboard' %}active{% endif %}">
+        <i class="fa-solid fa-address-book"></i> Contacts
         </a>
 
         <a href="{% url 'app_accounts:subscription' %}"

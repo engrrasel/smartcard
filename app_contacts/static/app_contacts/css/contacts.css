@@ -1,0 +1,30 @@
+.card-custom {
+    border-radius: 16px;
+    padding: 18px;
+    background: #ffffff;
+    border: 1px solid #eef0f3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.18s;
+}
+.card-custom:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+
+.contact-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.card-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
