@@ -2,7 +2,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     const counter = document.getElementById("reqCount");
 
-    /* ========== ACCEPT REQUEST ========== */
+
+    /*==================== ACCEPT ====================*/
     document.querySelectorAll(".btn-accept").forEach(btn=>{
         btn.onclick = ()=>{
 
@@ -12,19 +13,26 @@ document.addEventListener("DOMContentLoaded", ()=>{
                 if(data.success){
 
                     let box = document.getElementById("req-"+data.id);
-                    box.style.opacity="0";
-                    setTimeout(()=> box.remove(),300);  // 🔥 Reload ছাড়াই remove
+                    box.style.opacity = "0";
 
-                    updateCount();
+                    setTimeout(()=> box.remove(), 300); // UI instantly update
 
-                    Swal.fire({ icon:"success", title:"Accepted", timer:800, showConfirmButton:false });
+                    updateCount();  // 🔥 Count reduce instantly
+
+                    Swal.fire({
+                        icon:"success",
+                        title:"Request Accepted",
+                        timer:900,
+                        showConfirmButton:false
+                    });
                 }
             });
-        }
+        };
     });
 
 
-    /* ========== REJECT REQUEST ========== */
+
+    /*==================== REJECT ====================*/
     document.querySelectorAll(".btn-reject").forEach(btn=>{
         btn.onclick = ()=>{
 
@@ -34,22 +42,46 @@ document.addEventListener("DOMContentLoaded", ()=>{
                 if(data.success){
 
                     let box = document.getElementById("req-"+data.id);
-                    box.style.opacity="0";
-                    setTimeout(()=> box.remove(),300);  // 🔥 Instantly UI update
+                    box.style.opacity = "0";
 
-                    updateCount();
+                    setTimeout(()=> box.remove(), 300);
 
-                    Swal.fire({ icon:"info", title:"Removed", timer:800, showConfirmButton:false });
+                    updateCount();  // 🔥 Live badge update
+
+                    Swal.fire({
+                        icon:"info",
+                        title:"Request Removed",
+                        timer:900,
+                        showConfirmButton:false
+                    });
                 }
             });
-        }
+        };
     });
 
 
-    /* ========== COUNT UPDATE ========== */
+
+    /*==================== 🔍 LIVE SEARCH ====================*/
+    const searchInput = document.getElementById("searchReq");
+
+    searchInput?.addEventListener("input",()=>{
+
+        const q = searchInput.value.toLowerCase().trim();
+
+        document.querySelectorAll(".req-item").forEach(item=>{
+            item.style.display = item.dataset.name.includes(q) ? "" : "none";
+        });
+
+        updateCount(); // 🔥 Search করলে count dynamic update
+    });
+
+
+
+    /*==================== COUNT UPDATE ====================*/
     function updateCount(){
         if(counter){
-            counter.innerText = document.querySelectorAll(".req-card").length;
+            const visible = document.querySelectorAll(".req-item:not([style*='display: none'])");
+            counter.innerText = visible.length;
         }
     }
 

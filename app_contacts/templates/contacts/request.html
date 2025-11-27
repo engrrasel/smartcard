@@ -5,18 +5,26 @@
 <link rel="stylesheet" href="{% static 'app_contacts/css/request.css' %}">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<h3 class="fw-bold mb-4">
-   🔔 Connection Requests (<span id="reqCount">{{ requests|length }}</span>)
+<h3 class="fw-bold mb-4 d-flex justify-content-between align-items-center">
+
+    <span>🔔 Connection Requests</span>
+
+    <!-- 🔍 Search Box -->
+    <input id="searchReq" type="text" class="form-control"
+        placeholder="Search request..." 
+        style="max-width:250px;border-radius:6px;">
 </h3>
 
 {% if not requests %}
 <div class="alert alert-info text-center">No pending requests.</div>
 {% endif %}
 
-<div class="req-list">
+<div class="req-list" id="reqContainer">
 
 {% for r in requests %}
-<div class="req-card" id="req-{{ r.id }}">
+<div class="req-card req-item" 
+     data-name="{{ r.visitor.full_name|default:r.visitor.username|lower }}"
+     id="req-{{ r.id }}">
 
     <div class="flex">
         <img src="{% if r.visitor.profile_picture %}{{ r.visitor.profile_picture.url }}{% else %}https://via.placeholder.com/60{% endif %}"
@@ -36,9 +44,18 @@
 
 </div>
 {% endfor %}
-
 </div>
 
 <script src="{% static 'app_contacts/js/request.js' %}"></script>
 
 {% endblock %}
+
+
+// 🔍 Live Search System
+const searchInput = document.getElementById("searchReq");
+searchInput?.addEventListener("input", () => {
+    const q = searchInput.value.toLowerCase();
+    document.querySelectorAll(".req-item").forEach(item => {
+        item.style.display = item.dataset.name.includes(q) ? "" : "none";
+    });
+});

@@ -48,7 +48,11 @@ def add_contact(request, user_id):
 @login_required
 def request_view(request):
     requests = Contact.objects.filter(owner=request.user, status="pending")
-    return render(request, "contacts/request.html", {"requests": requests})
+
+    return render(request, "contacts/request.html", {
+        "requests": requests,
+        "req_count": requests.count(),   # ← 🔥 COUNT added
+    })
 
 
 
@@ -99,7 +103,7 @@ def contact_dashboard(request):
 @login_required
 def all_connects(request):
     contacts = Contact.objects.filter(owner=request.user, status="accepted").order_by("-created_at")
-    return render(request, "contacts/my_connects.html", {"contacts": contacts})
+    return render(request, "contacts/all_connects.html", {"contacts": contacts})
 
 
 

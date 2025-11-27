@@ -1,17 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /*============ 🔍 LIVE SEARCH ============*/
-    const searchBox=document.getElementById("searchBox");
-    if(searchBox){
-        searchBox.addEventListener("input",()=>{
-            const q=searchBox.value.toLowerCase();
-            document.querySelectorAll(".contact-row").forEach(row=>{
-                row.style.display=row.dataset.name.includes(q)?"":"none";
-            });
-        });
-    }
-
-
     /*============ 📝 NOTE SYSTEM ============*/
     const modal=document.getElementById("noteModal");
     const newNote=document.getElementById("newNote");
@@ -19,16 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const lastNoteText=document.getElementById("lastNoteText");
     let activeID=null;
 
-
-    // ⭐ OPEN NOTE MODAL + GET LAST NOTE
+    // ⭐ OPEN NOTE MODAL + LOAD LAST NOTE
     document.querySelectorAll(".contact-btn.note").forEach(btn=>{
         btn.addEventListener("click",(e)=>{
-            e.stopPropagation();               // prevent dashboard redirect ❗
+            e.stopPropagation();
             activeID=btn.dataset.id;
             modal.style.display="flex";
             newNote.value="";
 
-            // Fetch last note instantly
             fetch(`/contacts/get-last-note/${activeID}/`)
             .then(r=>r.json())
             .then(d=>{
@@ -36,12 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? `<b>${d.text}</b><br><small>${d.time}</small>`
                     : "No previous notes found";
             });
-
         });
     });
 
-
-    // ⭐ SAVE NOTE → POPUP + AUTO CLOSE
+    // ⭐ SAVE NOTE + CLOSE POPUP
     saveBtn.addEventListener("click",()=>{
         let text=newNote.value.trim();
         if(!text) return Swal.fire("⚠ Write something first!");
@@ -57,20 +41,17 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(r=>r.json())
         .then(d=>{
             if(d.success){
-
                 Swal.fire({
                     icon:"success",
                     title:"Note Saved!",
                     timer:900,
                     showConfirmButton:false,
-                    willClose:()=>closeNote()    // modal auto close 🔥
+                    willClose:()=>closeNote()
                 });
-
-                lastNoteText.innerHTML = `<b>${d.text}</b><br><small>${d.time}</small>`;
+                lastNoteText.innerHTML=`<b>${d.text}</b><br><small>${d.time}</small>`;
             }
         });
     });
-
 
 
 
@@ -82,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
-
     /*============ ✉ EMAIL BUTTON ============*/
     document.querySelectorAll(".contact-btn.email").forEach(btn=>{
         btn.onclick=e=>{
@@ -91,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
-    
+
     /*============ ❌ DELETE CONTACT ============*/
     document.querySelectorAll(".contact-btn.delete").forEach(btn=>{
         btn.onclick=e=>{
@@ -111,23 +91,40 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                     .then(r=>r.json())
                     .then(d=>{
-                        if(d.success){
-                            btn.closest(".contact-row").remove();
-                        }
+                        if(d.success) btn.closest(".contact-row").remove();
                     });
                 }
             });
-
         };
+    });
+
+
+    // ===================== 🔍 ADVANCED LIVE SEARCH =====================
+    const search=document.getElementById("searchBox");
+
+    search?.addEventListener("input",()=>{
+        let q=search.value.toLowerCase().trim();
+
+        document.querySelectorAll(".contact-row").forEach(item=>{
+
+            let name  = item.dataset.name ?? "";
+            let email = item.dataset.email ?? "";
+            let phone = item.dataset.phone ?? "";
+            let addr  = item.dataset.address ?? "";
+            let org   = item.dataset.org ?? "";
+
+            let match = name.includes(q) || email.includes(q) || phone.includes(q)
+                     || addr.includes(q) || org.includes(q);
+
+            item.style.display = match ? "" : "none";
+        });
     });
 
 });
 
 
-
-/*============ MODAL + CSRF ============*/
+/*============ UTILITIES ============*/
 function closeNote(){ document.getElementById("noteModal").style.display="none"; }
-
 function getCookie(name){
     return document.cookie.split("; ").reduce((a,b)=>{
         let c=b.split("=");return c[0]==name?decodeURIComponent(c[1]):a;
