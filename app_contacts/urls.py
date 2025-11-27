@@ -29,4 +29,5 @@ urlpatterns = [
     # Notes System (✔ This one is final)
     path("save-note/<int:contact_id>/", views.save_note, name="save_note"),
     path("notes/<int:contact_id>/", views.show_notes, name="show_notes"),
+    path("get-last-note/<int:contact_id>/", views.get_last_note, name="get_last_note"),
 ]

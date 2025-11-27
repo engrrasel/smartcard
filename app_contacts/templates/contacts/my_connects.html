@@ -71,28 +71,21 @@
 {% endif %}
 
 <!-- ⭐ ONLY ONE FINAL WORKING NOTE MODAL -->
+<!-- ⭐ ONLY ONE FINAL WORKING NOTE MODAL -->
 <div id="noteModal" class="modal-overlay">
-
     <div class="modal-box">
-
         <h4>✍ Add Note</h4>
 
-        <!-- New Note Input -->
-        <textarea id="newNote" class="form-control" rows="2" placeholder="Write new note..."></textarea>
+        <textarea id="newNote" class="form-control" rows="2"></textarea>
 
-        <!-- Last Saved Note -->
-        <div class="last-note-box mt-3">
-            <label>Last Note:</label>
-            <p id="lastNoteText">{{ contacts.first.notes.last.text|default:"No notes yet" }}</p>
-            <small>{{ contacts.first.notes.last.created_at|date:"d M Y, h:i A" }}</small>
-        </div>
+        <p id="lastNoteText" style="margin-top:10px; font-size:14px; color:#444"></p>
 
         <div class="d-flex justify-content-end gap-2 mt-3">
-            <button class="btn btn-secondary" onclick="closeNote()">Close</button>
+            <button onclick="closeNote()" class="btn btn-secondary">Close</button>
             <button id="saveNoteBtn" class="btn btn-primary">Save</button>
         </div>
-
     </div>
 </div>
+
 
 {% endblock %}

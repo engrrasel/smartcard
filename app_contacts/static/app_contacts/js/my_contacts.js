@@ -1,40 +1,53 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ============================
-       🔍 Live Search
+       🔍 SEARCH CONTACT
     ============================ */
     const searchBox = document.getElementById("searchBox");
-    searchBox?.addEventListener("input", () => {
-        const q = searchBox.value.toLowerCase();
-        document.querySelectorAll(".contact-row").forEach(row => {
-            row.style.display = row.dataset.name.includes(q) ? "" : "none";
+    if(searchBox){
+        searchBox.addEventListener("input",()=>{
+            let q = searchBox.value.toLowerCase();
+            document.querySelectorAll(".contact-row").forEach(row=>{
+                row.style.display = row.dataset.name.includes(q) ? "" : "none";
+            });
+        });
+    }
+
+    /* ============================
+       📝 NOTE MODAL
+    ============================ */
+    const modal = document.getElementById("noteModal");
+    const newNote = document.getElementById("newNote");
+    const saveBtn = document.getElementById("saveNoteBtn");
+    const lastNoteText = document.getElementById("lastNoteText");
+    let activeID = null;
+
+
+    // ⭐ OPEN MODAL + LOAD LAST NOTE
+    document.querySelectorAll(".contact-btn.note").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+            activeID = btn.dataset.id;
+            modal.style.display="flex";
+            newNote.value="";
+
+            // 🔥 Load last note instantly
+            fetch(`/contacts/get-last-note/${activeID}/`)
+            .then(r=>r.json())
+            .then(data=>{
+                lastNoteText.innerHTML = data.exists 
+                    ? `<b>${data.text}</b><br><small>${data.time}</small>`
+                    : "No previous note found";
+            });
         });
     });
 
 
-    /* ============================
-       📝 NOTE OPEN MODAL
-    ============================ */
-    const noteModal = document.getElementById("noteModal");
-    let selectedContactID = null;
+    // 💾 SAVE NOTE
+    saveBtn.addEventListener("click", ()=>{
+        let text = newNote.value.trim();
+        if(!text) return Swal.fire("⚠ Write something first!");
 
-    document.querySelectorAll(".contact-btn.note").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            selectedContactID = btn.dataset.id;
-            noteModal.style.display = "flex";   // Modal Show
-        });
-    });
-
-
-    /* ============================
-       📝 NOTE SAVE (AJAX + NO RELOAD)
-    ============================ */
-    document.getElementById("saveNoteBtn").onclick = () => {
-        const text = document.getElementById("newNote").value;
-        if(!text.trim()) return Swal.fire("Write something first ⚠");
-
-        fetch(`/contacts/note/save/${selectedContactID}/`,{
+        fetch(`/contacts/save-note/${activeID}/`,{
             method:"POST",
             headers:{
                 "X-CSRFToken": getCookie("csrftoken"),
@@ -45,78 +58,35 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(r=>r.json())
         .then(data=>{
             if(data.success){
-                document.getElementById("lastNoteText").innerText = data.text;
-                closeNote();   // Modal Close
-                Swal.fire("Saved! 🔥","Note stored successfully","success");
+
+                // 🔥 SHOW SUCCESS MESSAGE
+                Swal.fire({
+                    icon:"success",
+                    title:"Saved!",
+                    timer:1400,
+                    showConfirmButton:false
+                });
+
+                // 🌟 Update last note instantly in modal
+                lastNoteText.innerHTML = `<b>${data.text}</b><br><small>${data.time}</small>`;
+
+                closeNote(); // Popup auto close
             }
         });
-    };
-
-
-    /* ============================
-       ❌ DELETE CONTACT (AJAX)
-    ============================ */
-    document.querySelectorAll(".contact-btn.delete").forEach(btn=>{
-        btn.addEventListener("click", (e)=>{
-            e.stopPropagation();
-            const id = btn.dataset.id;
-
-            Swal.fire({
-                title: "Delete Contact?",
-                text: "This action cannot be undone!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d90429",
-                confirmButtonText: "Delete"
-            }).then(result=>{
-                if(result.isConfirmed){
-
-                    fetch(`/contacts/delete/${id}/`,{
-                        method:"DELETE",
-                        headers:{ "X-CSRFToken": getCookie("csrftoken") }
-                    })
-                    .then(r=>r.json())
-                    .then(data=>{
-                        if(data.success){
-                            let card = btn.closest(".contact-row");
-                            card.style.opacity="0";
-                            setTimeout(()=>card.remove(),300);
-                        }
-                    });
-
-                }
-            });
-        });
     });
 
-
-    /* ============================
-       📞 CALL + ✉ EMAIL ACTION
-    ============================ */
-    document.querySelectorAll(".contact-btn.call").forEach(btn=>{
-        btn.onclick = (e)=>{ e.stopPropagation(); window.location=`tel:${btn.dataset.phone}` }
-    });
-    document.querySelectorAll(".contact-btn.email").forEach(btn=>{
-        btn.onclick = (e)=>{ e.stopPropagation(); window.location=`mailto:${btn.dataset.email}` }
-    });
+    // Close Modal
+    window.closeNote = ()=> modal.style.display="none";
 
 
 });
 
 
 /* ============================
-   MODAL CLOSE FUNCTION
-============================ */
-function closeNote(){
-    document.getElementById("noteModal").style.display="none";
-    document.getElementById("newNote").value="";
-}
-
-/* ============================
-   CSRF TOKEN GETTER
+   🔐 CSRF
 ============================ */
 function getCookie(name){
     return document.cookie.split("; ").reduce((a,b)=>{
-        const c=b.split("="); return c[0]==name?c[1]:a;
+        let c=b.split("="); return c[0]==name?decodeURIComponent(c[1]):a;
     },"");
 }

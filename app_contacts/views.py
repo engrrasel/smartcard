@@ -170,3 +170,17 @@ def show_notes(request, contact_id):
         "contact": contact,
         "notes": notes
     })
+
+
+
+@login_required
+def get_last_note(request, contact_id):
+    note = ContactNote.objects.filter(contact_id=contact_id).order_by("-created_at").first()
+
+    if note:
+        return JsonResponse({
+            "exists": True,
+            "text": note.text,
+            "time": note.created_at.strftime("%d %b %Y — %I:%M %p")
+        })
+    return JsonResponse({"exists": False})
