@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.db.models import Q
 from .models import Contact, ContactNote
+from django.utils import timezone 
 
 User = get_user_model()
 
@@ -145,19 +146,23 @@ def delete_contact(request, contact_id):
 def save_note(request, contact_id):
     if request.method == "POST":
         text = request.POST.get('text', '').strip()
+
         if not text:
             return JsonResponse({"success": False, "message": "Note cannot be empty"})
 
         note = ContactNote.objects.create(contact_id=contact_id, text=text)
 
+        # 🔥 UTC → Local time convert
+        local_time = timezone.localtime(note.created_at)
+
         return JsonResponse({
             "success": True,
             "text": note.text,
-            "time": note.created_at.strftime("%d %b %Y — %I:%M %p"),
+            "time": local_time.strftime("%d %b %Y — %I:%M %p"),
             "count": ContactNote.objects.filter(contact_id=contact_id).count()
         })
 
-    return JsonResponse({"success": False}, status=405)
+    return JsonResponse({"success": False, "message": "Only POST allowed"}, status=405)
 
 
 
@@ -169,7 +174,14 @@ def get_last_note(request, contact_id):
     note = ContactNote.objects.filter(contact_id=contact_id).order_by("-created_at").first()
 
     if note:
-        return JsonResponse({"exists": True, "text": note.text, "time": note.created_at.strftime("%d %b %Y — %I:%M %p")})
+        # 🕒 UTC → Bangladesh local time
+        local_time = timezone.localtime(note.created_at)
+
+        return JsonResponse({
+            "exists": True,
+            "text": note.text,
+            "time": local_time.strftime("%d %b %Y — %I:%M %p"),
+        })
     return JsonResponse({"exists": False})
 
 
