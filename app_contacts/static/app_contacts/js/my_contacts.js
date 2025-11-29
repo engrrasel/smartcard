@@ -25,33 +25,38 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // ⭐ SAVE NOTE + CLOSE POPUP
-    saveBtn.addEventListener("click",()=>{
-        let text=newNote.value.trim();
-        if(!text) return Swal.fire("⚠ Write something first!");
+// ⭐ SAVE NOTE + CLOSE POPUP
+saveBtn.addEventListener("click",()=>{
+    let text=newNote.value.trim();
+    if(!text) return Swal.fire("⚠ Write something first!");
 
-        fetch(`/contacts/save-note/${activeID}/`,{
-            method:"POST",
-            headers:{
-                "X-CSRFToken":getCookie("csrftoken"),
-                "Content-Type":"application/x-www-form-urlencoded"
-            },
-            body:`text=${encodeURIComponent(text)}`
-        })
-        .then(r=>r.json())
-        .then(d=>{
-            if(d.success){
-                Swal.fire({
-                    icon:"success",
-                    title:"Note Saved!",
-                    timer:900,
-                    showConfirmButton:false,
-                    willClose:()=>closeNote()
-                });
-                lastNoteText.innerHTML=`<b>${d.text}</b><br><small>${d.time}</small>`;
-            }
-        });
+    fetch(`/contacts/save-note/${activeID}/`,{
+        method:"POST",
+        headers:{
+            "X-CSRFToken":getCookie("csrftoken"),
+            "Content-Type":"application/x-www-form-urlencoded"
+        },
+        body:`text=${encodeURIComponent(text)}`
+    })
+    .then(r=>r.json())
+    .then(d=>{
+        if(d.success){
+
+            // ⛳ প্রথমে popup বন্ধ হবে
+            closeNote();
+
+            // ⛳ তারপর success show হবে
+            Swal.fire({
+                icon:"success",
+                title:"Note Saved!",
+                timer:900,
+                showConfirmButton:false
+            });
+
+            lastNoteText.innerHTML=`<b>${d.text}</b><br><small>${d.time}</small>`;
+        }
     });
+});
 
 
 
