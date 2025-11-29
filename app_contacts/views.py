@@ -128,16 +128,26 @@ def my_connects_db(request, id):
 # ==========================
 # 🗑 Delete Contact
 # ==========================
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_POST
+
 @login_required
+@require_POST
 def delete_contact(request, contact_id):
-    if request.method == "DELETE":
-        contact = get_object_or_404(Contact, id=contact_id, owner=request.user)
-        contact.delete()
-        return JsonResponse({"success": True})
+    # যেই Contact delete করতে চাচ্ছি
+    contact = get_object_or_404(Contact, id=contact_id)
 
-    return JsonResponse({"success": False})
+    # লগইন করা ইউজার owner না visitor – দুজনের একজন না হলে delete করতে দেবে না
+    if contact.owner != request.user and contact.visitor != request.user:
+        return JsonResponse({"success": False, "error": "Not allowed"}, status=403)
 
+    # ✅ আগে সব note / child ডাটা delete করি (FK constraint safe)
+    ContactNote.objects.filter(contact_id=contact_id).delete()
 
+    # ✅ তারপর main contact delete করি
+    contact.delete()
+
+    return JsonResponse({"success": True})
 
 # ==========================
 # 📝 Save Note

@@ -1,0 +1,11 @@
+{% for log in history %}
+<div class="glass-card" style="padding:10px; margin-bottom:8px;">
+    <b>
+        {% if log.action == "call" %} 📞 Called
+        {% else %} ✉ Emailed
+        {% endif %}
+    </b>
+    <br>
+    <small>{{ log.timestamp|date:"d M Y — h:i A" }}</small>
+</div>
+{% endfor %}

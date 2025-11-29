@@ -8,8 +8,8 @@ User = get_user_model()
 # CONTACT MODEL (Request + Accept)
 # ===============================
 class Contact(models.Model):
-    owner       = models.ForeignKey(User, on_delete=models.CASCADE, related_name="my_contacts", default=1)
-    visitor     = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contact_user")
+    owner   = models.ForeignKey(User, on_delete=models.CASCADE, related_name="my_contacts")
+    visitor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contact_user")
 
     status      = models.CharField(max_length=10, default="pending")  # pending / accepted
 

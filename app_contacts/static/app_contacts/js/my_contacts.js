@@ -73,30 +73,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /*============ ❌ DELETE CONTACT ============*/
-    document.querySelectorAll(".contact-btn.delete").forEach(btn=>{
-        btn.onclick=e=>{
-            e.stopPropagation();
+document.querySelectorAll(".contact-btn.delete").forEach(btn=>{
+    btn.onclick=e=>{
+        e.stopPropagation();
 
-            Swal.fire({
-                title:"Delete Contact?",
-                icon:"warning",
-                showCancelButton:true,
-                confirmButtonColor:"#d90429",
-                confirmButtonText:"Delete"
-            }).then(res=>{
-                if(res.isConfirmed){
-                    fetch(`/contacts/delete/${btn.dataset.id}/`,{
-                        method:"DELETE",
-                        headers:{ "X-CSRFToken":getCookie("csrftoken") }
-                    })
-                    .then(r=>r.json())
-                    .then(d=>{
-                        if(d.success) btn.closest(".contact-row").remove();
-                    });
-                }
-            });
-        };
-    });
+        let id = btn.dataset.id;
+
+        Swal.fire({
+            title:"Delete Contact?",
+            icon:"warning",
+            showCancelButton:true,
+            confirmButtonColor:"#d90429",
+            confirmButtonText:"Delete"
+        }).then(res=>{
+            if(res.isConfirmed){
+                fetch(`/contacts/delete/${id}/`, {
+                    method: "POST",   // ✅ POST
+                    headers: { "X-CSRFToken": getCookie("csrftoken") }
+                })
+                .then(r=>r.json())
+                .then(d=>{
+                    if(d.success){
+                        btn.closest(".contact-row").remove();
+                        Swal.fire("Deleted!","Contact removed.","success");
+                    }
+                });
+            }
+        });
+    };
+});
+
 
 
     // ===================== 🔍 ADVANCED LIVE SEARCH =====================
