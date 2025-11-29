@@ -3,151 +3,90 @@
 {% block title %}Profile & Card{% endblock %}
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'accounts/profile_&_card.css' %}">
+<link rel="stylesheet" href="{% static 'accounts/profile_card_responsive.css' %}">
 
-<div class="container py-3">
+<div class="pc-container">
 
-    <!-- Toggle Buttons -->
-    <div class="toggle-wrapper mb-4 d-flex gap-2 justify-content-end">
-        <button id="toggleMain" class="btn btn-primary px-4 py-2 fw-semibold">Your Card</button>
-        <button id="toggleChild" class="btn btn-outline-primary px-4 py-2 fw-semibold">Employee</button>
+    <div class="pc-toggle">
+        <button id="toggleMain" class="pc-btn active">Your Card</button>
+        <button id="toggleChild" class="pc-btn-outline">Employee</button>
     </div>
 
-    <!-- MAIN CARD SECTION -->
+    
     <div id="mainSection">
-        <h4 class="fw-semibold mb-3">Your Card</h4>
+        <h3 class="pc-heading">Your Card</h3>
 
-        <div class="profile-box"
-             onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}'">
+        <div class="pc-card" onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}'">
 
-            <div class="left-content">
-                <div class="d-flex align-items-center">
-                    <img src="{% if main_profile.profile_picture %}{{ main_profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}"
-                        class="profile-photo">
-
-                    <div class="ms-3">
-                        <div class="profile-name">{{ main_profile.full_name|default:"Unnamed Profile" }}</div>
-                        <div class="profile-role">{{ main_profile.job_title|default:"No job title" }}</div>
-                    </div>
+            <div class="pc-left">
+                <img src="{{ main_profile.profile_picture.url|default:'https://via.placeholder.com/100' }}" class="pc-photo">
+                <div>
+                    <div class="pc-name">{{ main_profile.full_name }}</div>
+                    <div class="pc-role">{{ main_profile.job_title }}</div>
                 </div>
             </div>
 
-            <!-- RIGHT BUTTONS -->
-            <div class="action-buttons" onclick="event.stopPropagation();">
+            <div class="pc-right" onclick="event.stopPropagation();">
 
-                <!-- Toggle -->
                 <label class="switch">
-                    <input type="checkbox" class="toggle-switch" data-id="{{ main_profile.id }}"
-                        {% if main_profile.is_public %}checked{% endif %}>
+                    <input type="checkbox" {% if main_profile.is_public %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
 
-                <!-- View -->
-                <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="icon-btn">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
+                <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="pc-icon"><i class="fa-solid fa-eye"></i></a>
 
-                <!-- Copy Permanent -->
-                <button class="icon-btn"
-                        onclick="copyText('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}')">
+                <button class="pc-icon copy-btn"
+                        data-url="{{request.scheme}}://{{request.get_host}}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <!-- Edit -->
-                <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="icon-btn">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </a>
-
-                <!-- QR -->
-                <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="icon-btn">
-                    <i class="fa-solid fa-qrcode"></i>
-                </a>
-
+                <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="pc-icon"><i class="fa-solid fa-pen"></i></a>
+                <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="pc-icon"><i class="fa-solid fa-qrcode"></i></a>
             </div>
         </div>
     </div>
 
 
-    <!-- CHILD CARDS -->
-    <div id="childSection" class="mt-4" style="display:none;">
-        <h4 class="fw-semibold mb-3">Your Other Cards</h4>
+    <div id="childSection" style="display:none">
+        <h3 class="pc-heading">Employee Profiles</h3>
 
         {% for profile in child_profiles %}
-        <div class="profile-box"
-             onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
+        <div class="pc-card">
 
-            <div class="left-content">
-                <div class="d-flex align-items-center">
-                    <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/80{% endif %}"
-                        class="profile-photo">
-
-                    <div class="ms-3">
-                        <div class="profile-name">{{ profile.full_name }}</div>
-                        <div class="profile-role">{{ profile.job_title }}</div>
-                    </div>
+            <div class="pc-left">
+                <img src="{{ profile.profile_picture.url }}" class="pc-photo">
+                <div>
+                    <div class="pc-name">{{ profile.full_name }}</div>
+                    <div class="pc-role">{{ profile.job_title }}</div>
                 </div>
             </div>
 
-            <!-- RIGHT -->
-            <div class="action-buttons" onclick="event.stopPropagation();">
+            <div class="pc-right" onclick="event.stopPropagation();">
 
-                <!-- Toggle -->
                 <label class="switch">
-                    <input type="checkbox" class="toggle-switch" data-id="{{ profile.id }}"
-                        {% if profile.is_public %}checked{% endif %}>
+                    <input type="checkbox" {% if profile.is_public %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
 
-                <!-- View -->
-                <a href="{% url 'app_accounts:public_profile' profile.username %}" class="icon-btn">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
+                <a class="pc-icon"><i class="fa-solid fa-eye"></i></a>
 
-                <!-- Copy Permanent -->
-                <button class="icon-btn"
-                        onclick="copyText('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' profile.public_id %}')">
+                <button class="pc-icon copy-btn"
+                    data-url="{{request.scheme}}://{{request.get_host}}{% url 'app_accounts:public_profile_by_id' profile.public_id %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <!-- Edit -->
-                <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="icon-btn">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </a>
-
-                <!-- QR -->
-                <a href="{% url 'app_accounts:download_qr' profile.id %}" class="icon-btn">
-                    <i class="fa-solid fa-qrcode"></i>
-                </a>
-
-                <!-- Unlink -->
-                <a href="{% url 'app_accounts:unlink_profile' profile.id %}"
-                   class="icon-btn delete-btn"
-                   onclick="return confirm('This profile will no longer be linked to your account. Continue?');">
-                    <i class="fa-solid fa-link-slash"></i>
-                </a>
-
+                <a class="pc-icon"><i class="fa-solid fa-pen"></i></a>
+                <a class="pc-icon"><i class="fa-solid fa-qrcode"></i></a>
             </div>
+
         </div>
         {% endfor %}
-
     </div>
-
 </div>
 
-<!-- Floating Create Button -->
-<a href="{% url 'app_accounts:create_profile' %}" class="floating-create-btn">
-    <i class="fa-solid fa-plus"></i> Create New
-</a>
+<a href="{% url 'app_accounts:create_profile' %}" class="pc-float"><i class="fa-solid fa-plus"></i> Create New</a>
 
-
-<!-- JS -->
-<script src="{% static 'accounts/profile_&_card.js' %}"></script>
-
-<script>
-function copyText(text) {
-    navigator.clipboard.writeText(text);
-    alert("Permanent link copied!");
-}
-</script>
+<!-- Only this script, nothing else -->
+<script src="{% static 'accounts/profile_card_responsive.js' %}"></script>
 
 {% endblock %}

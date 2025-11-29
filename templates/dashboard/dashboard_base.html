@@ -10,201 +10,181 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <style>
-        :root {
-            --bg-main: #F7F7F7;
-            --bg-card: #FFFFFF;
-            --sidebar-bg: #FFFFFF;
-            --primary: #007BFF;
-            --text-dark: #212529;
-            --text-muted: #6c757d;
-            --border-color: #E3E6EA;
-        }
+<style>
+    :root {
+        --bg-main:#F7F7F7;
+        --sidebar-bg:#FFFFFF;
+        --primary:#007BFF;
+        --text-dark:#212529;
+        --border-color:#E3E6EA;
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-dark);
-        }
+    body{
+        font-family:'Inter',sans-serif;
+        background:var(--bg-main);
+        color:var(--text-dark);
+        overflow-x:hidden;
+    }
 
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 1.5rem 1rem;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
+    /* ================= Sidebar ================= */
+    .sidebar{
+        width:250px;
+        height:100vh;
+        background:var(--sidebar-bg);
+        position:fixed;
+        top:0; left:0;
+        border-right:1px solid var(--border-color);
+        display:flex;
+        flex-direction:column;
+        padding:1.2rem 1rem;
+        transition:0.35s ease;
+        z-index:1000;
+    }
 
-        .sidebar h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 2rem;
-        }
+    .sidebar.hide{ left:-260px; } /* Desktop collapse */
 
-        .sidebar a {
-            color: var(--text-dark);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
+    .sidebar .menu{
+        flex:1;
+        overflow-y:auto;
+        padding-bottom:80px;
+    }
 
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: var(--primary);
-            color: white;
-        }
+    .sidebar a{
+        display:flex;align-items:center;gap:10px;
+        padding:10px 14px;margin-bottom:6px;
+        border-radius:10px;text-decoration:none;
+        color:var(--text-dark);font-weight:500;
+        transition:.25s;
+    }
+    .sidebar a:hover, .sidebar a.active{ background:var(--primary);color:#fff; }
 
-        .logout-btn {
-            background-color: #E74C3C;
-            color: #fff;
-            text-align: center;
-            padding: 10px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
+    .logout-box{ position:sticky; bottom:0; background:#fff; padding:10px 0; }
+    .logout-btn{ width:100%; background:#E74C3C;border:none;color:#fff;border-radius:10px;padding:10px;font-weight:600;}
+    .logout-btn:hover{ background:#c0392b; }
 
-        .logout-btn:hover {
-            background-color: #c0392b;
-        }
+    /* ================= Main ================= */
+    .main{
+        margin-left:260px;
+        padding:2.2rem;
+        transition:0.35s ease;
+    }
+    .main.expand{ margin-left:0; } /* Desktop collapse →
 
-        /* Main */
-        .main {
-            margin-left: 260px;
-            padding: 2.5rem;
-            transition: all 0.3s ease;
-        }
+    /* ========== Mobile ========== */
+    @media(max-width:991px){
+        .sidebar{ left:-260px; }
+        .sidebar.open{ left:0; box-shadow:4px 0 15px rgba(0,0,0,.18); }
+        .main{ margin-left:0 !important; }
+    }
 
-        /* Responsive Sidebar */
-        .sidebar-toggle {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1100;
-            border-radius: 8px;
-            display: none;
-        }
+    .sidebar-toggle{
+        position:fixed; left:15px; top:15px;
+        z-index:1100;
+        background:white;
+        border-radius:6px;
+        padding:6px 10px;
+        display:block;
+    }
+</style>
 
-        @media (max-width: 991px) {
-            .sidebar {
-                left: -260px;
-                position: fixed;
-            }
-            .sidebar.open {
-                left: 0;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-            }
-            .main {
-                margin-left: 0 !important;
-                padding: 1.5rem;
-            }
-            .sidebar-toggle {
-                display: inline-block;
-            }
-        }
-    </style>
 </head>
-
 <body>
 
-<div class="sidebar">
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
 
-    <div>
+    <div class="menu">
         <h3><i class="fa-solid fa-id-card-clip"></i> SmartCard</h3>
 
         <a href="{% url 'app_accounts:dashboard' %}"
            class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-            <i class="fa-solid fa-house"></i> Dashboard
+           <i class="fa-solid fa-house"></i> Dashboard
         </a>
 
         <a href="{% url 'app_accounts:profile_and_card' %}"
            class="{% if request.resolver_match.url_name == 'profile_and_card' %}active{% endif %}">
-            <i class="fa-solid fa-id-badge"></i> Profile & Card
+           <i class="fa-solid fa-id-badge"></i> Profile & Card
         </a>
 
         <a href="{% url 'app_contacts:contact_dashboard' %}"
-        class="{% if request.resolver_match.url_name == 'contact_dashboard' %}active{% endif %}">
-        <i class="fa-solid fa-address-book"></i> Contacts
+           class="{% if request.resolver_match.url_name == 'contact_dashboard' %}active{% endif %}">
+           <i class="fa-solid fa-address-book"></i> Contacts
         </a>
 
         <a href="{% url 'app_accounts:subscription' %}"
            class="{% if request.resolver_match.url_name == 'subscription' %}active{% endif %}">
-            <i class="fa-solid fa-credit-card"></i> Subscription
+           <i class="fa-solid fa-credit-card"></i> Subscription
         </a>
 
         <a href="{% url 'app_settings:settings_home' %}"
            class="{% if 'settings' in request.path %}active{% endif %}">
-            <i class="fa-solid fa-gear"></i> Settings
+           <i class="fa-solid fa-gear"></i> Settings
         </a>
     </div>
 
-    <form action="{% url 'app_accounts:logout' %}" method="post" style="margin: 0;">
-        {% csrf_token %}
-        <button type="submit" class="logout-btn w-100 border-0">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-        </button>
-        
-    </form>
-
+    <!-- Logout bottom -->
+    <div class="logout-box">
+        <form method="post" action="{% url 'app_accounts:logout' %}">
+            {% csrf_token %}
+            <button class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </form>
+    </div>
 </div>
 
-<!-- Toggle Button -->
-<button class="sidebar-toggle btn btn-light shadow-sm">
+<!-- Toggle -->
+<button class="sidebar-toggle btn btn-light shadow-sm" id="toggleBtn">
     <i class="fa-solid fa-bars"></i>
 </button>
 
-<main class="main">
-    {% block content %}{% endblock %}
-</main>
+<!-- main -->
+<main class="main">{% block content %}{% endblock %}</main>
 
 <!-- Toast -->
 <div class="toast-container position-fixed top-0 end-0 p-3">
     {% for message in messages %}
-        <div class="toast text-bg-{{ message.tags }} border-0 shadow-sm" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">{{ message }}</div>
-                <button type="button" class="btn-close btn-close-white m-auto" data-bs-dismiss="toast"></button>
-            </div>
+    <div class="toast text-bg-{{ message.tags }} border-0 shadow-sm">
+        <div class="d-flex"><div class="toast-body">{{ message }}</div>
+            <button type="button" class="btn-close m-auto" data-bs-dismiss="toast"></button>
         </div>
+    </div>
     {% endfor %}
 </div>
 
-<!-- Scripts -->
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", ()=>{
 
-    const sidebar = document.querySelector(".sidebar");
-    const toggleBtn = document.querySelector(".sidebar-toggle");
+    const sidebar=document.getElementById("sidebar");
+    const toggle=document.getElementById("toggleBtn");
+    const main=document.querySelector(".main");
 
-    toggleBtn.addEventListener("click", () => {
-        sidebar.classList.toggle("open");
-    });
+    toggle.onclick = () => {
+        sidebar.classList.toggle("hide");   // Desktop hide/show
+        sidebar.classList.toggle("open");   // Mobile slide
+        main.classList.toggle("expand");    // Page resize
+    };
 
-    // Show toast messages
-    document.querySelectorAll('.toast').forEach(toastEl => {
-        new bootstrap.Toast(toastEl, { delay: 3000 }).show();
-    });
+    document.querySelectorAll('.toast').forEach(
+        t=> new bootstrap.Toast(t,{delay:3000}).show()
+    );
+    // Blank area click → sidebar auto hide
+document.addEventListener("click", (e) => {
+    const sidebar = document.getElementById("sidebar");
+    const main = document.querySelector(".main");
+    const toggle = document.getElementById("toggleBtn");
+
+    // যদি sidebar খোলা থাকে & ক্লিক হয়েছে sidebar-এর বাইরে
+    if ((sidebar.classList.contains("open") || !sidebar.classList.contains("hide")) &&
+        !sidebar.contains(e.target) && e.target !== toggle) {
+
+        sidebar.classList.add("hide");
+        sidebar.classList.remove("open");
+        main.classList.add("expand");
+    }
+});
+
 });
 </script>
 

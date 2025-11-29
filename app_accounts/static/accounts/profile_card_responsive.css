@@ -1,0 +1,111 @@
+.pc-container{max-width:1200px;margin:auto;padding:20px}
+
+
+/* ================= Toggle Buttons ================= */
+.pc-toggle{display:flex;justify-content:flex-end;gap:10px;margin-bottom:25px}
+
+.pc-btn,.pc-btn-outline{
+    padding:9px 25px;border-radius:6px;font-weight:600;
+    font-size:15px;cursor:pointer;transition:.25s;
+}
+
+/* Solid Button */
+.pc-btn{
+    background:#0d6efd;color:#fff;border:1px solid #0d6efd;
+}
+.pc-btn:hover{background:#0b5ed7}
+
+/* Outline Button */
+.pc-btn-outline{
+    border:1px solid #0d6efd;background:#fff;color:#0d6efd;
+}
+.pc-btn-outline:hover{
+    background:#e9f1ff;
+}
+
+.pc-btn.active{background:#0d6efd;color:#fff}
+
+
+
+/* ================= CARD ================= */
+/* ================= CARD ================= */
+.pc-card{
+    background:#fff;padding:18px 20px;border-radius:10px;
+    display:flex;justify-content:space-between;align-items:center;
+    border:1px solid #dcdcdc;margin-bottom:16px;
+    
+    /* ✨ Animation Added */
+    transition: transform .25s ease, box-shadow .25s ease, border .3s;
+}
+
+/* Hover Animation */
+.pc-card:hover{
+    transform: translateY(-4px);
+    box-shadow:0px 8px 22px rgba(0,0,0,.08);
+    border-color:#c7c7c7;
+    background:#fdfdfd;
+}
+
+
+/* ================= LEFT SIDE ================= */
+.pc-left{display:flex;align-items:center;gap:15px}
+.pc-photo{width:62px;height:62px;border-radius:50%;object-fit:cover}
+
+.pc-name{font-size:18px;font-weight:600;color:#222}
+.pc-role{font-size:14px;color:#666}
+
+
+
+/* ================= RIGHT ICONS ================= */
+.pc-right{display:flex;align-items:center;gap:14px}
+
+/* Icon Buttons — Clean + Minimal */
+.pc-icon{
+    padding:7px 8px;border-radius:6px;font-size:16px;
+    color:#333;border:1px solid #d6d6d6;background:#fff;
+    transition:.25s;
+}
+.pc-icon:hover{
+    background:#e8e8e8;
+    border-color:#bfbfbf;
+    color:#000;
+}
+
+
+
+/* ================= SWITCH ================= */
+.switch{position:relative;width:40px;height:20px}
+.switch input{display:none}
+
+.slider{
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    background:#bfbfbf;border-radius:20px;transition:.3s;
+}
+.slider:before{
+    content:"";position:absolute;height:15px;width:15px;
+    left:3px;bottom:2.5px;background:#fff;border-radius:50%;
+    transition:.3s;
+}
+input:checked + .slider{background:#0d6efd}
+input:checked + .slider:before{transform:translateX(18px)}
+
+
+
+/* ================= Floating Create Button ================= */
+.pc-float{
+    position:fixed;right:22px;bottom:22px;background:#0d6efd;
+    color:#fff;padding:10px 22px;border-radius:6px;font-weight:600;
+    transition:.25s;border:1px solid #0a58ca;font-size:14px;
+}
+.pc-float:hover{
+    background:#0b5ed7;
+}
+
+
+/* ================= MOBILE ================= */
+@media(max-width:600px){
+    .pc-card{flex-direction:column;align-items:flex-start;gap:14px}
+    .pc-right{width:100%;justify-content:flex-end}
+    .pc-photo{width:52px;height:52px}
+    .pc-name{font-size:17px}
+}
