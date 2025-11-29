@@ -15,12 +15,15 @@ User = get_user_model()
 # ==========================
 @login_required
 def my_contacts(request):
-    contact_list = Contact.objects.filter(owner=request.user, status="accepted").order_by("-created_at")
+    contact_list = Contact.objects.filter(
+        owner=request.user, 
+        status__in=["accepted", "saved"]   # 🟢 savedও দেখবে
+    ).order_by("-created_at")
+
     paginator = Paginator(contact_list, 5)
     page = request.GET.get('page')
     contacts = paginator.get_page(page)
     return render(request, "app_contacts/my_contacts.html", {'contacts': contacts})
-
 
 
 # ==========================
@@ -28,16 +31,22 @@ def my_contacts(request):
 # ==========================
 @login_required
 def add_contact(request, user_id):
-    sender = request.user                      # B = requester
-    receiver = get_object_or_404(User, id=user_id)  # A = profile owner
+    sender = request.user                     # খ
+    receiver = get_object_or_404(User, id=user_id)  # ক
 
-    if Contact.objects.filter(owner=receiver, visitor=sender, status="pending").exists():
-        return redirect('app_accounts:public_profile', username=receiver.username)
+    # 🔹 ক এর কাছে pending request send হবে
+    Contact.objects.get_or_create(
+        owner=receiver,
+        visitor=sender,
+        defaults={"status": "pending"}
+    )
 
-    if Contact.objects.filter(owner=receiver, visitor=sender, status="accepted").exists():
-        return redirect('app_accounts:public_profile', username=receiver.username)
-
-    Contact.objects.create(owner=receiver, visitor=sender, status="pending")
+    # 🔹 খ-এর লিস্টে saved immediately দেখাবে
+    Contact.objects.get_or_create(
+        owner=sender,
+        visitor=receiver,
+        defaults={"status": "saved"}  # pending নয়, saved দেখাবে
+    )
 
     return redirect('app_accounts:public_profile', username=receiver.username)
 
@@ -101,9 +110,12 @@ def contact_dashboard(request):
 # ==========================
 # 🔗 Accepted Connections
 # ==========================
-@login_required
 def all_connects(request):
-    contacts = Contact.objects.filter(owner=request.user, status="accepted").order_by("-created_at")
+    contacts = Contact.objects.filter(
+        owner=request.user, 
+        status__in=["accepted", "saved"]
+    ).order_by("-created_at")
+
     return render(request, "contacts/all_connects.html", {"contacts": contacts})
 
 
