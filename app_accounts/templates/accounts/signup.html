@@ -9,30 +9,36 @@
     <h3 class="text-center mb-3">Create Account</h3>
 
     <form method="POST">
-      {% csrf_token %}
+  {% csrf_token %}
 
-      <div class="mb-3">
-        <label>Email</label>
-        {{ form.email|add_class:"form-control" }}
-      </div>
+  <!-- ⭐ next URL carry করার জন্য সবচেয়ে গুরুত্বপূর্ণ লাইন -->
+  <input type="hidden" name="next" value="{{ request.GET.next }}">
 
-      <div class="mb-3">
-        <label>Password</label>
-        {{ form.password1|add_class:"form-control" }}
-      </div>
+  <div class="mb-3">
+    <label>Email</label>
+    {{ form.email|add_class:"form-control" }}
+  </div>
 
-      <div class="mb-3">
-        <label>Confirm Password</label>
-        {{ form.password2|add_class:"form-control" }}
-      </div>
+  <div class="mb-3">
+    <label>Password</label>
+    {{ form.password1|add_class:"form-control" }}
+  </div>
 
-      <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+  <div class="mb-3">
+    <label>Confirm Password</label>
+    {{ form.password2|add_class:"form-control" }}
+  </div>
 
-      <p class="text-center mt-3">
-        Already have an account?
-        <a href="{% url 'app_accounts:login' %}">Login</a>
-      </p>
-    </form>
+  <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+
+  <p class="text-center mt-3">
+    Already have an account?
+    <a href="{% url 'app_accounts:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
+      Login
+    </a>
+  </p>
+</form>
+
   </div>
 </div>
 {% endblock %}

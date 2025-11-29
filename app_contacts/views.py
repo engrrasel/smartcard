@@ -29,7 +29,7 @@ def my_contacts(request):
 # ==========================
 # 🔥 Send Connection Request
 # ==========================
-@login_required
+@login_required(login_url='/login/')
 def add_contact(request, user_id):
     sender = request.user                     # খ
     receiver = get_object_or_404(User, id=user_id)  # ক

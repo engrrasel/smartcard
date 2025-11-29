@@ -41,7 +41,13 @@ def signup_view(request):
             user.save()
             login(request, user)
             messages.success(request, "Account created & logged in!")
-            return redirect("app_accounts:dashboard")
+
+            next_url = request.POST.get("next") or request.GET.get("next")  # ⭐ GET থেকে next ধরল
+            if next_url:
+                return redirect(next_url)       # ⭐ Signup শেষ → আগের পেজে ফিরে যাবে
+
+            return redirect("app_accounts:dashboard")  # fallback
+
 
         user.is_active = False
         user.save()

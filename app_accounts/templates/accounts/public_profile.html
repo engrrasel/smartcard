@@ -61,9 +61,16 @@ body {
     <div class="btn-area">
 
       <!-- ✅ Corrected URL here -->
-      <a href="{% url 'app_contacts:add_contact' profile.id %}" class="btn btn-primary">
-          Connect
-      </a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'app_contacts:add_contact' profile.id %}" class="btn btn-primary">
+            Connect
+        </a>
+    {% else %}
+        <a href="/login/?next={% url 'app_contacts:add_contact' profile.id %}" class="btn btn-primary">
+            Connect
+        </a>
+    {% endif %}
+
 
       {% if profile.phone %}
       <a href="tel:{{ profile.phone }}" class="btn-call">

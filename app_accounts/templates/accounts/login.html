@@ -25,7 +25,10 @@
 
       <p class="text-center mt-3">
         Don’t have an account?
-        <a href="{% url 'app_accounts:signup' %}">Sign Up</a>
+        <a href="{% url 'app_accounts:signup' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
+    Create Account
+</a>
+
       </p>
     </form>
   </div>
