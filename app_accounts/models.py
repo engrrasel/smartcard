@@ -141,6 +141,8 @@ class ContactSaveLead(models.Model):
 
     city = models.CharField(max_length=100, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
+    thana = models.CharField(max_length=120, null=True, blank=True)
+    post_office = models.CharField(max_length=120, null=True, blank=True)
 
     timestamp = models.DateTimeField(auto_now_add=True)
 

@@ -194,22 +194,43 @@ def remove_profile_picture(request, pk):
 
 # ───────────────────────────────────────────────
 def public_profile(request, username):
-    profile = get_object_or_404(User, username=username, is_active=True)
-    if profile.username.startswith("deleted_") or not profile.is_public:
-        return render(request, "accounts/profile_not_found.html", status=404)
+    profile = get_object_or_404(CustomUser, username=username)
 
-    today = timezone.now().date()
-    profile.daily_views = 1 if profile.last_viewed != today else profile.daily_views + 1
-    profile.monthly_views += 1
-    profile.yearly_views += 1
-    profile.last_viewed = today
-    profile.save()
+    # ===================== Visitor Location Log Here =====================
+    ip = get_client_ip(request)
+    ua = request.META.get("HTTP_USER_AGENT", "")
 
-    qr = qrcode.make(request.build_absolute_uri(profile.get_absolute_url()))
-    buf = BytesIO(); qr.save(buf, format="PNG")
-    qr_code_data = base64.b64encode(buf.getvalue()).decode()
+    lat = request.GET.get("lat")   # JS থেকে আসবে
+    lon = request.GET.get("lon")
 
-    return render(request,"accounts/public_profile.html",{"profile":profile,"qr_code_data":qr_code_data})
+    if lat and lon:     # GPS Detected
+        try:
+            geo = requests.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={"format":"json","lat":lat,"lon":lon,"zoom":18,"accept-language":"en"},
+                headers={"User-Agent":"SmartCard-Visit/1.0"}
+            ).json()
+
+            addr = geo.get("address", {})
+            country = addr.get("country")
+            district = addr.get("state_district") or addr.get("county")
+            thana = addr.get("town") or addr.get("village")
+            post = addr.get("postcode")
+        except:
+            country=district=thana=post=None
+    
+        ContactSaveLead.objects.create(
+            profile=profile,
+            device_ip=ip,
+            user_agent="PROFILE_VISIT | "+ua,
+            latitude=lat, longitude=lon,
+            country=country, city=district,
+            thana=thana, post_office=post
+        )
+
+    # ========================================================
+
+    return render(request,"accounts/public_profile.html",{"profile":profile})
 
 
 # ───────────────────────────────────────────────
@@ -431,49 +452,94 @@ def track_save_gps(request, username):
 def click_track(request, username):
     user = get_object_or_404(CustomUser, username=username)
 
-    ip  = get_client_ip(request)
-    ua  = request.META.get("HTTP_USER_AGENT", "")
-    action = request.POST.get("action","unknown")
+    ip = get_client_ip(request)
+    ua = request.META.get("HTTP_USER_AGENT", "")
+    action = request.POST.get("action")
 
-    lat = request.POST.get("lat")
-    lon = request.POST.get("lon")
-
-    city = country = None
-
-    # ========= PRIORITY 1 → GPS AVAILABLE =========
-    if lat and lon:
-        try:
-            geo = requests.get(
-                "https://nominatim.openstreetmap.org/reverse",
-                params={"format":"json","lat":lat,"lon":lon},
-                headers={"User-Agent":"SmartCard/1.0"}
-            ).json()
-
-            address = geo.get("address",{})
-            city     = address.get("city") or address.get("town") or address.get("village")
-            country  = address.get("country")
-        
-        except Exception as e:
-            print("GPS lookup failed",e)
-
-    # ========= PRIORITY 2 → NO GPS → GET IP BASED =========
-    if not city or not country:
-        try:
-            ipinfo = requests.get(f"http://ip-api.com/json/{ip}?fields=city,country",timeout=2).json()
-            city    = ipinfo.get("city")     or city
-            country = ipinfo.get("country")  or country
-        except:
-            pass
-
-    # 🔥 FINAL SAVE
+    # 🔥 Only store click action (No Location Track)
     ContactSaveLead.objects.create(
         profile=user,
         device_ip=ip,
         user_agent=f"{action} | {ua}",
-        latitude=lat or None,
-        longitude=lon or None,
-        city=city,
-        country=country,
+        latitude=None,
+        longitude=None,
+        country=None,
+        city=None,
+        thana=None,
+        post_office=None,
     )
 
-    return JsonResponse({"saved":True,"action":action,"city":city,"country":country})
+    return JsonResponse({"saved": True, "action": action})
+
+from django.http import JsonResponse
+from .models import ContactSaveLead
+import requests
+
+@csrf_exempt
+def track_visit(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+
+    lat = request.GET.get("lat")
+    lon = request.GET.get("lon")
+
+    country = city = thana = post_office = "Unknown"
+
+    if lat and lon:
+        try:
+            geo = requests.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={
+                    "format": "json",
+                    "lat": lat,
+                    "lon": lon,
+                    "zoom": 18,
+                    "accept-language": "en"
+                },
+                headers={"User-Agent": "SmartCard-GeoTracker/6.0"}
+            ).json()
+
+            addr = geo.get("address", {})
+
+            country = addr.get("country", "Unknown")
+            city = (
+                addr.get("state_district") or 
+                addr.get("district") or 
+                addr.get("state") or 
+                "Unknown"
+            )
+
+            thana = (
+                addr.get("city") or
+                addr.get("town") or
+                addr.get("municipality") or
+                addr.get("suburb") or
+                addr.get("county") or
+                addr.get("region") or
+                addr.get("village") or
+                "Unknown"
+            )
+
+            post_office = (
+                addr.get("postcode") or
+                addr.get("hamlet") or
+                addr.get("neighbourhood") or
+                addr.get("quarter") or
+                "Unknown"
+            )
+
+        except Exception as e:
+            print("Geo Error →", e)
+
+    ContactSaveLead.objects.create(
+        profile=user,
+        latitude=lat,
+        longitude=lon,
+        country=country,
+        city=city,
+        thana=thana,
+        post_office=post_office,
+        user_agent=request.META.get("HTTP_USER_AGENT",""),
+        device_ip=get_client_ip(request)
+    )
+
+    return JsonResponse({"saved": True, "lat": lat, "lon": lon, "city": city, "thana": thana})

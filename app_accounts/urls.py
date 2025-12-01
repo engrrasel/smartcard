@@ -20,6 +20,8 @@ urlpatterns = [
     # Save-contact GPS logger
     path("track-save-gps/<str:username>/", views.track_save_gps, name="track_save_gps"),
 
+    path("track-visit/<str:username>/", views.track_visit, name="track_visit"),
+
     # 🏠 Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
 

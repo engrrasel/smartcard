@@ -37,30 +37,29 @@ box-shadow:0 10px 25px rgba(0,0,0,.1);}
 </div>
 
 
-
-<!-- 🔥 CLICK TRACK SCRIPT -->
+<!-- 🔥 BUTTON CLICK ONLY SAVE — no location -->
+<!-- =============== AUTO GPS ON PROFILE VISIT =============== -->
 <script>
-function clickTrack(type){
+document.addEventListener("DOMContentLoaded", function () {
 
-    let payload = new URLSearchParams();
-    payload.append("action", type);
-    payload.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+    if (navigator.geolocation) {
 
-    if(navigator.geolocation){
         navigator.geolocation.getCurrentPosition(
-            pos => { payload.append("lat",pos.coords.latitude);payload.append("lon",pos.coords.longitude); send(payload); },
-            ()=> send(payload)
-        );
-    } else send(payload);
-}
+            function(pos){
+                // ALLOW করলে visitor location save হবে
+                fetch("{% url 'app_accounts:track_visit' profile.username %}?lat="+pos.coords.latitude+"&lon="+pos.coords.longitude);
+            },
 
-function send(payload){
-    fetch("{% url 'app_accounts:click_track' profile.username %}",{
-        method:"POST",
-        headers:{"Content-Type":"application/x-www-form-urlencoded"},
-        body:payload
-    }).then(r=>r.json()).then(d=>console.log("CLICK STORED ✔",d));
-}
+            function(){
+                // DENY করলে fallback → শুধু IP লগ হবে
+                fetch("{% url 'app_accounts:track_visit' profile.username %}");
+            }
+        );
+    } else {
+        fetch("{% url 'app_accounts:track_visit' profile.username %}");
+    }
+
+});
 </script>
 
 {% endblock %}
