@@ -156,37 +156,39 @@
 <script>
 document.addEventListener("DOMContentLoaded", ()=>{
 
-    const sidebar=document.getElementById("sidebar");
-    const toggle=document.getElementById("toggleBtn");
-    const main=document.querySelector(".main");
-
-    toggle.onclick = () => {
-        sidebar.classList.toggle("hide");   // Desktop hide/show
-        sidebar.classList.toggle("open");   // Mobile slide
-        main.classList.toggle("expand");    // Page resize
-    };
-
-    document.querySelectorAll('.toast').forEach(
-        t=> new bootstrap.Toast(t,{delay:3000}).show()
-    );
-    // Blank area click → sidebar auto hide
-document.addEventListener("click", (e) => {
     const sidebar = document.getElementById("sidebar");
-    const main = document.querySelector(".main");
     const toggle = document.getElementById("toggleBtn");
+    const main = document.querySelector(".main");
 
-    // যদি sidebar খোলা থাকে & ক্লিক হয়েছে sidebar-এর বাইরে
-    if ((sidebar.classList.contains("open") || !sidebar.classList.contains("hide")) &&
-        !sidebar.contains(e.target) && e.target !== toggle) {
+    /* =========================
+       Sidebar Toggle (Stable Fix)
+    ==========================*/
+    toggle.addEventListener("click", (e) => {
+        e.stopPropagation();   // ⛔ toggle click যেন outside-listener না ধরে
+        sidebar.classList.toggle("open");
+        sidebar.classList.toggle("hide");
+        main.classList.toggle("expand");
+    });
 
-        sidebar.classList.add("hide");
-        sidebar.classList.remove("open");
-        main.classList.add("expand");
-    }
-});
+    /* =============== Click Outside To Close (Mobile Only) ================= */
+    document.addEventListener("click", (e) => {
 
+        // only close when sidebar actually open
+        if(sidebar.classList.contains("open") 
+           && !sidebar.contains(e.target)
+           && e.target !== toggle){
+            sidebar.classList.remove("open");
+            sidebar.classList.add("hide");
+            main.classList.add("expand");
+        }
+    });
+
+    /* Toast Auto Open */
+    document.querySelectorAll('.toast')
+        .forEach(t=> new bootstrap.Toast(t,{delay:3000}).show());
 });
 </script>
+
 
 </body>
 </html>

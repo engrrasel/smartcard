@@ -110,6 +110,7 @@ def contact_dashboard(request):
 # ==========================
 # 🔗 Accepted Connections
 # ==========================
+@login_required(login_url='/login/')
 def all_connects(request):
     contacts = Contact.objects.filter(
         owner=request.user, 
@@ -249,3 +250,11 @@ def track_action(request, contact_id, action):
         "call": contact.call_count,
         "email": contact.email_count
     })
+
+
+from django.contrib.auth import logout
+
+def logout_view(request):
+    logout(request)
+    request.session.flush()   # 💥 multi-tab session kill
+    return redirect('/login/')
