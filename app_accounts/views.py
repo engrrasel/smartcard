@@ -525,6 +525,7 @@ def track_visit(request, username):
     # ================= GPS REVERSE GEO =================
     # ================= GPS REVERSE GEO =================
 # ================= GPS SMART REVERSE GEO =================
+# ==================== SMART THANa FIX BY GPS COORD ====================
     if location_source == "GPS":
         try:
             r = requests.get(
@@ -537,14 +538,12 @@ def track_visit(request, username):
                     "accept-language": "en",
                     "addressdetails": 1
                 },
-                headers={"User-Agent": "SmartCard-GPS-Tracker/3.0"}
+                headers={"User-Agent": "SmartCard-GPS-Tracker/4.0"}
             ).json()
 
             addr = r.get("address", {})
 
             country = addr.get("country", "Unknown")
-
-            # Main City/District Field
             city = (
                 addr.get("state_district")
                 or addr.get("county")
@@ -552,30 +551,28 @@ def track_visit(request, username):
                 or "Unknown"
             )
 
-            # Raw possible thana sources
-            detected = [
-                addr.get("town"), addr.get("city"),
-                addr.get("municipality"), addr.get("village"),
-                addr.get("suburb"), addr.get("hamlet"),
-                addr.get("neighbourhood"), addr.get("quarter")
-            ]
-            thana = next((x for x in detected if x), "Unknown")
+            # Raw area grab
+            thana = (
+                addr.get("town") or addr.get("city") or addr.get("municipality") or
+                addr.get("village") or addr.get("suburb") or "Unknown"
+            )
 
-            post_office = addr.get("postcode", "-")
+            post_office = addr.get("postcode","-")
 
-            # 🔥 AUTO FIX → IF GPS area is inside Mirzapur range
-            lat_f = float(lat); lon_f = float(lon)
+            # Convert lat/lon to float
+            latF = float(lat)
+            lonF = float(lon)
 
-            # -------- Mirzapur GPS Boundary --------
-            # তুমি চাইলে আমি boundary আরও refine করে দেব।
-            if 24.07 <= lat_f <= 24.26 and 90.00 <= lon_f <= 90.25:
+            # ========== Force Mirzapur Boundary Fix ==========
+            # তোমার দেওয়া লোকেশন এর ভিত্তিতে 2.5 KM radius cover
+            if (24.14 <= latF <= 24.20) and (90.00 <= lonF <= 90.08):
                 thana = "Mirzapur"
+                city = "Tangail District"
 
-            print("📍 RAW:", addr)
-            print("🏷 FINAL THANA:", thana)
+            print("✔ GPS Smart Fix Applied →", city, thana)
 
         except Exception as e:
-            print("⛔ GPS GEO ERROR =", e)
+            print("⛔ GPS Reverse Error", e)
 
 
 

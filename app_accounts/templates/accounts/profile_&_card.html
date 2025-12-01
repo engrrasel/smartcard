@@ -13,6 +13,7 @@
     </div>
 
     
+    <!-- ================= MY CARD SECTION ================== -->
     <div id="mainSection">
         <h3 class="pc-heading">Your Card</h3>
 
@@ -33,28 +34,34 @@
                     <span class="slider"></span>
                 </label>
 
+                <!-- WORKING VIEW -->
                 <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="pc-icon"><i class="fa-solid fa-eye"></i></a>
 
+                <!-- COPY LINK -->
                 <button class="pc-icon copy-btn"
-                        data-url="{{request.scheme}}://{{request.get_host}}{% url 'app_accounts:public_profile_by_id' main_profile.public_id %}">
+                        data-url="{{request.scheme}}://{{request.get_host}}/user/{{main_profile.username}}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
+                <!-- WORKING EDIT -->
                 <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="pc-icon"><i class="fa-solid fa-pen"></i></a>
+
+                <!-- WORKING QR -->
                 <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="pc-icon"><i class="fa-solid fa-qrcode"></i></a>
             </div>
         </div>
     </div>
 
 
+    <!-- ================= CHILD (EMPLOYEE) SECTION ================== -->
     <div id="childSection" style="display:none">
         <h3 class="pc-heading">Employee Profiles</h3>
 
         {% for profile in child_profiles %}
-        <div class="pc-card">
+        <div class="pc-card" onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
 
             <div class="pc-left">
-                <img src="{{ profile.profile_picture.url }}" class="pc-photo">
+                <img src="{{ profile.profile_picture.url|default:'https://via.placeholder.com/100' }}" class="pc-photo">
                 <div>
                     <div class="pc-name">{{ profile.full_name }}</div>
                     <div class="pc-role">{{ profile.job_title }}</div>
@@ -68,28 +75,39 @@
                     <span class="slider"></span>
                 </label>
 
-                <a class="pc-icon"><i class="fa-solid fa-eye"></i></a>
+                <a href="{% url 'app_accounts:public_profile' profile.username %}" class="pc-icon"><i class="fa-solid fa-eye"></i></a>
 
                 <button class="pc-icon copy-btn"
-                    data-url="{{request.scheme}}://{{request.get_host}}{% url 'app_accounts:public_profile_by_id' profile.public_id %}">
+                    data-url="{{request.scheme}}://{{request.get_host}}/user/{{profile.username}}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <a class="pc-icon"><i class="fa-solid fa-pen"></i></a>
-                <a class="pc-icon"><i class="fa-solid fa-qrcode"></i></a>
-            </div>
+                <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="pc-icon"><i class="fa-solid fa-pen"></i></a>
+                <a href="{% url 'app_accounts:download_qr' profile.id %}" class="pc-icon"><i class="fa-solid fa-qrcode"></i></a>
 
+                <!-- UNLINK BUTTON (SAFE ZONE) -->
+                <form action="{% url 'app_accounts:unlink_profile' profile.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="pc-icon" title="Unlink" style="color:#ff4444;">
+                        <i class="fa-solid fa-user-xmark"></i>
+                    </button>
+                </form>
+
+            </div>
         </div>
         {% endfor %}
     </div>
+
 </div>
 
 <a href="{% url 'app_accounts:create_profile' %}" class="pc-float"><i class="fa-solid fa-plus"></i> Create New</a>
 
-<!-- Only this script, nothing else -->
 <script src="{% static 'accounts/profile_card_responsive.js' %}"></script>
 
-
-
+<script>
+document.querySelectorAll(".copy-btn").forEach(btn=>{
+    btn.onclick=()=>{ navigator.clipboard.writeText(btn.dataset.url); alert("Link Copied ✓"); }
+});
+</script>
 
 {% endblock %}
