@@ -41,32 +41,89 @@ box-shadow:0 10px 25px rgba(0,0,0,.1);}
 <!-- =============== AUTO GPS ON PROFILE VISIT =============== -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const trackUrl = "{% url 'app_accounts:track_visit' profile.username %}";
 
-    if (!navigator.geolocation) {
-        fetch("{% url 'app_accounts:track_visit' profile.username %}");
+    // একবারই ভালো রিডিং পাঠাবো
+    let visitLogged = false;
+    let watchId = null;
+
+    function sendVisit(lat, lon, acc){
+        if (visitLogged) return;
+        visitLogged = true;
+
+        console.log("📡 Sending visit →", lat, lon, "accuracy:", acc);
+
+        fetch(
+            trackUrl
+            + "?lat=" + encodeURIComponent(lat)
+            + "&lon=" + encodeURIComponent(lon)
+            + "&accuracy=" + encodeURIComponent(acc),
+            { method: "GET" }
+        ).catch(err => console.log("Send error", err));
+    }
+
+    function fallbackIP(){
+        if (visitLogged) return;
+        visitLogged = true;
+        console.log("🌍 Fallback → IP based tracking");
+
+        fetch(trackUrl, { method: "GET" })
+            .catch(err => console.log("IP send error", err));
+    }
+
+    if (!navigator.geolocation){
+        console.log("❌ Geolocation not supported → IP mode");
+        fallbackIP();
         return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-        pos => {
-            console.log("GPS Allowed — Location Saved ✓");
+    // ⏱ 8 সেকেন্ডের মধ্যে ভালো GPS না পেলে → IP fallback
+    setTimeout(function () {
+        if (!visitLogged){
+            console.log("⏱ GPS timeout → IP fallback");
+            if (watchId !== null){
+                navigator.geolocation.clearWatch(watchId);
+            }
+            fallbackIP();
+        }
+    }, 8000);
 
-            fetch(
-                "{% url 'app_accounts:track_visit' profile.username %}"
-                + "?lat=" + pos.coords.latitude
-                + "&lon=" + pos.coords.longitude,
-                { method: "GET" }
-            );
+    // ⭐ High-accuracy live tracking
+    watchId = navigator.geolocation.watchPosition(
+        pos => {
+            console.log("📍 GPS update:", pos.coords);
+
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            const acc = pos.coords.accuracy; // meter
+
+            // খুব খারাপ (৩৫০m+) রিডিং হলে ignore
+            if (!acc || acc > 350){
+                console.log("⚠ Bad accuracy (" + acc + "m), wait for better...");
+                return;
+            }
+
+            // ভালো রিডিং (<= 50m) পেলেই পাঠাই + watch বন্ধ করি
+            if (acc <= 50){
+                sendVisit(lat, lon, acc);
+                if (watchId !== null){
+                    navigator.geolocation.clearWatch(watchId);
+                }
+            }
         },
         err => {
-            console.log("GPS Denied — Saving Visitor via IP");
-            fetch("{% url 'app_accounts:track_visit' profile.username %}");
+            console.log("❌ GPS error:", err);
+            fallbackIP();
         },
-        { enableHighAccuracy:true, timeout:10000, maximumAge:0 } // 🟢 High Accuracy mode
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+        }
     );
-
 });
 </script>
+
 
 
 {% endblock %}

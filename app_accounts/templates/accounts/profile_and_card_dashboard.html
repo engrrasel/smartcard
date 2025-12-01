@@ -142,6 +142,7 @@
                     <th>Lon</th>
                     <th>Time</th>
                     <th>Accuracy %</th>
+                    <th>Source</th>
                 </tr>
             </thead>
             <tbody>
@@ -155,10 +156,17 @@
                     <td>{{ v.longitude }}</td>
                     <td>{{ v.timestamp|date:"d M h:i A" }}</td>
                     <td><b>{{ v.accuracy|default:"-" }}%</b></td>
+                    <td>
+                        {% if v.location_source == "GPS" %}
+                            <span class="badge bg-success">GPS</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">IP</span>
+                        {% endif %}
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center text-muted">
+                    <td colspan="9" class="text-center text-muted py-3">
                         No location found
                     </td>
                 </tr>

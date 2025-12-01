@@ -144,7 +144,13 @@ class ContactSaveLead(models.Model):
     thana = models.CharField(max_length=120, null=True, blank=True)
     post_office = models.CharField(max_length=120, null=True, blank=True)
     accuracy = models.IntegerField(null=True, blank=True)
-  # ← 🔥 MOST IMPORTANT
+
+    # ⭐⭐ ADD THIS FIELD ⭐⭐
+    location_source = models.CharField(
+        max_length=5,
+        choices=[("GPS", "GPS"), ("IP", "IP")],
+        default="IP"
+    )
 
     timestamp = models.DateTimeField(auto_now_add=True)
 

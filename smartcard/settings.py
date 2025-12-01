@@ -26,7 +26,12 @@ SECRET_KEY = 'django-insecure-=4@1k%zl(p7vxx$=k)*vyd*n2h2lgln)zmaaf7a)r09ow_w!@v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.127']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '192.168.1.127',
+    'starlessly-knickered-stewart.ngrok-free.dev',   # ← ADD THIS
+]
 
 
 
@@ -180,3 +185,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 CRONJOBS = [
     ('0 0 * * *', 'app_accounts.cron.reset_daily_views'),  # 🕛 প্রতি রাত ১২টায় রান হবে
 ]
+
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+GEOIP_PATH = os.path.join(BASE_DIR, "geo")

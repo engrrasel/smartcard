@@ -471,18 +471,8 @@ def click_track(request, username):
 
     return JsonResponse({"saved": True, "action": action})
 
-from django.http import JsonResponse
-from .models import ContactSaveLead
-import requests
 
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-import requests
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
-import requests
 
 @csrf_exempt
 def track_visit(request, username):
@@ -492,57 +482,150 @@ def track_visit(request, username):
 
     lat = request.GET.get("lat")
     lon = request.GET.get("lon")
-    acc_raw = request.GET.get("accuracy")  # meter based accuracy
+    acc_raw = request.GET.get("accuracy")  # meter-based accuracy from JS
 
     # ---------- ACCURACY CONVERT FUNCTION ----------
     def convert_accuracy(meter):
         try:
             m = float(meter)
             return (
-                98 if m<=5 else
-                92 if m<=10 else
-                85 if m<=20 else
-                70 if m<=50 else
-                55 if m<=100 else
+                98 if m <= 5 else
+                92 if m <= 10 else
+                85 if m <= 20 else
+                70 if m <= 50 else
+                55 if m <= 100 else
                 35
             )
-        except:
+        except Exception:
             return None
 
-    accuracy_percent = convert_accuracy(acc_raw) or 50 
-
-    # Default geo values (useful when no GPS / API fail)
+    # Default values
     country = city = thana = post_office = "Unknown"
+    location_source = "IP"  # default fallback
+    accuracy = convert_accuracy(acc_raw) or 50
 
-    # ---------- REVERSE GEO LOOKUP ----------
-    if lat and lon:
+    # ----------- Decide: GPS usable or not? ----------
+    gps_allowed = bool(lat and lon and acc_raw)
+    gps_accuracy_m = None
+
+    if gps_allowed:
+        try:
+            gps_accuracy_m = float(acc_raw)
+        except Exception:
+            gps_allowed = False
+
+    # যদি GPS আছে কিন্তু accuracy অনেক খারাপ (৩৫০m+) → IP হিসেবে ধরব
+    if gps_allowed and gps_accuracy_m is not None and gps_accuracy_m <= 350:
+        location_source = "GPS"
+    else:
+        lat = None
+        lon = None
+        location_source = "IP"
+
+    # ================= GPS REVERSE GEO =================
+    # ================= GPS REVERSE GEO =================
+# ================= GPS SMART REVERSE GEO =================
+    if location_source == "GPS":
         try:
             r = requests.get(
                 "https://nominatim.openstreetmap.org/reverse",
-                params={"format": "json", "lat": lat, "lon": lon, "zoom": 18},
-                headers={"User-Agent": "GeoTracker/1.0"}
+                params={
+                    "format": "json",
+                    "lat": lat,
+                    "lon": lon,
+                    "zoom": 18,
+                    "accept-language": "en",
+                    "addressdetails": 1
+                },
+                headers={"User-Agent": "SmartCard-GPS-Tracker/3.0"}
             ).json()
 
             addr = r.get("address", {})
-            country      = addr.get("country", "Unknown")
-            city         = addr.get("state_district") or addr.get("county") or addr.get("state") or "Unknown"
-            thana        = addr.get("city") or addr.get("town") or addr.get("suburb") or "Unknown"
-            post_office  = addr.get("postcode", "Unknown")
+
+            country = addr.get("country", "Unknown")
+
+            # Main City/District Field
+            city = (
+                addr.get("state_district")
+                or addr.get("county")
+                or addr.get("state")
+                or "Unknown"
+            )
+
+            # Raw possible thana sources
+            detected = [
+                addr.get("town"), addr.get("city"),
+                addr.get("municipality"), addr.get("village"),
+                addr.get("suburb"), addr.get("hamlet"),
+                addr.get("neighbourhood"), addr.get("quarter")
+            ]
+            thana = next((x for x in detected if x), "Unknown")
+
+            post_office = addr.get("postcode", "-")
+
+            # 🔥 AUTO FIX → IF GPS area is inside Mirzapur range
+            lat_f = float(lat); lon_f = float(lon)
+
+            # -------- Mirzapur GPS Boundary --------
+            # তুমি চাইলে আমি boundary আরও refine করে দেব।
+            if 24.07 <= lat_f <= 24.26 and 90.00 <= lon_f <= 90.25:
+                thana = "Mirzapur"
+
+            print("📍 RAW:", addr)
+            print("🏷 FINAL THANA:", thana)
 
         except Exception as e:
-            print("🌍 GEO ERROR:", e)
+            print("⛔ GPS GEO ERROR =", e)
+
+
+
+    # ================= IP GEO (fallback) =================
+    if location_source == "IP":
+        try:
+            from django.contrib.gis.geoip2 import GeoIP2
+
+            g = GeoIP2()
+            ip = request.META.get("REMOTE_ADDR")
+
+            geo = g.city(ip)  # city lookup
+
+            country = geo.get("country_name", "Unknown")
+            city = geo.get("city", "Unknown")
+            # GeoIP2 তে সাধারণত 'region' বা 'region_name' থাকে
+            thana = geo.get("region", "Unknown") or geo.get("region_name", "Unknown")
+            post_office = geo.get("postal_code", "-")
+
+            lat = geo.get("latitude")
+            lon = geo.get("longitude")
+
+            accuracy = 40  # approx for IP
+
+            print("🌍 IP GEO SUCCESS:", country, city)
+
+        except Exception as e:
+            print("❗ GEO Lookup Failed →", e)
 
     # ---------- SAVE TO DATABASE ----------
     ContactSaveLead.objects.create(
         profile=user,
+        device_ip=request.META.get("REMOTE_ADDR"),
+        user_agent=request.META.get("HTTP_USER_AGENT", "")[:500],
         latitude=lat,
         longitude=lon,
         country=country,
         city=city,
         thana=thana,
         post_office=post_office,
-        accuracy=accuracy_percent
+        accuracy=accuracy,
+        location_source=location_source,
     )
 
-    print("✔ Location Stored Successfully")
-    return JsonResponse({"status": "saved", "accuracy": accuracy_percent})
+    print("✔ Location Stored Successfully →", location_source, "ACC%", accuracy)
+    return JsonResponse({
+        "status": "saved",
+        "source": location_source,
+        "accuracy": accuracy,
+        "country": country,
+        "city": city,
+        "thana": thana,
+    })
