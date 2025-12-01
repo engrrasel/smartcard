@@ -475,61 +475,64 @@ from django.http import JsonResponse
 from .models import ContactSaveLead
 import requests
 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import requests
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+import requests
+
 @csrf_exempt
 def track_visit(request, username):
+    print("📌 TRACK VISIT HIT — USER =", username)
+
     user = get_object_or_404(CustomUser, username=username)
 
     lat = request.GET.get("lat")
     lon = request.GET.get("lon")
+    acc_raw = request.GET.get("accuracy")  # meter based accuracy
 
+    # ---------- ACCURACY CONVERT FUNCTION ----------
+    def convert_accuracy(meter):
+        try:
+            m = float(meter)
+            return (
+                98 if m<=5 else
+                92 if m<=10 else
+                85 if m<=20 else
+                70 if m<=50 else
+                55 if m<=100 else
+                35
+            )
+        except:
+            return None
+
+    accuracy_percent = convert_accuracy(acc_raw) or 50 
+
+    # Default geo values (useful when no GPS / API fail)
     country = city = thana = post_office = "Unknown"
 
+    # ---------- REVERSE GEO LOOKUP ----------
     if lat and lon:
         try:
-            geo = requests.get(
+            r = requests.get(
                 "https://nominatim.openstreetmap.org/reverse",
-                params={
-                    "format": "json",
-                    "lat": lat,
-                    "lon": lon,
-                    "zoom": 18,
-                    "accept-language": "en"
-                },
-                headers={"User-Agent": "SmartCard-GeoTracker/6.0"}
+                params={"format": "json", "lat": lat, "lon": lon, "zoom": 18},
+                headers={"User-Agent": "GeoTracker/1.0"}
             ).json()
 
-            addr = geo.get("address", {})
-
-            country = addr.get("country", "Unknown")
-            city = (
-                addr.get("state_district") or 
-                addr.get("district") or 
-                addr.get("state") or 
-                "Unknown"
-            )
-
-            thana = (
-                addr.get("city") or
-                addr.get("town") or
-                addr.get("municipality") or
-                addr.get("suburb") or
-                addr.get("county") or
-                addr.get("region") or
-                addr.get("village") or
-                "Unknown"
-            )
-
-            post_office = (
-                addr.get("postcode") or
-                addr.get("hamlet") or
-                addr.get("neighbourhood") or
-                addr.get("quarter") or
-                "Unknown"
-            )
+            addr = r.get("address", {})
+            country      = addr.get("country", "Unknown")
+            city         = addr.get("state_district") or addr.get("county") or addr.get("state") or "Unknown"
+            thana        = addr.get("city") or addr.get("town") or addr.get("suburb") or "Unknown"
+            post_office  = addr.get("postcode", "Unknown")
 
         except Exception as e:
-            print("Geo Error →", e)
+            print("🌍 GEO ERROR:", e)
 
+    # ---------- SAVE TO DATABASE ----------
     ContactSaveLead.objects.create(
         profile=user,
         latitude=lat,
@@ -538,8 +541,8 @@ def track_visit(request, username):
         city=city,
         thana=thana,
         post_office=post_office,
-        user_agent=request.META.get("HTTP_USER_AGENT",""),
-        device_ip=get_client_ip(request)
+        accuracy=accuracy_percent
     )
 
-    return JsonResponse({"saved": True, "lat": lat, "lon": lon, "city": city, "thana": thana})
+    print("✔ Location Stored Successfully")
+    return JsonResponse({"status": "saved", "accuracy": accuracy_percent})

@@ -143,6 +143,8 @@ class ContactSaveLead(models.Model):
     country = models.CharField(max_length=100, null=True, blank=True)
     thana = models.CharField(max_length=120, null=True, blank=True)
     post_office = models.CharField(max_length=120, null=True, blank=True)
+    accuracy = models.IntegerField(null=True, blank=True)
+  # ← 🔥 MOST IMPORTANT
 
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -171,3 +173,5 @@ class ClickEvent(models.Model):
 
     def __str__(self):
         return f"{self.profile.username} → {self.button_type}"
+
+

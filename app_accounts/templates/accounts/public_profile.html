@@ -42,24 +42,31 @@ box-shadow:0 10px 25px rgba(0,0,0,.1);}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    if (navigator.geolocation) {
-
-        navigator.geolocation.getCurrentPosition(
-            function(pos){
-                // ALLOW করলে visitor location save হবে
-                fetch("{% url 'app_accounts:track_visit' profile.username %}?lat="+pos.coords.latitude+"&lon="+pos.coords.longitude);
-            },
-
-            function(){
-                // DENY করলে fallback → শুধু IP লগ হবে
-                fetch("{% url 'app_accounts:track_visit' profile.username %}");
-            }
-        );
-    } else {
+    if (!navigator.geolocation) {
         fetch("{% url 'app_accounts:track_visit' profile.username %}");
+        return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            console.log("GPS Allowed — Location Saved ✓");
+
+            fetch(
+                "{% url 'app_accounts:track_visit' profile.username %}"
+                + "?lat=" + pos.coords.latitude
+                + "&lon=" + pos.coords.longitude,
+                { method: "GET" }
+            );
+        },
+        err => {
+            console.log("GPS Denied — Saving Visitor via IP");
+            fetch("{% url 'app_accounts:track_visit' profile.username %}");
+        },
+        { enableHighAccuracy:true, timeout:10000, maximumAge:0 } // 🟢 High Accuracy mode
+    );
 
 });
 </script>
+
 
 {% endblock %}
