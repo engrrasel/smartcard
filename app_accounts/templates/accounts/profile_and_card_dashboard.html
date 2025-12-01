@@ -1,153 +1,103 @@
 {% extends "dashboard/dashboard_base.html" %}
+{% load static %}
 {% block title %}{{ profile.full_name }} — Dashboard{% endblock %}
 {% block content %}
 
+<link rel="stylesheet" href="{% static 'accounts/css/click_analytics.css' %}">
+<script defer src="{% static 'accounts/js/click_track.js' %}"></script>
+
 <div class="container py-4">
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<h2 class="text-center fw-bold mb-4">📊 Button Click Analytics</h2>
 
-        <div class="d-flex align-items-center">
-            <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}https://via.placeholder.com/100{% endif %}"
-                class="rounded-circle border me-3" width="100" height="100">
+<!-- ================= TOP ANALYTICS ================= -->
+<div class="row text-center mb-4">
 
-            <div>
-                <h3 class="fw-bold text-primary mb-1">{{ profile.full_name|default:"Unnamed Profile" }}</h3>
-                <p class="text-muted mb-0">
-                    {{ profile.job_title|default:"No designation" }} — {{ profile.company_name|default:"N/A" }}
-                </p>
-            </div>
-        </div>
-
-        <!-- ACTION BUTTONS -->
-        <div class="d-flex align-items-center gap-3">
-
-            <!-- Public Toggle -->
-            <label class="switch" title="Public On/Off">
-                <input type="checkbox" class="toggle-switch"
-                       data-id="{{ profile.id }}"
-                       {% if profile.is_public %}checked{% endif %}>
-                <span class="slider"></span>
-            </label>
-
-            <!-- View -->
-            <a href="{% url 'app_accounts:public_profile' profile.username %}" class="btn btn-light">
-                <i class="fa-solid fa-eye"></i>
-            </a>
-
-
-            <!-- Copy Permanent Link -->
-            <button class="btn btn-light"
-                    onclick="copyText('{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile_by_id' profile.public_id %}')">
-                <i class="fa-solid fa-link"></i>
-            </button>
-
-
-            <!-- Edit -->
-            <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="btn btn-light">
-                <i class="fa-solid fa-pen-to-square"></i>
-            </a>
-
-            <!-- QR -->
-            <a href="{% url 'app_accounts:download_qr' profile.id %}" class="btn btn-light">
-                <i class="fa-solid fa-qrcode"></i>
-            </a>
-
-            <!-- Unlink -->
-            {% if profile.parent_user %}
-            <a onclick="return confirm('Are you sure you want to unlink this profile?')"
-               href="{% url 'app_accounts:unlink_profile' profile.id %}"
-               class="btn btn-light text-danger">
-                <i class="fa-solid fa-link-slash"></i>
-            </a>
-            {% endif %}
-
-        </div>
+    <div class="col-6 col-md-3">
+        <div class="click-box"><h1>{{ click_stats.total|default:0 }}</h1><small>Total Clicks</small></div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card stat-card text-center border-0 shadow-sm">
-                <div class="card-body">
-                    <i class="fa-solid fa-eye fa-2x text-primary mb-2"></i>
-                    <h6 class="fw-bold text-muted">Today</h6>
-                    <h2 class="counter text-dark" data-target="{{ daily_views }}">0</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card stat-card text-center border-0 shadow-sm">
-                <div class="card-body">
-                    <i class="fa-solid fa-calendar fa-2x text-success mb-2"></i>
-                    <h6 class="fw-bold text-muted">This Month</h6>
-                    <h2 class="counter text-dark" data-target="{{ monthly_views }}">0</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card stat-card text-center border-0 shadow-sm">
-                <div class="card-body">
-                    <i class="fa-solid fa-chart-line fa-2x text-warning mb-2"></i>
-                    <h6 class="fw-bold text-muted">This Year</h6>
-                    <h2 class="counter text-dark" data-target="{{ yearly_views }}">0</h2>
-                </div>
-            </div>
-        </div>
+    <div class="col-6 col-md-3">
+        <div class="click-box text-primary"><h1>{{ click_stats.connect|default:0 }}</h1><small>Connect</small></div>
     </div>
 
-    <!-- Back Button -->
-    <div class="text-center mt-4">
-        <a href="{% url 'app_accounts:profile_and_card' %}" class="btn btn-outline-primary">
-            <i class="fa-solid fa-arrow-left"></i> Back to Profiles
-        </a>
+    <div class="col-6 col-md-3">
+        <div class="click-box text-success"><h1>{{ click_stats.save|default:0 }}</h1><small>Saved</small></div>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <div class="click-box text-danger"><h1>{{ click_stats.call|default:0 }}</h1><small>Call</small></div>
     </div>
 
 </div>
 
 
-<style>
-.stat-card { transition: 0.3s; }
-.stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+<!-- ================= BUTTON TAB SECTION ================= -->
+<div class="d-flex justify-content-center gap-3 mb-4">
+    <button class="btn btn-dark px-4" onclick="showTab('tab_clicks')">📥 Recent Click Logs</button>
+    <button class="btn btn-primary px-4" onclick="showTab('tab_location')">🌍 Visitor Locations</button>
+</div>
 
-.switch { position: relative; width: 50px; height: 26px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-    position: absolute; inset: 0;
-    background:#d0d7ff; border-radius: 25px; transition: .3s;
-}
-.slider:before {
-    content:""; width:20px; height:20px; background:#fff;
-    border-radius:50%; position:absolute; left:3px; top:3px;
-    transition:.3s;
-}
-input:checked + .slider { background:#4b7bff; }
-input:checked + .slider:before { transform: translateX(24px); }
-</style>
+
+<!-- ========================== RECENT CLICKS TAB ========================== -->
+<div id="tab_clicks" class="tab-section" style="display:none;">
+    <h4 class="text-center fw-bold mb-3">📥 Recent Click Logs (Last 50)</h4>
+
+    <div class="log-box">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Button</th><th>IP</th><th>Device</th><th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in click_logs %}
+            <tr>
+                <td><span class="badge bg-primary">{{ c.button_type }}</span></td>
+                <td>{{ c.device_ip }}</td>
+                <td>{{ c.user_agent|truncatechars:22 }}</td>
+                <td>{{ c.timestamp|date:"d M • h:i A" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan=4 class="text-center text-muted py-3">No Click Data Found</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<!-- ========================== VISITOR LOCATION TAB ========================== -->
+<div id="tab_location" class="tab-section" style="display:none;">
+    <h4 class="text-center fw-bold mb-3">🌍 Visitor Location Logs</h4>
+
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Country</th><th>City</th><th>Lat</th><th>Lon</th><th>Time</th></tr>
+        </thead>
+        <tbody>
+        {% for v in location_logs %}
+        <tr>
+            <td>{{ v.country|default:"-" }}</td>
+            <td>{{ v.city|default:"-" }}</td>
+            <td>{{ v.latitude|default:"-" }}</td>
+            <td>{{ v.longitude|default:"-" }}</td>
+            <td>{{ v.timestamp|date:"d M h:i A" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan=5 class="text-center text-muted py-3">No Location Data</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
 <script>
-function copyText(text) {
-    navigator.clipboard.writeText(text);
-    alert("Link copied!");
+function showTab(id){
+    document.querySelectorAll(".tab-section").forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const counters = document.querySelectorAll(".counter");
-  counters.forEach(counter => {
-    const update = () => {
-      const target = +counter.dataset.target;
-      const count = +counter.innerText;
-      const increment = Math.max(1, target / 60);
-      if (count < target) {
-        counter.innerText = Math.ceil(count + increment);
-        setTimeout(update, 25);
-      } else counter.innerText = target;
-    };
-    update();
-  });
-});
 </script>
 
+</div>
 {% endblock %}

@@ -13,6 +13,12 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
     path('email-sent/', lambda request: render(request, 'accounts/email_sent.html'), name='email_sent'),
     path('activate/<uidb64>/<token>/', views.activate_account, name='activate_account'),
+    
+    # CLICK Tracking Master Route (ONLY THIS ONE REQUIRED)
+    path("click/<str:username>/", views.click_track, name="click_track"),
+
+    # Save-contact GPS logger
+    path("track-save-gps/<str:username>/", views.track_save_gps, name="track_save_gps"),
 
     # 🏠 Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),

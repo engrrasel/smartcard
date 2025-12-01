@@ -1,0 +1,11 @@
+.click-box{
+    background:#fff;padding:18px;border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);transition:.3s
+}
+.click-box:hover{transform:translateY(-4px)}
+
+.log-box{border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,.1);overflow:hidden}
+.log-header{background:#111;color:#fff;padding:10px;font-weight:bold;text-align:center}
+
+.summary-box{box-shadow:0 4px 16px rgba(0,0,0,.1);border-radius:12px}
+.summary-box .title{background:#007bff;color:#fff;padding:8px;text-align:center;font-weight:bold}

@@ -33,7 +33,8 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.127']
 # Application definition
 
 INSTALLED_APPS = [
-    'app_contacts',
+    "app_accounts.apps.AppAccountConfig",  # <-- এটি উপরে থাকবে (auth model তাই)
+    "app_contacts",                        # <-- তারপর contacts
     'django_crontab',
     'django_extensions',
     'widget_tweaks',
@@ -46,14 +47,15 @@ INSTALLED_APPS = [
     "app_notifications",
     "app_subscriptions",
     "app_settings",
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app_accounts.apps.AppAccountConfig',
 ]
+
 
 MIDDLEWARE = [
     'middleware.no_cache.NoCacheMiddleware',    'django.middleware.security.SecurityMiddleware',

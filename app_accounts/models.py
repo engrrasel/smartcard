@@ -1,12 +1,18 @@
-# Fixed and fully prepared models.py with username delete-safe logic
+# ======================================================
+#  🔥 NEXT LEVEL TRACKING READY MODELS.PY (FINAL BUILD)
+# ======================================================
+
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 from django.urls import reverse
-import uuid   # <<<<<< ADD THIS
+import uuid
 
 
+# ======================================================
+#   USER CREATION MANAGER
+# ======================================================
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -31,9 +37,11 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+# ======================================================
+#   MAIN USER MODEL + NFC PUBLIC CARD
+# ======================================================
 class CustomUser(AbstractBaseUser, PermissionsMixin):
 
-    # ✅ Permanent Public ID (Never changes)
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     email = models.EmailField(unique=True)
@@ -42,10 +50,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
     activation_date = models.DateTimeField(null=True, blank=True)
 
+    # PRO/ELITE accounts can create team profiles
     parent_user = models.ForeignKey(
-        "self",
-        null=True,
-        blank=True,
+        "self", null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name="child_profiles"
     )
@@ -55,11 +62,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ("pro", "Pro"),
         ("elite", "Elite"),
     ]
-    account_type = models.CharField(
-        max_length=20,
-        choices=ACCOUNT_TYPE_CHOICES,
-        default="starter"
-    )
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES, default="starter")
 
     full_name = models.CharField(max_length=150, blank=True, null=True)
     username = models.SlugField(max_length=100, unique=True, blank=True, null=True)
@@ -74,65 +77,95 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     instagram = models.URLField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
 
+    # 📊 PROFILE ANALYTICS
     daily_views = models.PositiveIntegerField(default=0)
     monthly_views = models.PositiveIntegerField(default=0)
     yearly_views = models.PositiveIntegerField(default=0)
     last_viewed = models.DateField(blank=True, null=True)
 
+    save_count = models.PositiveIntegerField(default=0)   # ⭐ When someone saves contact
+
     updated_at = models.DateTimeField(auto_now=True)
     is_public = models.BooleanField(default=True)
 
     objects = CustomUserManager()
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
-
-    class Meta:
-        verbose_name = "User"
-        verbose_name_plural = "Users"
-        ordering = ["-updated_at", "-date_joined"]
 
     def __str__(self):
         return self.full_name or self.email
 
+    # PUBLIC URL
     def get_absolute_url(self):
-        # If username removed / card deleted → no public profile
         if not self.username or self.username.startswith("deleted_"):
             return reverse("app_accounts:dashboard")
-
         return reverse("app_accounts:public_profile", args=[self.username])
 
-
-    # ⭐ Permanent unchangeable public URL
     def get_permanent_url(self):
         return reverse("app_accounts:public_profile_by_id", args=[self.public_id])
 
-
     def can_create_profile(self):
         count = self.child_profiles.count()
-        if self.account_type == "elite":
-            return True
-        if self.account_type == "pro":
-            return count < 10
+        if self.account_type == "elite": return True
+        if self.account_type == "pro": return count < 10
         return count < 0
 
+    # AUTO-UNIQUE USERNAME GENERATOR
     def save(self, *args, **kwargs):
-
-        # যদি username empty থাকে → auto generate
         if not self.username:
             base = slugify(self.full_name or self.email.split("@")[0])
             username = base or "user"
             counter = 1
-
-            qs = CustomUser.objects.all()
-            if self.pk:
-                qs = qs.exclude(pk=self.pk)
-
+            qs = CustomUser.objects.exclude(pk=self.pk) if self.pk else CustomUser.objects.all()
             while qs.filter(username=username).exists():
-                username = f"{base}-{counter}"
-                counter += 1
-
+                username = f"{base}-{counter}" ; counter += 1
             self.username = username
 
-        # যদি username আগে থেকেই থাকে → client যেটা update দিয়েছে সেটা রাখতে হবে
         super().save(*args, **kwargs)
 
+
+
+# ======================================================
+#  NEXT LEVEL CONTACT SAVE TRACKER 🚀
+# ======================================================
+# ================== Visitor Save + Location Tracking ==================
+class ContactSaveLead(models.Model):
+    profile = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="visits")
+
+    device_ip = models.CharField(max_length=50, null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    city = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def location_label(self):
+        if self.latitude and self.longitude:
+            return f"📍 GPS({self.latitude}, {self.longitude})"
+        if self.city or self.country:
+            return f"🌍 {self.city or ''}, {self.country or ''}"
+        return "❓ Unknown"
+
+    def __str__(self):
+        return f"{self.profile} [{self.location_label()}]"
+
+
+# ================== Button Click Tracking ==================
+class ClickEvent(models.Model):
+    profile = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="clicks")
+
+    button_type = models.CharField(max_length=50)  # connect, save, call, fb, insta...
+    device_ip = models.CharField(max_length=50, null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.profile.username} → {self.button_type}"

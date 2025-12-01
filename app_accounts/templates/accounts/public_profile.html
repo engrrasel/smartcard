@@ -2,118 +2,65 @@
 {% block content %}
 
 <style>
-/* --- তোমার দেওয়া সব CSS অপরিবর্তিত রেখে দেওয়া হলো --- */
-
-body {
-  background: linear-gradient(135deg, #e3f2fd, #f9f9fb);
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-}
-
-.profile-card {
-  max-width: 600px;
-  margin: 3rem auto;
-  background: rgba(255, 255, 255, 0.75);
-  border-radius: 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(12px);
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-.profile-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
-}
-
-.cover {
-  background: linear-gradient(120deg, #007bff, #00c6ff);
-  height: 150px;
-}
-
-.avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 5px solid #fff;
-  margin-top: -60px;
-  object-fit: cover;
-  background: #f0f0f0;
-}
+body{background:#eef2ff;font-family:'Inter',sans-serif;}
+.profile-card{max-width:600px;margin:3rem auto;background:#fff;border-radius:18px;padding-bottom:15px;
+box-shadow:0 10px 25px rgba(0,0,0,.1);}
+.cover{background:linear-gradient(120deg,#007bff,#00d2ff);height:160px;}
+.avatar{width:120px;height:120px;border-radius:50%;border:5px solid #fff;margin-top:-60px;}
+.btn-area{display:flex;gap:10px;justify-content:center;margin:20px 0;}
+.btn-primary,.btn-call,.btn-save-contact{padding:9px 18px;color:#fff;border-radius:8px;font-weight:600;}
+.btn-primary{background:#0d6efd;} .btn-call{background:#28a745;} .btn-save-contact{background:#6c63ff;}
 </style>
 
 
 <div class="profile-card text-center">
-  <div class="cover"></div>
 
-  <div class="px-3 pb-3">
+    <div class="cover"></div>
+    <img class="avatar" src="{{ profile.profile_picture.url|default:'https://via.placeholder.com/120' }}">
 
-    {% if profile.profile_picture %}
-      <img src="{{ profile.profile_picture.url }}" alt="Profile" class="avatar">
-    {% else %}
-      <img src="https://via.placeholder.com/120" class="avatar" alt="No photo">
-    {% endif %}
+    <h2>{{ profile.full_name }}</h2>
+    <p>{{ profile.job_title }}</p>
+    <p>{{ profile.company_name }}</p>
 
-    <h2 class="name">{{ profile.full_name|default:"Unnamed User" }}</h2>
-    <p class="title">{{ profile.job_title|default:"" }}</p>
-    <p class="company">{{ profile.company_name|default:"" }}</p>
-    <p class="location">{{ profile.bio|default:"" }}</p>
-
-    <!-- ACTION BUTTONS -->
     <div class="btn-area">
+        <a onclick="clickTrack('connect')" class="btn-primary"
+           href="{% url 'app_contacts:add_contact' profile.id %}">Connect</a>
 
-      <!-- ✅ Corrected URL here -->
-    {% if user.is_authenticated %}
-        <a href="{% url 'app_contacts:add_contact' profile.id %}" class="btn btn-primary">
-            Connect
-        </a>
-    {% else %}
-        <a href="/login/?next={% url 'app_contacts:add_contact' profile.id %}" class="btn btn-primary">
-            Connect
-        </a>
-    {% endif %}
+        {% if profile.phone %}
+        <a onclick="clickTrack('call')" class="btn-call" href="tel:{{ profile.phone }}">Call</a>
+        {% endif %}
 
-
-      {% if profile.phone %}
-      <a href="tel:{{ profile.phone }}" class="btn-call">
-          <i class="fa-solid fa-phone"></i> Call
-      </a>
-      {% endif %}
-
-      <a href="{% url 'app_accounts:download_contact_vcard' profile.username %}"
-        class="btn-save-contact">
-          <i class="fa-solid fa-floppy-disk"></i> Save
-      </a>
-
+        <a onclick="clickTrack('save')" class="btn-save-contact"
+           href="{% url 'app_accounts:download_contact_vcard' profile.username %}">Save</a>
     </div>
-
-
-    <!-- SOCIAL LINKS -->
-    <div class="social-links">
-      {% if profile.facebook %}<a target="_blank" href="{{ profile.facebook }}"><i class="fab fa-facebook"></i></a>{% endif %}
-      {% if profile.linkedin %}<a target="_blank" href="{{ profile.linkedin }}"><i class="fab fa-linkedin"></i></a>{% endif %}
-      {% if profile.instagram %}<a target="_blank" href="{{ profile.instagram }}"><i class="fab fa-instagram"></i></a>{% endif %}
-      {% if profile.website %}<a target="_blank" href="{{ profile.website }}"><i class="fas fa-globe"></i></a>{% endif %}
-    </div>
-
-  </div>
-
-  <div class="section">
-    <h5>Activity</h5>
-    <p>👥 Followers: <strong>1,362</strong></p>
-    <p>Latest post or update will appear here…</p>
-  </div>
-
-  <div class="section">
-    <h5>Experience</h5>
-    {% if profile.job_title %}
-      <p><strong>{{ profile.job_title }}</strong> — {{ profile.company_name }}</p>
-      <p class="text-muted">Present</p>
-    {% else %}
-      <p>No experience added yet.</p>
-    {% endif %}
-  </div>
 
 </div>
 
-<script src="https://kit.fontawesome.com/a2d9d6b6a0.js" crossorigin="anonymous"></script>
+
+
+<!-- 🔥 CLICK TRACK SCRIPT -->
+<script>
+function clickTrack(type){
+
+    let payload = new URLSearchParams();
+    payload.append("action", type);
+    payload.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(
+            pos => { payload.append("lat",pos.coords.latitude);payload.append("lon",pos.coords.longitude); send(payload); },
+            ()=> send(payload)
+        );
+    } else send(payload);
+}
+
+function send(payload){
+    fetch("{% url 'app_accounts:click_track' profile.username %}",{
+        method:"POST",
+        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body:payload
+    }).then(r=>r.json()).then(d=>console.log("CLICK STORED ✔",d));
+}
+</script>
 
 {% endblock %}
