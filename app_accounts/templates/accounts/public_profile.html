@@ -2,20 +2,36 @@
 {% block content %}
 
 <style>
-body{background:#eef2ff;font-family:'Inter',sans-serif;}
-.profile-card{max-width:600px;margin:3rem auto;background:#fff;border-radius:18px;padding-bottom:15px;
-box-shadow:0 10px 25px rgba(0,0,0,.1);}
-.cover{background:linear-gradient(120deg,#007bff,#00d2ff);height:160px;}
-.avatar{width:120px;height:120px;border-radius:50%;border:5px solid #fff;margin-top:-60px;}
-.btn-area{display:flex;gap:10px;justify-content:center;margin:20px 0;}
-.btn-primary,.btn-call,.btn-save-contact{padding:9px 18px;color:#fff;border-radius:8px;font-weight:600;}
-.btn-primary{background:#0d6efd;} .btn-call{background:#28a745;} .btn-save-contact{background:#6c63ff;}
+body{
+    background:#eef2ff;
+    font-family:'Inter',sans-serif;
+}
+.profile-card{
+    max-width:600px;margin:3rem auto;background:#fff;border-radius:18px;padding-bottom:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+.cover{
+    background:linear-gradient(120deg,#007bff,#00d2ff);height:160px;
+}
+.avatar{
+    width:120px;height:120px;border-radius:50%;border:5px solid #fff;margin-top:-60px;
+}
+.btn-area{
+    display:flex;gap:10px;justify-content:center;margin:20px 0;
+}
+.btn-primary,.btn-call,.btn-save-contact{
+    padding:9px 18px;color:#fff;border-radius:8px;font-weight:600;
+}
+.btn-primary{background:#0d6efd;}
+.btn-call{background:#28a745;}
+.btn-save-contact{background:#6c63ff;}
 </style>
 
 
 <div class="profile-card text-center">
 
     <div class="cover"></div>
+
     <img class="avatar" src="{{ profile.profile_picture.url|default:'https://via.placeholder.com/120' }}">
 
     <h2>{{ profile.full_name }}</h2>
@@ -37,13 +53,13 @@ box-shadow:0 10px 25px rgba(0,0,0,.1);}
 </div>
 
 
-<!-- 🔥 BUTTON CLICK ONLY SAVE — no location -->
-<!-- =============== AUTO GPS ON PROFILE VISIT =============== -->
 <script>
+console.log("🔥 PUBLIC PROFILE LOADED");  // DEBUG LINE
+
 document.addEventListener("DOMContentLoaded", function () {
+
     const trackUrl = "{% url 'app_accounts:track_visit' profile.username %}";
 
-    // একবারই ভালো রিডিং পাঠাবো
     let visitLogged = false;
     let watchId = null;
 
@@ -54,33 +70,42 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("📡 Sending visit →", lat, lon, "accuracy:", acc);
 
         fetch(
-            trackUrl
-            + "?lat=" + encodeURIComponent(lat)
-            + "&lon=" + encodeURIComponent(lon)
-            + "&accuracy=" + encodeURIComponent(acc),
-            { method: "GET" }
+            trackUrl +
+            "?lat=" + encodeURIComponent(lat) +
+            "&lon=" + encodeURIComponent(lon) +
+            "&accuracy=" + encodeURIComponent(acc),
+            {
+                method: "GET",
+                credentials: "include",
+                cache: "no-store",
+                headers: { "Accept": "application/json" }
+            }
         ).catch(err => console.log("Send error", err));
     }
 
     function fallbackIP(){
         if (visitLogged) return;
         visitLogged = true;
-        console.log("🌍 Fallback → IP based tracking");
 
-        fetch(trackUrl, { method: "GET" })
-            .catch(err => console.log("IP send error", err));
+        console.log("🌍 Fallback → IP tracking");
+
+        fetch(trackUrl, {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            headers: { "Accept": "application/json" }
+        }).catch(err => console.log("IP send error", err));
     }
 
     if (!navigator.geolocation){
-        console.log("❌ Geolocation not supported → IP mode");
+        console.log("❌ Geolocation not supported → Using IP");
         fallbackIP();
         return;
     }
 
-    // ⏱ 8 সেকেন্ডের মধ্যে ভালো GPS না পেলে → IP fallback
     setTimeout(function () {
         if (!visitLogged){
-            console.log("⏱ GPS timeout → IP fallback");
+            console.log("⏱ GPS timeout → Using IP");
             if (watchId !== null){
                 navigator.geolocation.clearWatch(watchId);
             }
@@ -88,27 +113,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, 8000);
 
-    // ⭐ High-accuracy live tracking
     watchId = navigator.geolocation.watchPosition(
         pos => {
             console.log("📍 GPS update:", pos.coords);
 
             const lat = pos.coords.latitude;
             const lon = pos.coords.longitude;
-            const acc = pos.coords.accuracy; // meter
+            const acc = pos.coords.accuracy;
 
-            // খুব খারাপ (৩৫০m+) রিডিং হলে ignore
             if (!acc || acc > 350){
-                console.log("⚠ Bad accuracy (" + acc + "m), wait for better...");
+                console.log("⚠ Bad accuracy:", acc, "waiting for better…");
                 return;
             }
 
-            // ভালো রিডিং (<= 50m) পেলেই পাঠাই + watch বন্ধ করি
             if (acc <= 50){
                 sendVisit(lat, lon, acc);
-                if (watchId !== null){
-                    navigator.geolocation.clearWatch(watchId);
-                }
+                navigator.geolocation.clearWatch(watchId);
             }
         },
         err => {
@@ -121,9 +141,8 @@ document.addEventListener("DOMContentLoaded", function () {
             timeout: 10000
         }
     );
+
 });
 </script>
-
-
 
 {% endblock %}

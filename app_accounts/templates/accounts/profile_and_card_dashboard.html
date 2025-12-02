@@ -31,6 +31,18 @@
         from{opacity:0}
         to{opacity:1}
     }
+    .visitor-box{
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .visitor-box img{
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        object-fit:cover;
+        border:1px solid #ddd;
+    }
 </style>
 
 <div class="container py-4">
@@ -72,30 +84,20 @@
 
     <!-- ================= TAB HEADERS ================= -->
     <div class="text-center mb-4">
-        <button
-            class="tab-btn active"
-            id="btn_logs"
-            type="button"
-            onclick="openTab('tab_logs','btn_logs')"
-        >
+        <button class="tab-btn active" id="btn_logs"
+                onclick="openTab('tab_logs','btn_logs')">
             📥 Recent Click Logs
         </button>
 
-        <button
-            class="tab-btn inactive"
-            id="btn_loc"
-            type="button"
-            onclick="openTab('tab_loc','btn_loc')"
-        >
+        <button class="tab-btn inactive" id="btn_loc"
+                onclick="openTab('tab_loc','btn_loc')">
             🌍 Visitor Locations
         </button>
     </div>
 
     <!-- ================= TAB - CLICK LOGS ================= -->
     <div id="tab_logs" class="tab-section" style="display:block">
-        <h4 class="text-center fw-bold mb-3">
-            📥 Recent Click Logs (Last 50)
-        </h4>
+        <h4 class="text-center fw-bold mb-3">📥 Recent Click Logs (Last 50)</h4>
 
         <div class="log-box">
             <table class="table table-hover">
@@ -117,9 +119,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-3">
-                            No Click Data
-                        </td>
+                        <td colspan="4" class="text-center text-muted py-3">No Click Data</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -127,80 +127,100 @@
         </div>
     </div>
 
-    <!-- ================= TAB - LOCATION LOGS ================= -->
-    <div id="tab_loc" class="tab-section">
-        <h4 class="text-center fw-bold mb-3">🌍 Visitor Location Logs</h4>
+<!-- ================= TAB - LOCATION LOGS ================= -->
+<div id="tab_loc" class="tab-section">
+    <h4 class="text-center fw-bold mb-3">🌍 Visitor Location Logs</h4>
 
-        <table class="table table-striped mt-3">
-            <thead class="table-dark">
-                <tr>
-                    <th>Country</th>
-                    <th>City / District</th>
-                    <th>Thana</th>
-                    <th>Post Office</th>
-                    <th>Lat</th>
-                    <th>Lon</th>
-                    <th>Time</th>
-                    <th>Accuracy %</th>
-                    <th>Source</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for v in location_logs %}
-                <tr>
-                    <td>{{ v.country }}</td>
-                    <td>{{ v.city }}</td>
-                    <td>{{ v.thana|default:"-" }}</td>
-                    <td>{{ v.post_office|default:"-" }}</td>
-                    <td>{{ v.latitude }}</td>
-                    <td>{{ v.longitude }}</td>
-                    <td>{{ v.timestamp|date:"d M h:i A" }}</td>
-                    <td><b>{{ v.accuracy|default:"-" }}%</b></td>
-                    <td>
-                        {% if v.location_source == "GPS" %}
-                            <span class="badge bg-success">GPS</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark">IP</span>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="9" class="text-center text-muted py-3">
-                        No location found
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <table class="table table-striped mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Visitor</th> <!-- FIRST COLUMN -->
+                <th>Country</th>
+                <th>City / District</th>
+                <th>Thana</th>
+                <th>Post Office</th>
+                <th>Lat</th>
+                <th>Lon</th>
+                <th>Time</th>
+                <th>Accuracy %</th>
+                <th>Source</th>
+            </tr>
+        </thead>
 
-    <script>
-        function openTab(sectionId, btnId){
-            // Hide all tab sections
-            document.querySelectorAll('.tab-section').forEach(function (el){
-                el.style.display = 'none';
-            });
+        <tbody>
+        {% for v in location_logs %}
+            <tr>
 
-            // Show selected tab section
-            var activeSection = document.getElementById(sectionId);
-            if (activeSection){
-                activeSection.style.display = 'block';
-            }
+                <!-- VISITOR COLUMN FIRST -->
+                <td>
+                    {% if v.visitor %}
+                        <div class="visitor-box">
 
-            // Update button states
-            document.querySelectorAll('.tab-btn').forEach(function (btn){
-                btn.classList.remove('active');
-                btn.classList.add('inactive');
-            });
+                            {% if v.visitor.profile_picture %}
+                                <img src="{{ v.visitor.profile_picture.url }}" alt="visitor">
+                            {% else %}
+                                <img src="https://via.placeholder.com/36" alt="visitor">
+                            {% endif %}
 
-            var activeBtn = document.getElementById(btnId);
-            if (activeBtn){
-                activeBtn.classList.remove('inactive');
-                activeBtn.classList.add('active');
-            }
-        }
-    </script>
+                            <div>
+                                <div>{{ v.visitor.full_name|default:v.visitor.email }}</div>
+                                <small class="text-muted">{{ v.visitor.username }}</small>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <span class="text-muted">Anonymous</span>
+                    {% endif %}
+                </td>
+
+
+                <td>{{ v.country|default:"-" }}</td>
+                <td>{{ v.city|default:"-" }}</td>
+                <td>{{ v.thana|default:"-" }}</td>
+                <td>{{ v.post_office|default:"-" }}</td>
+                <td>{{ v.latitude|default:"-" }}</td>
+                <td>{{ v.longitude|default:"-" }}</td>
+                <td>{{ v.timestamp|date:"d M h:i A" }}</td>
+
+                <td><b>{{ v.accuracy|default:"-" }}%</b></td>
+
+                <td>
+                    {% if v.location_source == "GPS" %}
+                        <span class="badge bg-success">GPS</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">IP</span>
+                    {% endif %}
+                </td>
+
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="10" class="text-center text-muted py-3">
+                    No location found
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
 </div>
+
+<script>
+function openTab(sectionId, btnId){
+    document.querySelectorAll('.tab-section').forEach(el => el.style.display = 'none');
+    document.getElementById(sectionId).style.display = 'block';
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.add('inactive');
+    });
+
+    const activeBtn = document.getElementById(btnId);
+    activeBtn.classList.remove('inactive');
+    activeBtn.classList.add('active');
+}
+</script>
+
 {% endblock %}

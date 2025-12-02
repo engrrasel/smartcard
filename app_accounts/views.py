@@ -1,46 +1,46 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, JsonResponse
-from django.urls import reverse
-from django.contrib import messages
-from django.contrib.auth import login, get_user_model
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
-from django.conf import settings
-from django.utils import timezone
-from django.views.decorators.http import require_POST
-from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt
-from django.apps import apps   # ←⭐ Lazy load model fix
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.urls import reverse
-from datetime import timedelta  
-from django.db.models import Count
-
-from .models import CustomUser, ContactSaveLead
-from .utils import get_client_ip, parse_user_agent
-# ----- Models -----
-from app_accounts.models import CustomUser
-# ❗ ContactSaveLead direct import remove করা হয়েছে
-
-# ----- Others -----
-import requests
-import qrcode
-import base64
-import urllib.parse
+from datetime import timedelta
 from io import BytesIO
 
-# ----- Forms -----
-from .forms import SignupForm, ChildProfileCreateForm, ProfileUpdateForm
+import base64
+import qrcode
+import requests
+import urllib.parse
+
+from django.apps import apps
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.http import HttpResponse, JsonResponse
+
+from .forms import ChildProfileCreateForm, ProfileUpdateForm, SignupForm
+from .utils import get_client_ip, parse_user_agent
+
+# Models (single, clear import)
+from app_accounts.models import CustomUser, ContactSaveLead
 
 User = get_user_model()
 
+
 # --- Lazy Load Function (Reusable) ---
 def LeadModel():
-    return apps.get_model('app_contacts', 'ContactSaveLead')  # ←🔥 Safe import
+    return apps.get_model("app_contacts", "ContactSaveLead")
+
+
+# Utility: model field names
+def _model_field_names(model_cls):
+    """Return set of field names for a model class."""
+    return {f.name for f in model_cls._meta.get_fields()}
 
 
 # ───────────────────────────────────────────────
@@ -93,7 +93,7 @@ def activate_account(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk=uid)
-    except:
+    except Exception:
         user = None
 
     if user and default_token_generator.check_token(user, token):
@@ -155,7 +155,8 @@ def create_profile(request):
                 new_user = base
                 counter = 1
                 while CustomUser.objects.filter(username=new_user).exists():
-                    new_user = f"{base}{counter}"; counter += 1
+                    new_user = f"{base}{counter}"
+                    counter += 1
                 child.username = new_user
 
             child.save()
@@ -169,7 +170,8 @@ def create_profile(request):
 @login_required
 def edit_profile(request, pk):
     profile = get_object_or_404(User, pk=pk)
-    if profile != request.user and profile.parent_user != request.user: return HttpResponse("Forbidden", 403)
+    if profile != request.user and profile.parent_user != request.user:
+        return HttpResponse("Forbidden", 403)
 
     form = ProfileUpdateForm(request.POST or None, request.FILES or None, instance=profile)
 
@@ -185,70 +187,40 @@ def edit_profile(request, pk):
 @login_required
 def remove_profile_picture(request, pk):
     profile = get_object_or_404(User, pk=pk)
-    if profile != request.user and profile.parent_user != request.user: return HttpResponse("Forbidden",403)
+    if profile != request.user and profile.parent_user != request.user:
+        return HttpResponse("Forbidden", 403)
 
-    if profile.profile_picture: profile.profile_picture.delete(save=True)
+    if profile.profile_picture:
+        profile.profile_picture.delete(save=True)
     messages.success(request, "Profile picture removed.")
     return redirect("app_accounts:edit_profile", pk=pk)
 
 
 # ───────────────────────────────────────────────
+# ⭐ FIXED VERSION — ONLY RENDERS PAGE (NO TRACKING HERE)
+# tracking will be handled by track_visit()
 def public_profile(request, username):
     profile = get_object_or_404(CustomUser, username=username)
-
-    # ===================== Visitor Location Log Here =====================
-    ip = get_client_ip(request)
-    ua = request.META.get("HTTP_USER_AGENT", "")
-
-    lat = request.GET.get("lat")   # JS থেকে আসবে
-    lon = request.GET.get("lon")
-
-    if lat and lon:     # GPS Detected
-        try:
-            geo = requests.get(
-                "https://nominatim.openstreetmap.org/reverse",
-                params={"format":"json","lat":lat,"lon":lon,"zoom":18,"accept-language":"en"},
-                headers={"User-Agent":"SmartCard-Visit/1.0"}
-            ).json()
-
-            addr = geo.get("address", {})
-            country = addr.get("country")
-            district = addr.get("state_district") or addr.get("county")
-            thana = addr.get("town") or addr.get("village")
-            post = addr.get("postcode")
-        except:
-            country=district=thana=post=None
-    
-        ContactSaveLead.objects.create(
-            profile=profile,
-            device_ip=ip,
-            user_agent="PROFILE_VISIT | "+ua,
-            latitude=lat, longitude=lon,
-            country=country, city=district,
-            thana=thana, post_office=post
-        )
-
-    # ========================================================
-
-    return render(request,"accounts/public_profile.html",{"profile":profile})
+    return render(request, "accounts/public_profile.html", {"profile": profile})
 
 
 # ───────────────────────────────────────────────
 @login_required
 def download_qr(request, pk):
     profile = get_object_or_404(User, pk=pk)
-    if profile!=request.user and profile.parent_user!=request.user: return HttpResponse("Forbidden",403)
+    if profile != request.user and profile.parent_user != request.user:
+        return HttpResponse("Forbidden", 403)
 
-    qr = qrcode.make(request.build_absolute_uri(reverse("app_accounts:public_profile_by_id",args=[profile.public_id])))
-    b = BytesIO(); qr.save(b,"PNG"); b.seek(0)
-    res = HttpResponse(b,"image/png")
-    res["Content-Disposition"]=f'attachment; filename="{profile.username}.png"'
+    qr = qrcode.make(request.build_absolute_uri(reverse("app_accounts:public_profile_by_id", args=[profile.public_id])))
+    b = BytesIO()
+    qr.save(b, "PNG")
+    b.seek(0)
+    res = HttpResponse(b, "image/png")
+    res["Content-Disposition"] = f'attachment; filename="{profile.username}.png"'
     return res
 
 
 # ───────────────────────────────────────────────
-
-
 @login_required
 def profile_and_card_dashboard(request, pk):
     profile = get_object_or_404(CustomUser, pk=pk)
@@ -256,36 +228,32 @@ def profile_and_card_dashboard(request, pk):
     if profile != request.user and profile.parent_user != request.user:
         return HttpResponse("Forbidden", 403)
 
-    # ====================== FIXED — Main Query (Un-Sliced!) ======================
-    base = ContactSaveLead.objects.filter(profile=profile).order_by("-timestamp")
+    base = ContactSaveLead.objects.filter(
+        profile=profile
+    ).select_related("visitor").order_by("-timestamp")
 
-    # UI তে দেখানোর জন্য আমরা শুধু slice নিচ্ছি — filter এর পরে 👍
     leads = base[:200]
     location_logs = base[:50]
 
-    # ================= ANALYTICS =================
     total_views = base.count()
-    gps_count   = base.filter(latitude__isnull=False, longitude__isnull=False).count()
-    ip_count    = total_views - gps_count
+    gps_count = base.filter(latitude__isnull=False, longitude__isnull=False).count()
+    ip_count = total_views - gps_count
 
-    mobile  = base.filter(user_agent__icontains="Mobile").count()
-    tablet  = base.filter(user_agent__icontains="Tablet").count()
+    mobile = base.filter(user_agent__icontains="Mobile").count()
+    tablet = base.filter(user_agent__icontains="Tablet").count()
     desktop = total_views - (mobile + tablet)
 
-    # ========== LAST 15 DAYS CHART ==========
     today = timezone.now().date()
     labels, values = [], []
 
     for i in range(15):
-        d = today - timedelta(days=(14-i))
+        d = today - timedelta(days=(14 - i))
         labels.append(d.strftime("%d %b"))
         values.append(base.filter(timestamp__date=d).count())
 
-    # ========== TOP COUNTRY ==========
     top_countries = base.values("country").annotate(c=Count("id")).order_by("-c")[:5]
 
-    # ========== BUTTON CLICK COUNTS ==========
-    click_logs = base.exclude(user_agent__icontains="Unknown")[:50]  # optional
+    click_logs = base.exclude(user_agent__icontains="Unknown")[:50]
 
     click_stats = {
         "total": total_views,
@@ -294,12 +262,10 @@ def profile_and_card_dashboard(request, pk):
         "call": base.filter(user_agent__icontains="call").count(),
     }
 
-    return render(request,"accounts/profile_and_card_dashboard.html",{
+    return render(request, "accounts/profile_and_card_dashboard.html", {
         "profile": profile,
         "leads": leads,
         "location_logs": location_logs,
-
-        # Main Analytics
         "total_views": total_views,
         "gps_count": gps_count,
         "ip_count": ip_count,
@@ -309,55 +275,55 @@ def profile_and_card_dashboard(request, pk):
         "chart_labels": labels,
         "chart_values": values,
         "top_countries": top_countries,
-
-        # Click Analytics
         "click_logs": click_logs,
         "click_stats": click_stats,
     })
 
 
-
-
 # ───────────────────────────────────────────────
 @login_required
 def profile_search(request):
-    query=request.GET.get("q","").strip()
-    profiles=User.objects.filter(Q(pk=request.user.pk)|Q(parent_user=request.user))
-    if query: profiles=profiles.filter(full_name__icontains=query)
+    query = request.GET.get("q", "").strip()
+    profiles = User.objects.filter(Q(pk=request.user.pk) | Q(parent_user=request.user))
+    if query:
+        profiles = profiles.filter(full_name__icontains=query)
 
-    return render(request,"dashboard/profile_search.html",{"results":profiles,"query":query})
+    return render(request, "dashboard/profile_search.html", {"results": profiles, "query": query})
 
 
 # ───────────────────────────────────────────────
 @login_required
 @require_POST
-def toggle_public_view(request,profile_id):
+def toggle_public_view(request, profile_id):
     try:
-        profile=User.objects.get(id=profile_id)
-        if profile!=request.user and profile.parent_user!=request.user:
-            return JsonResponse({"status":"error","message":"Forbidden"},403)
+        profile = User.objects.get(id=profile_id)
+        if profile != request.user and profile.parent_user != request.user:
+            return JsonResponse({"status": "error", "message": "Forbidden"}, 403)
 
-        profile.is_public=not profile.is_public; profile.save()
-        return JsonResponse({"status":"success","is_public":profile.is_public})
+        profile.is_public = not profile.is_public
+        profile.save()
+        return JsonResponse({"status": "success", "is_public": profile.is_public})
 
     except User.DoesNotExist:
-        return JsonResponse({"status":"error","message":"Profile not found"},404)
+        return JsonResponse({"status": "error", "message": "Profile not found"}, 404)
 
 
 # ───────────────────────────────────────────────
 @login_required
-def unlink_profile(request,pk):
-    profile=get_object_or_404(User,pk=pk)
-    if profile.parent_user!=request.user: return HttpResponse("Forbidden",403)
-    profile.parent_user=None; profile.save(update_fields=["parent_user"])
-    messages.success(request,"Child profile unlinked.")
+def unlink_profile(request, pk):
+    profile = get_object_or_404(User, pk=pk)
+    if profile.parent_user != request.user:
+        return HttpResponse("Forbidden", 403)
+    profile.parent_user = None
+    profile.save(update_fields=["parent_user"])
+    messages.success(request, "Child profile unlinked.")
     return redirect("app_accounts:profile_and_card")
 
 
 # ───────────────────────────────────────────────
-def download_contact_vcard(request,username):
-    profile=get_object_or_404(User,username=username)
-    v=f"""BEGIN:VCARD
+def download_contact_vcard(request, username):
+    profile = get_object_or_404(User, username=username)
+    v = f"""BEGIN:VCARD
 VERSION:3.0
 FN:{profile.full_name}
 TEL:{profile.phone}
@@ -367,113 +333,142 @@ TITLE:{profile.job_title}
 URL:{profile.website}
 END:VCARD"""
 
-    r=HttpResponse(v,'text/vcard')
-    r['Content-Disposition']=f'attachment; filename="{profile.username}.vcf"'
+    r = HttpResponse(v, "text/vcard")
+    r["Content-Disposition"] = f'attachment; filename="{profile.username}.vcf"'
     return r
 
 
 def subscription(request):
-    return render(request,"dashboard/subscription.html")
+    return render(request, "dashboard/subscription.html")
 
 
-def public_profile_by_id(request,public_id):
-    profile=CustomUser.objects.filter(public_id=public_id,is_public=True).first()
-    if not profile:return render(request,"accounts/profile_not_found.html",status=404)
-    return redirect("app_accounts:public_profile",username=profile.username)
+def public_profile_by_id(request, public_id):
+    profile = CustomUser.objects.filter(public_id=public_id, is_public=True).first()
+    if not profile:
+        return render(request, "accounts/profile_not_found.html", status=404)
+    return redirect("app_accounts:public_profile", username=profile.username)
 
 
 # ───────────────────────────────────────────────
 def ip_to_location(ip):
     try:
-        r=requests.get(f"http://ip-api.com/json/{ip}",timeout=2).json()
-        return r.get("city"),r.get("country")
-    except:
-        return None,None
+        r = requests.get(f"http://ip-api.com/json/{ip}", timeout=2).json()
+        return r.get("city"), r.get("country")
+    except Exception:
+        return None, None
 
 
 # ───────────────────────────────────────────────
-
-
-# ───────────────────────────────────────────────
+@require_POST
+@csrf_exempt
 def track_save_gps(request, username):
-    """
-    Save Contact বাটনে ক্লিকের সময়:
-    - GPS থাকলে lat/lon সহ log
-    - না থাকলে শুধুই IP + UA log
-    """
-    if request.method != "POST":
-        return JsonResponse({"success": False, "error": "POST only"}, status=405)
-
-    # ❗ পূর্বে ছিল UserProfile → কিন্তু তোমার model হলো CustomUser
     profile = get_object_or_404(CustomUser, username=username)
 
-    ip = get_client_ip(request)
-    ua = request.META.get("HTTP_USER_AGENT", "")
+    ip = get_client_ip(request) or request.META.get("REMOTE_ADDR", "")
+    ua = request.META.get("HTTP_USER_AGENT", "")[:1000]
 
-    lat = request.POST.get("lat")
-    lon = request.POST.get("lon")
+    raw_lat = request.POST.get("lat") or request.POST.get("latitude")
+    raw_lon = request.POST.get("lon") or request.POST.get("longitude")
 
-    is_gps = bool(lat and lon)
+    try:
+        lat = float(raw_lat) if raw_lat not in (None, "") else None
+    except:
+        lat = None
 
-    # 🔥 parse_user_agent আসলেই use হবে তাই রেখেছি (তুমি ডিলিট চাইনি)
+    try:
+        lon = float(raw_lon) if raw_lon not in (None, "") else None
+    except:
+        lon = None
+
+    is_gps = lat is not None and lon is not None
+
     device_type, browser, os_name = parse_user_agent(ua)
 
-    # ❗ ProfileVisitLead model তোমার প্রোজেক্টে নেই
-    # তাই তোমার existing ContactSaveLead use করেই same log save করছি
+    allowed = _model_field_names(ContactSaveLead)
 
-    lead = ContactSaveLead.objects.create(
-        profile=profile,
-        device_ip=ip,
-        user_agent=ua,
-        latitude=lat or None,
-        longitude=lon or None,
-        # 🔥 তোমার original কোডের is_gps / device browser save-logic remove করিনি
-        # তবে DB তে field নাই → তাই JSON response এ preserve রাখলাম
-    )
+    data = {
+        "profile": profile,
+        "device_ip": ip,
+        "user_agent": ua,
+        "latitude": lat,
+        "longitude": lon,
+    }
 
-    # Save করার পর আবার public profile-এ পাঠানো হচ্ছে (Original logic untouched)
+    for k in ("country", "city", "thana", "post_office", "accuracy", "location_source"):
+        v = request.POST.get(k)
+        if v:
+            data[k] = v
+
+    lead_kwargs = {k: v for k, v in data.items() if k in allowed}
+
+    lead = ContactSaveLead.objects.create(**lead_kwargs)
+
     redirect_url = reverse("app_accounts:public_profile", args=[username])
 
     return JsonResponse({
         "success": True,
         "url": redirect_url,
         "lead_id": lead.id,
-        "gps_used": is_gps,        # ⭐ original idea preserved
+        "gps_used": is_gps,
         "browser": browser,
         "device": device_type,
         "os": os_name,
     })
 
 
-
-
+# ───────────────────────────────────────────────
 @require_POST
 @csrf_exempt
 def click_track(request, username):
     user = get_object_or_404(CustomUser, username=username)
 
-    ip = get_client_ip(request)
-    ua = request.META.get("HTTP_USER_AGENT", "")
-    action = request.POST.get("action")
+    ip = get_client_ip(request) or request.META.get("REMOTE_ADDR", "")
+    ua = request.META.get("HTTP_USER_AGENT", "")[:1000]
+    action = request.POST.get("action", "").strip()
 
-    # 🔥 Only store click action (No Location Track)
-    ContactSaveLead.objects.create(
-        profile=user,
-        device_ip=ip,
-        user_agent=f"{action} | {ua}",
-        latitude=None,
-        longitude=None,
-        country=None,
-        city=None,
-        thana=None,
-        post_office=None,
-    )
+# ====================== VISITOR DETECTION ======================
+    visitor = None
+    if request.user.is_authenticated:
+        visitor = request.user  # নিজের প্রোফাইল দেখলেও visitor হিসেবে লগ হবে
+
+
+    raw_lat = request.POST.get("lat") or request.POST.get("latitude")
+    raw_lon = request.POST.get("lon") or request.POST.get("longitude")
+
+    try:
+        lat = float(raw_lat) if raw_lat else None
+    except:
+        lat = None
+
+    try:
+        lon = float(raw_lon) if raw_lon else None
+    except:
+        lon = None
+
+    allowed = _model_field_names(ContactSaveLead)
+
+    data = {
+        "profile": user,
+        "visitor": visitor,
+        "device_ip": ip,
+        "user_agent": ua,
+        "latitude": lat,
+        "longitude": lon,
+    }
+
+    for k in ("country", "city", "thana", "post_office", "accuracy", "location_source", "action"):
+        v = request.POST.get(k)
+        if v:
+            data[k] = v
+
+    lead_kwargs = {k: v for k, v in data.items() if k in allowed}
+
+    ContactSaveLead.objects.create(**lead_kwargs)
 
     return JsonResponse({"saved": True, "action": action})
 
 
-
-
+# ───────────────────────────────────────────────
 @csrf_exempt
 def track_visit(request, username):
     print("📌 TRACK VISIT HIT — USER =", username)
@@ -482,9 +477,8 @@ def track_visit(request, username):
 
     lat = request.GET.get("lat")
     lon = request.GET.get("lon")
-    acc_raw = request.GET.get("accuracy")  # meter-based accuracy from JS
+    acc_raw = request.GET.get("accuracy")
 
-    # ---------- ACCURACY CONVERT FUNCTION ----------
     def convert_accuracy(meter):
         try:
             m = float(meter)
@@ -496,36 +490,29 @@ def track_visit(request, username):
                 55 if m <= 100 else
                 35
             )
-        except Exception:
+        except:
             return None
 
-    # Default values
     country = city = thana = post_office = "Unknown"
-    location_source = "IP"  # default fallback
+    location_source = "IP"
     accuracy = convert_accuracy(acc_raw) or 50
 
-    # ----------- Decide: GPS usable or not? ----------
     gps_allowed = bool(lat and lon and acc_raw)
     gps_accuracy_m = None
 
     if gps_allowed:
         try:
             gps_accuracy_m = float(acc_raw)
-        except Exception:
+        except:
             gps_allowed = False
 
-    # যদি GPS আছে কিন্তু accuracy অনেক খারাপ (৩৫০m+) → IP হিসেবে ধরব
-    if gps_allowed and gps_accuracy_m is not None and gps_accuracy_m <= 350:
+    if gps_allowed and gps_accuracy_m <= 350:
         location_source = "GPS"
     else:
         lat = None
         lon = None
         location_source = "IP"
 
-    # ================= GPS REVERSE GEO =================
-    # ================= GPS REVERSE GEO =================
-# ================= GPS SMART REVERSE GEO =================
-# ==================== SMART THANa FIX BY GPS COORD ====================
     if location_source == "GPS":
         try:
             r = requests.get(
@@ -538,73 +525,50 @@ def track_visit(request, username):
                     "accept-language": "en",
                     "addressdetails": 1
                 },
-                headers={"User-Agent": "SmartCard-GPS-Tracker/4.0"}
+                headers={"User-Agent": "SmartCard-GPS-Tracker/4.0"},
+                timeout=5
             ).json()
 
             addr = r.get("address", {})
 
             country = addr.get("country", "Unknown")
-            city = (
-                addr.get("state_district")
-                or addr.get("county")
-                or addr.get("state")
-                or "Unknown"
-            )
+            city = addr.get("state_district") or addr.get("county") or addr.get("state") or "Unknown"
+            thana = addr.get("town") or addr.get("city") or addr.get("village") or "Unknown"
+            post_office = addr.get("postcode", "-")
 
-            # Raw area grab
-            thana = (
-                addr.get("town") or addr.get("city") or addr.get("municipality") or
-                addr.get("village") or addr.get("suburb") or "Unknown"
-            )
-
-            post_office = addr.get("postcode","-")
-
-            # Convert lat/lon to float
             latF = float(lat)
             lonF = float(lon)
 
-            # ========== Force Mirzapur Boundary Fix ==========
-            # তোমার দেওয়া লোকেশন এর ভিত্তিতে 2.5 KM radius cover
             if (24.14 <= latF <= 24.20) and (90.00 <= lonF <= 90.08):
                 thana = "Mirzapur"
                 city = "Tangail District"
 
-            print("✔ GPS Smart Fix Applied →", city, thana)
-
         except Exception as e:
             print("⛔ GPS Reverse Error", e)
 
-
-
-    # ================= IP GEO (fallback) =================
     if location_source == "IP":
         try:
             from django.contrib.gis.geoip2 import GeoIP2
-
             g = GeoIP2()
             ip = request.META.get("REMOTE_ADDR")
-
-            geo = g.city(ip)  # city lookup
+            geo = g.city(ip)
 
             country = geo.get("country_name", "Unknown")
             city = geo.get("city", "Unknown")
-            # GeoIP2 তে সাধারণত 'region' বা 'region_name' থাকে
-            thana = geo.get("region", "Unknown") or geo.get("region_name", "Unknown")
+            thana = geo.get("region", "Unknown")
             post_office = geo.get("postal_code", "-")
-
             lat = geo.get("latitude")
             lon = geo.get("longitude")
-
-            accuracy = 40  # approx for IP
-
-            print("🌍 IP GEO SUCCESS:", country, city)
-
+            accuracy = 40
         except Exception as e:
             print("❗ GEO Lookup Failed →", e)
 
-    # ---------- SAVE TO DATABASE ----------
+    # ⭐⭐ visitor include (YOUR REQUIRED FIX)
+    visitor = request.user if request.user.is_authenticated and request.user != user else None
+
     ContactSaveLead.objects.create(
         profile=user,
+        visitor=visitor,
         device_ip=request.META.get("REMOTE_ADDR"),
         user_agent=request.META.get("HTTP_USER_AGENT", "")[:500],
         latitude=lat,
@@ -618,6 +582,7 @@ def track_visit(request, username):
     )
 
     print("✔ Location Stored Successfully →", location_source, "ACC%", accuracy)
+
     return JsonResponse({
         "status": "saved",
         "source": location_source,
