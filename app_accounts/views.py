@@ -6,6 +6,7 @@ import qrcode
 import requests
 import urllib.parse
 
+from app_accounts.models import ClickEvent
 from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
@@ -253,13 +254,16 @@ def profile_and_card_dashboard(request, pk):
 
     top_countries = base.values("country").annotate(c=Count("id")).order_by("-c")[:5]
 
-    click_logs = base.exclude(user_agent__icontains="Unknown")[:50]
+    # 👉 NEW CLICK SYSTEM
+    click_events = ClickEvent.objects.filter(profile=profile).order_by("-timestamp")
+
+    click_logs = click_events[:50]
 
     click_stats = {
-        "total": total_views,
-        "connect": base.filter(user_agent__icontains="connect").count(),
-        "save": base.filter(user_agent__icontains="save").count(),
-        "call": base.filter(user_agent__icontains="call").count(),
+        "total": click_events.count(),
+        "connect": click_events.filter(button_type="connect").count(),
+        "save": click_events.filter(button_type="save").count(),
+        "call": click_events.filter(button_type="call").count(),
     }
 
     return render(request, "accounts/profile_and_card_dashboard.html", {
@@ -275,10 +279,11 @@ def profile_and_card_dashboard(request, pk):
         "chart_labels": labels,
         "chart_values": values,
         "top_countries": top_countries,
+
+        # Correct logs and stats
         "click_logs": click_logs,
         "click_stats": click_stats,
     })
-
 
 # ───────────────────────────────────────────────
 @login_required
@@ -424,14 +429,17 @@ def click_track(request, username):
 
     ip = get_client_ip(request) or request.META.get("REMOTE_ADDR", "")
     ua = request.META.get("HTTP_USER_AGENT", "")[:1000]
-    action = request.POST.get("action", "").strip()
 
-# ====================== VISITOR DETECTION ======================
-    visitor = None
+    # --- CLICKED BUTTON TYPE ---
+    action = request.POST.get("action", "").strip()  # connect | call | save
+
+    # ====================== VISITOR DETECTION ======================
     if request.user.is_authenticated:
-        visitor = request.user  # নিজের প্রোফাইল দেখলেও visitor হিসেবে লগ হবে
+        visitor = request.user    # নিজের অ্যাকাউন্ট থেকেও visitor হিসেবে লগ হবে
+    else:
+        visitor = None
 
-
+    # ---------- Optional GPS ----------
     raw_lat = request.POST.get("lat") or request.POST.get("latitude")
     raw_lon = request.POST.get("lon") or request.POST.get("longitude")
 
@@ -447,6 +455,7 @@ def click_track(request, username):
 
     allowed = _model_field_names(ContactSaveLead)
 
+    # ---------------- BASE DATA ----------------
     data = {
         "profile": user,
         "visitor": visitor,
@@ -454,18 +463,37 @@ def click_track(request, username):
         "user_agent": ua,
         "latitude": lat,
         "longitude": lon,
+        "action": action,   # ⭐⭐ MUST SAVE ACTION ⭐⭐
     }
 
-    for k in ("country", "city", "thana", "post_office", "accuracy", "location_source", "action"):
+    # Optional data from JS (if any)
+    for k in ("country", "city", "thana", "post_office", "accuracy", "location_source"):
         v = request.POST.get(k)
         if v:
             data[k] = v
 
+    # Filter only valid model fields
     lead_kwargs = {k: v for k, v in data.items() if k in allowed}
 
+    # ⭐⭐⭐ ORIGINAL CODE — DO NOT REMOVE ⭐⭐⭐
     ContactSaveLead.objects.create(**lead_kwargs)
 
+    # ============================================================
+    # ⭐⭐ NEW REQUIRED FEATURE → BUTTON CLICK MUST SAVE HERE ⭐⭐
+    # ============================================================
+    ClickEvent.objects.create(
+        profile=user,
+        button_type=action,
+        device_ip=ip,
+        user_agent=ua,
+        latitude=lat,
+        longitude=lon,
+    )
+    # ============================================================
+
     return JsonResponse({"saved": True, "action": action})
+
+
 
 
 # ───────────────────────────────────────────────

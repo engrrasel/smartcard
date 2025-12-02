@@ -53,13 +53,35 @@ body{
 </div>
 
 
+<!-- =============== CLICK TRACK SCRIPT =============== -->
 <script>
-console.log("🔥 PUBLIC PROFILE LOADED");  // DEBUG LINE
+function clickTrack(action){
+    console.log("🔥 CLICK:", action);
+
+    fetch("{% url 'app_accounts:click_track' profile.username %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "action=" + encodeURIComponent(action)
+    })
+    .then(r => r.json())
+    .then(data => console.log("CLICK SAVED:", data))
+    .catch(err => console.error("Click error:", err));
+}
+</script>
+
+
+
+<!-- =============== AUTO GPS TRACKING =============== -->
+<script>
+
+console.log("🔥 PUBLIC PROFILE LOADED");
 
 document.addEventListener("DOMContentLoaded", function () {
 
     const trackUrl = "{% url 'app_accounts:track_visit' profile.username %}";
-
     let visitLogged = false;
     let watchId = null;
 
@@ -80,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 cache: "no-store",
                 headers: { "Accept": "application/json" }
             }
-        ).catch(err => console.log("Send error", err));
+        );
     }
 
     function fallbackIP(){
@@ -94,18 +116,18 @@ document.addEventListener("DOMContentLoaded", function () {
             credentials: "include",
             cache: "no-store",
             headers: { "Accept": "application/json" }
-        }).catch(err => console.log("IP send error", err));
+        });
     }
 
     if (!navigator.geolocation){
-        console.log("❌ Geolocation not supported → Using IP");
+        console.log("❌ No GPS → Using IP");
         fallbackIP();
         return;
     }
 
-    setTimeout(function () {
+    setTimeout(function(){
         if (!visitLogged){
-            console.log("⏱ GPS timeout → Using IP");
+            console.log("⏱ Timeout → Using IP");
             if (watchId !== null){
                 navigator.geolocation.clearWatch(watchId);
             }
@@ -115,14 +137,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     watchId = navigator.geolocation.watchPosition(
         pos => {
-            console.log("📍 GPS update:", pos.coords);
-
             const lat = pos.coords.latitude;
             const lon = pos.coords.longitude;
             const acc = pos.coords.accuracy;
 
+            console.log("📍 GPS update:", pos.coords);
+
             if (!acc || acc > 350){
-                console.log("⚠ Bad accuracy:", acc, "waiting for better…");
+                console.log("⚠ Bad accuracy:", acc);
                 return;
             }
 
@@ -141,8 +163,8 @@ document.addEventListener("DOMContentLoaded", function () {
             timeout: 10000
         }
     );
-
 });
 </script>
+
 
 {% endblock %}
