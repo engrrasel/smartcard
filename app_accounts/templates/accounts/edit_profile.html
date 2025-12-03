@@ -4,143 +4,225 @@
 {% block title %}Edit Profile{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body px-4 py-5">
+<div class="glass-container py-4">
 
-            <!-- 🔹 Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-semibold mb-0 text-primary">
-                    <i class="fa-solid fa-user-pen me-2"></i> Edit Profile
-                </h4>
-                <a href="{% url 'app_accounts:dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                    <i class="fa-solid fa-arrow-left me-1"></i> Back
-                </a>
+    <div class="glass-card">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title">
+                <i class="fa-solid fa-user-pen me-2"></i> Edit Profile
+            </h3>
+
+            <a href="{% url 'app_accounts:dashboard' %}" class="neo-btn small-btn">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back
+            </a>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} shadow-sm rounded-3 small py-2 mb-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+
+            <!-- Profile Picture -->
+            <div class="text-center mb-4">
+                <div class="profile-upload-box">
+                    <img id="previewImage"
+                         src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}https://via.placeholder.com/150{% endif %}"
+                         class="upload-preview">
+
+                    <label for="id_profile_picture" class="camera-btn">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                </div>
+
+                <input type="file" name="profile_picture" id="id_profile_picture"
+                       class="d-none" accept="image/*">
+
+                <div class="text-muted small mt-2">Tap camera icon to change</div>
+
+                {% if form.instance.profile_picture %}
+                    <a href="{% url 'app_accounts:remove_profile_picture' form.instance.pk %}"
+                       class="neo-btn danger-btn mt-2 small-btn">
+                        🗑 Remove Picture
+                    </a>
+                {% endif %}
             </div>
 
-            <!-- ✅ Messages -->
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} small shadow-sm rounded-3 py-2 mb-3">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+            <!-- Inputs -->
+            <div class="row g-3">
 
-            <!-- 🧾 Form -->
-            <form method="post" enctype="multipart/form-data" class="mt-3">
-                {% csrf_token %}
-
-                <!-- 🖼 Profile Picture -->
-                <div class="text-center mb-4">
-                    <div class="position-relative d-inline-block">
-                        <img id="previewImage"
-                             src="{% if form.instance.profile_picture %}{{ form.instance.profile_picture.url }}{% else %}https://via.placeholder.com/140{% endif %}"
-                             class="rounded-circle border border-3 border-light shadow-sm"
-                             width="140" height="140">
-
-                        <label for="id_profile_picture"
-                               class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow"
-                               style="cursor:pointer; border: 3px solid #fff;">
-                            <i class="fa-solid fa-camera"></i>
-                        </label>
-                    </div>
-
-                    <input type="file" name="profile_picture" id="id_profile_picture" class="d-none" accept="image/*">
-
-                    <div class="small text-muted mt-2">Click the camera icon to change</div>
-
-                    {% if form.instance.profile_picture %}
-                        <a href="{% url 'app_accounts:remove_profile_picture' form.instance.pk %}"
-                           class="btn btn-sm btn-outline-danger mt-2 rounded-pill px-3 py-1">
-                            🗑 Remove Picture
-                        </a>
-                    {% endif %}
+                <!-- Email (readonly) -->
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Email</label>
+                    <input type="email" class="glass-input" value="{{ form.instance.email }}" disabled>
+                    <div class="text-muted small mt-1">Email cannot be changed.</div>
                 </div>
 
-                <!-- 🧾 Two Column Inputs -->
-                <div class="row g-3">
-
-                    <!-- Email (readonly) -->
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small mb-1">Email</label>
-                        <input type="email" class="form-control form-control-sm soft-input"
-                               value="{{ form.instance.email }}" disabled>
-                        <div class="small text-muted mt-1">Email cannot be changed.</div>
-                    </div>
-
-                    <!-- All other fields (auto) -->
-                    {% for field in form %}
-                        {% if field.name not in "username,email,profile_picture,daily_views,monthly_views,yearly_views,last_viewed,is_public" %}
-                            <div class="col-md-6">
-                                <label class="form-label text-muted small mb-1">{{ field.label }}</label>
-                                {{ field|add_class:"form-control form-control-sm soft-input" }}
-                                {% if field.errors %}
-                                    <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
-                                {% endif %}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-
-                <!-- ✔ Username (single correct placed field) -->
-                <div class="mb-3 mt-3">
-                    <label class="form-label text-muted small mb-1">Username</label>
-                    {{ form.username|add_class:"form-control form-control-sm soft-input" }}
-
-                    {% if form.username.errors %}
-                        <div class="text-danger small mt-1">
-                            {{ form.username.errors|join:", " }}
+                <!-- Auto-fields -->
+                {% for field in form %}
+                    {% if field.name not in "username,email,profile_picture,daily_views,monthly_views,yearly_views,last_viewed,is_public" %}
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">{{ field.label }}</label>
+                            {{ field|add_class:"glass-input" }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                            {% endif %}
                         </div>
                     {% endif %}
-                </div>
+                {% endfor %}
+            </div>
 
-                <!-- 🔘 Buttons -->
-                <div class="d-flex justify-content-end mt-4 gap-2">
-                    <a href="{% url 'app_accounts:profile_and_card' %}"
-                       class="btn btn-light border rounded-pill px-4 py-2 small shadow-sm">
-                        <i class="fa-solid fa-xmark me-1"></i> Cancel
-                    </a>
+            <!-- Username -->
+            <div class="mt-3">
+                <label class="form-label form-label-custom">Username</label>
+                {{ form.username|add_class:"glass-input" }}
 
-                    <button type="submit"
-                            class="btn btn-success rounded-pill px-4 py-2 small shadow-sm">
-                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
-                    </button>
-                </div>
+                {% if form.username.errors %}
+                    <div class="text-danger small mt-1">{{ form.username.errors|join:", " }}</div>
+                {% endif %}
+            </div>
 
-            </form>
+            <!-- Buttons -->
+            <div class="d-flex justify-content-end mt-4 gap-2">
+                <a href="{% url 'app_accounts:profile_and_card' %}" class="neo-btn cancel-btn">
+                    <i class="fa-solid fa-xmark me-1"></i> Cancel
+                </a>
 
-        </div>
+                <button type="submit" class="neo-btn primary-btn">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                </button>
+            </div>
+
+        </form>
     </div>
 </div>
 
-<!-- 🧠 Live Preview Script -->
+<!-- Image Preview -->
 <script>
 document.getElementById("id_profile_picture").addEventListener("change", function() {
-    const file = this.files[0];
-    if (file) {
-        document.getElementById("previewImage").src = URL.createObjectURL(file);
-    }
+    const f = this.files[0];
+    if (f) document.getElementById("previewImage").src = URL.createObjectURL(f);
 });
 </script>
 
-<!-- 🎨 Custom Style -->
+<!-- Premium Glass UI CSS -->
 <style>
-    body {
-        font-family: 'Inter', 'Poppins', 'Segoe UI', sans-serif;
-        font-size: 0.9rem;
-        background-color: #f8f9fb;
-        color: #333;
-    }
-    h4 { font-size: 1.15rem; letter-spacing: 0.3px; }
-    .soft-input {
-        border: 1px solid #e3e6ea!important;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-        background-color: #fff!important;
-    }
-    .soft-input:focus {
-        border-color: #007bff!important;
-        box-shadow: 0 0 0 0.15rem rgba(0,123,255,0.15);
-    }
+/* Main Container */
+.glass-container {
+    max-width: 900px;
+    margin: auto;
+}
+
+/* Card */
+.glass-card {
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(18px) saturate(160%);
+    padding: 32px;
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,0.5);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+/* Title */
+.page-title {
+    font-weight: 700;
+    color: #1a73e8;
+}
+
+/* Upload Photo */
+.profile-upload-box {
+    position: relative;
+    display: inline-block;
+}
+
+.upload-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 8px 22px rgba(0,0,0,.18);
+    border: 4px solid rgba(255,255,255,.9);
+}
+
+.camera-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #1a73e8;
+    color: #fff;
+    padding: 10px 11px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+
+/* Inputs */
+.glass-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.65);
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.12);
+    backdrop-filter: blur(6px);
+    transition: .25s;
+}
+
+.glass-input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 8px rgba(26,115,232,.25);
+    outline: none;
+}
+
+.form-label-custom {
+    font-size: .85rem;
+    font-weight: 600;
+    color: #555;
+}
+
+/* Buttons */
+.neo-btn {
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: .25s;
+    box-shadow: 4px 4px 14px rgba(0,0,0,.12);
+}
+
+.primary-btn {
+    background: #1a73e8;
+    color: #fff;
+}
+
+.cancel-btn {
+    background: #f1f1f1;
+    color: #333;
+}
+
+.danger-btn {
+    background: #ffdddd;
+    color: #b70000;
+}
+
+.small-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+}
+
+.neo-btn:hover {
+    transform: scale(1.05);
+}
 </style>
 
 {% endblock %}

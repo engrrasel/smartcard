@@ -159,10 +159,19 @@ def edit_profile(request, pk):
 @login_required
 def remove_profile_picture(request, pk):
     profile = get_object_or_404(User, pk=pk)
+
+    # Security: Only owner or parent user can remove DP
     if profile != request.user and profile.parent_user != request.user:
         return HttpResponse("Forbidden", 403)
-    if profile.profile_picture:
-        profile.profile_picture.delete(save=True)
+
+    # If picture exists AND it is NOT default.png
+    if profile.profile_picture and profile.profile_picture.name != "default.png":
+        profile.profile_picture.delete(save=False)
+
+    # Set fallback default image
+    profile.profile_picture = "default.png"
+    profile.save()
+
     messages.success(request, "Profile picture removed.")
     return redirect("app_accounts:edit_profile", pk=pk)
 
