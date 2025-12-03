@@ -2,261 +2,280 @@
 {% load static %}
 
 {% block title %}{{ profile.full_name }} — Dashboard{% endblock %}
-
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'accounts/css/click_analytics.css' %}">
 
 <style>
-    .tab-container{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        margin-bottom:18px;
-        flex-wrap:wrap;
-        gap:10px;
-    }
-    .tab-left{
-        display:flex;
-        gap:10px;
-    }
-    .tab-btn{
-        padding:8px 16px;
-        font-weight:600;
-        border-radius:6px;
-        border:1px solid #ccc;
-        cursor:pointer;
-        background:#f8f9fa;
-    }
-    .tab-btn.active{
-        background:#111;
-        color:#fff;
-        border-color:#111;
-    }
-    .search-box{
-        max-width:260px;
-        width:100%;
-    }
-    .search-box input{
-        width:100%;
-        padding:8px 14px;
-        border-radius:6px;
-        border:1px solid #bbb;
-    }
-    .tab-section{
-        display:none;
-        animation:fade .4s ease-in-out;
-    }
-    @keyframes fade{from{opacity:0} to{opacity:1}}
 
+    /* ---------- GLOBAL DESIGN SYSTEM ---------- */
+    :root{
+        --card-bg: rgba(255,255,255,0.75);
+        --border-soft: rgba(0,0,0,0.08);
+        --shadow-soft: 0 8px 24px rgba(0,0,0,0.06);
+        --radius: 16px;
+        --text-light: #6d6d6d;
+        --primary: #1a73e8;
+        --green: #0f9d58;
+        --red: #d93025;
+    }
+
+    body{
+        background: linear-gradient(145deg, #f3f7ff, #fff);
+    }
+
+
+    /* ---------- SUMMARY CARDS ---------- */
+    .summary-card{
+        background: var(--card-bg);
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius);
+        padding: 22px 12px;
+        text-align:center;
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow-soft);
+        transition: .25s ease;
+        height: 100%; /* Ensures equal height in grid */
+    }
+    .summary-card:hover{
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.09);
+    }
+
+    .summary-card h2{
+        font-size:2rem;
+        font-weight:700;
+        margin-bottom: 0.5rem;
+    }
+    .summary-title{
+        font-size:0.9rem;
+        color:var(--text-light);
+    }
+
+
+    /* ---------- TABLE ---------- */
+    .smart-table{
+        background: white;
+        border-radius: var(--radius);
+        overflow: hidden; /* Clear floats/radius */
+        border:1px solid var(--border-soft);
+        box-shadow: var(--shadow-soft);
+        width: 100%;
+        /* Responsive Scroll Logic */
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .smart-table table {
+        width: 100%;
+        margin-bottom: 0;
+        white-space: nowrap; /* Prevents text wrapping on mobile */
+    }
+
+    .smart-table thead{
+        background:#111;
+        color:white;
+    }
+
+    .smart-table th{
+        padding:14px;
+        font-size:0.90rem;
+        letter-spacing:0.3px;
+        text-transform:uppercase;
+        vertical-align: middle;
+    }
+
+    .smart-table tbody tr{
+        font-size:0.92rem;
+        transition:0.2s;
+    }
+    .smart-table tbody tr:hover{
+        background:#f4f6fa;
+    }
+
+    .smart-table td{
+        padding:14px;
+        vertical-align: middle;
+    }
+
+    /* ---------- AVATAR ---------- */
     .visitor-box{
         display:flex;
         align-items:center;
-        gap:8px;
+        gap:12px;
     }
     .visitor-box img{
-        width:36px;
-        height:36px;
+        width:42px;
+        height:42px;
         border-radius:50%;
+        border:2px solid #fff;
+        box-shadow:0 2px 8px rgba(0,0,0,0.15);
         object-fit:cover;
-        border:1px solid #ddd;
+        flex-shrink: 0; /* Prevents image squishing */
     }
+
+    /* ---------- SEARCH ---------- */
+    .search-input{
+        padding:12px 16px;
+        border-radius: var(--radius);
+        border:1px solid #ccc;
+        width: 100%;           /* Responsive width */
+        max-width: 260px;      /* Maximum width on desktop */
+        transition:.25s;
+    }
+    .search-input:focus{
+        border-color: var(--primary);
+        box-shadow:0 0 8px rgba(26,115,232,0.35);
+        outline:none;
+    }
+
+    /* ---------- MOBILE RESPONSIVE MEDIA QUERY ---------- */
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /* Adjust Title Size */
+        h2.text-transform {
+            font-size: 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        /* Compact Cards on Mobile */
+        .summary-card {
+            padding: 15px 8px;
+        }
+        .summary-card h2 {
+            font-size: 1.5rem;
+        }
+        .summary-title {
+            font-size: 0.8rem;
+        }
+
+        /* Table Adjustments */
+        .smart-table th, 
+        .smart-table td {
+            padding: 10px;
+            font-size: 0.85rem;
+        }
+    }
+
 </style>
+
 
 <div class="container py-4">
 
-    <h2 class="text-center fw-bold mb-4">📊 Button Click Analytics</h2>
+    <h2 class="text-transform fw-bold mb-5" style="font-size:2rem;">
+        Profile Visitor
+    </h2>
 
-    <!-- ================= SUMMARY BLOCK ================= -->
-    <div class="row text-center mb-5">
 
-        <div class="col-6 col-md-3">
-            <div class="click-box">
-                <h1>{{ click_stats.total|default:0 }}</h1>
-                <small>Total Clicks</small>
+    <div class="row g-3 g-md-4 mb-5"> <div class="col-6 col-md-3">
+            <div class="summary-card">
+                <h2>{{ click_stats.total|default:0 }}</h2>
+                <div class="summary-title">Total Clicks</div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="click-box text-primary">
-                <h1>{{ click_stats.connect|default:0 }}</h1>
-                <small>Connect</small>
+            <div class="summary-card" style="color:var(--primary);">
+                <h2>{{ click_stats.connect|default:0 }}</h2>
+                <div class="summary-title">Connect</div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="click-box text-success">
-                <h1>{{ click_stats.save|default:0 }}</h1>
-                <small>Saved</small>
+            <div class="summary-card" style="color:var(--green);">
+                <h2>{{ click_stats.save|default:0 }}</h2>
+                <div class="summary-title">Saved</div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="click-box text-danger">
-                <h1>{{ click_stats.call|default:0 }}</h1>
-                <small>Call</small>
+            <div class="summary-card" style="color:var(--red);">
+                <h2>{{ click_stats.call|default:0 }}</h2>
+                <div class="summary-title">Call</div>
             </div>
         </div>
 
     </div>
 
-    <!-- =============== TABS + SEARCHBAR (NEW UI) =============== -->
-    <div class="tab-container">
 
-        <!-- LEFT BUTTONS -->
-        <div class="tab-left">
-            <button class="tab-btn active" id="btn_loc"
-                onclick="openTab('tab_loc','btn_loc')">
-                🌍 Visitor Locations
-            </button>
 
-            <button class="tab-btn inactive" id="btn_logs"
-                onclick="openTab('tab_logs','btn_logs')">
-                📥 Click Logs
-            </button>
-        </div>
-
-        <!-- RIGHT SEARCH BAR -->
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Search visitors, country, city…"
-                   onkeyup="searchTable()">
-        </div>
-
+    <div class="d-flex justify-content-end mb-3">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search…" onkeyup="searchTable()">
     </div>
 
 
-<!-- ========================================================= -->
-<!-- ================= TAB - LOCATION LOGS (DEFAULT) ============ -->
-<!-- ========================================================= -->
-<div id="tab_loc" class="tab-section" style="display:block;">
+    <div class="table-responsive smart-table"> <table class="table mb-0" id="visitorTable">
+            <thead>
+                <tr>
+                    <th>Visitor</th>
+                    <th>Country</th>
+                    <th>City</th>
+                    <th>Thana</th>
+                    <th>Post Office</th>
+                    <th>Lat</th>
+                    <th>Lon</th>
+                    <th>Time</th>
+                    <th>Accuracy</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
 
-    <table class="table table-striped mt-3" id="visitorTable">
-        <thead class="table-dark">
-            <tr>
-                <th>Visitor</th>
-                <th>Country</th>
-                <th>City / District</th>
-                <th>Thana</th>
-                <th>Post Office</th>
-                <th>Lat</th>
-                <th>Lon</th>
-                <th>Time</th>
-                <th>Accuracy %</th>
-                <th>Source</th>
-            </tr>
-        </thead>
+            <tbody>
+            {% for v in location_logs %}
+                <tr>
 
-        <tbody>
-        {% for v in location_logs %}
-            <tr>
-                <td>
-                    {% if v.visitor %}
-                        <div class="visitor-box">
-                            <img src="{{ v.visitor.profile_picture.url|default:'https://via.placeholder.com/36' }}">
-                            <div>
-                                <div>{{ v.visitor.full_name|default:v.visitor.email }}</div>
-                                <small class="text-muted">{{ v.visitor.username }}</small>
+                    <td>
+                        {% if v.visitor %}
+                            <div class="visitor-box">
+                                <img src="{{ v.visitor.profile_picture.url }}">
+                                <div>
+                                    <div style="font-weight:600;">{{ v.visitor.full_name|default:v.visitor.email }}</div>
+                                    <small class="text-muted">{{ v.visitor.username }}</small>
+                                </div>
                             </div>
-                        </div>
-                    {% else %}
-                        Anonymous
-                    {% endif %}
-                </td>
+                        {% else %}
+                            Anonymous
+                        {% endif %}
+                    </td>
 
-                <td>{{ v.country|default:"-" }}</td>
-                <td>{{ v.city|default:"-" }}</td>
-                <td>{{ v.thana|default:"-" }}</td>
-                <td>{{ v.post_office|default:"-" }}</td>
-                <td>{{ v.latitude|default:"-" }}</td>
-                <td>{{ v.longitude|default:"-" }}</td>
-                <td>{{ v.timestamp|date:"d M h:i A" }}</td>
+                    <td>{{ v.country|default:"-" }}</td>
+                    <td>{{ v.city|default:"-" }}</td>
+                    <td>{{ v.thana|default:"-" }}</td>
+                    <td>{{ v.post_office|default:"-" }}</td>
 
-                <td><b>{{ v.accuracy|default:"-" }}%</b></td>
+                    <td>{{ v.latitude|default:"-" }}</td>
+                    <td>{{ v.longitude|default:"-" }}</td>
 
-                <td>
-                    {% if v.location_source == "GPS" %}
-                        <span class="badge bg-success">GPS</span>
-                    {% else %}
-                        <span class="badge bg-warning text-dark">IP</span>
-                    {% endif %}
-                </td>
+                    <td>{{ v.timestamp|date:"d M • h:i A" }}</td>
 
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                    <td><b>{{ v.accuracy|default:"-" }}%</b></td>
 
-</div>
+                    <td>
+                        {% if v.location_source == "GPS" %}
+                            <span class="badge bg-success px-3 py-2">GPS</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark px-3 py-2">IP</span>
+                        {% endif %}
+                    </td>
 
-
-<!-- ========================================================= -->
-<!-- ================= TAB - CLICK LOGS ============ -->
-<!-- ========================================================= -->
-<div id="tab_logs" class="tab-section">
-
-    <table class="table table-hover" id="clickTable">
-        <thead class="table-light">
-            <tr>
-                <th>Button</th>
-                <th>IP</th>
-                <th>Device</th>
-                <th>Time</th>
-            </tr>
-        </thead>
-
-        <tbody>
-        {% for c in click_logs %}
-            <tr>
-                <td>
-                    {% if c.action %}
-                        <span class="badge bg-primary">{{ c.action }}</span>
-                    {% else %}
-                        <span class="text-muted">-</span>
-                    {% endif %}
-                </td>
-
-                <td>{{ c.device_ip }}</td>
-                <td>{{ c.user_agent|truncatechars:25 }}</td>
-                <td>{{ c.timestamp|date:"d M • h:i A" }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </div>
 
-
-</div>
 
 <script>
-function openTab(sectionId, btnId){
-    document.querySelectorAll('.tab-section').forEach(el => el.style.display = 'none');
-    document.getElementById(sectionId).style.display = 'block';
-
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        btn.classList.add('inactive');
-    });
-
-    const activeBtn = document.getElementById(btnId);
-    activeBtn.classList.remove('inactive');
-    activeBtn.classList.add('active');
-}
-
-/* 🔥 UNIVERSAL SEARCH — works on both tables */
 function searchTable(){
     let input = document.getElementById("searchInput").value.toLowerCase();
-
-    let visitorRows = document.querySelectorAll("#visitorTable tbody tr");
-    visitorRows.forEach(row=>{
-        let text = row.innerText.toLowerCase();
-        row.style.display = text.includes(input) ? "" : "none";
-    });
-
-    let clickRows = document.querySelectorAll("#clickTable tbody tr");
-    clickRows.forEach(row=>{
-        let text = row.innerText.toLowerCase();
-        row.style.display = text.includes(input) ? "" : "none";
+    document.querySelectorAll("#visitorTable tbody tr").forEach(row=>{
+        row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
     });
 }
 </script>

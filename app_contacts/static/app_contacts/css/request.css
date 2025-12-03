@@ -1,19 +1,156 @@
-.req-list { display: flex; flex-direction: column; gap: 12px; }
-.req-card {
-    background:#fff;
-    padding:14px;
-    border-radius:10px;
-    display:flex; 
-    align-items:center; 
-    justify-content:space-between;
-    box-shadow:0 2px 6px rgba(0,0,0,.08);
-}
-.req-avatar{ width:55px;height:55px;border-radius:50%;margin-right:12px;object-fit:cover; }
-.flex{ display:flex;align-items:center;gap:10px; }
+/* ==========================================
+   REQUEST LIST – Premium Glass UI + Responsive
+   ========================================== */
 
-.btn-area button{
-    padding:6px 12px;border:none;border-radius:6px;
-    font-weight:600;cursor:pointer;
+.req-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 14px; 
 }
-.btn-accept{ background:#00d26a;color:#fff;margin-right:6px; }
-.btn-reject{ background:#ff3b3b;color:#fff; }
+
+/* Card */
+.req-card {
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    padding: 18px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,.06),
+        inset 0 0 0 rgba(255,255,255,.6);
+    transition: .25s ease;
+}
+
+.req-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 12px 28px rgba(0,0,0,.12),
+        inset 0 0 0 rgba(255,255,255,1);
+}
+
+/* Avatar */
+.req-avatar { 
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    margin-right: 14px;
+    object-fit: cover;
+    border: 3px solid rgba(255,255,255,.75);
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+/* Flexbox */
+.flex { 
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/*  Button Group */
+.btn-area {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-area button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: .25s ease;
+}
+
+/* Accept / Reject */
+.btn-accept { 
+    background: #00d26a;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(0,210,106,.35);
+}
+.btn-accept:hover {
+    background: #00b85b;
+}
+
+.btn-reject { 
+    background: #ff3b3b;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(255,59,59,.35);
+}
+.btn-reject:hover {
+    background: #e23333;
+}
+
+/* ==========================================
+   RESPONSIVE MOBILE UI (Perfect Clean)
+   ========================================== */
+@media(max-width: 768px){
+
+    .req-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .req-avatar {
+        width: 60px;
+        height: 60px;
+        margin-right: 0;
+    }
+
+    .flex {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-area {
+        width: 100%;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .btn-area button {
+        flex: 1;
+        font-size: 15px;
+        padding: 12px !important;
+        border-radius: 12px;
+    }
+}
+/* ============================
+   ADVANCED SEARCH INPUT (GLASS)
+   ============================ */
+.search-box{
+    width: 100%;
+    max-width: 360px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.45);
+    background: rgba(255,255,255,0.60);
+    backdrop-filter: blur(14px) saturate(160%);
+    font-size: 15px;
+    box-shadow:
+        0 4px 14px rgba(0,0,0,.08),
+        inset 0 0 0 rgba(255,255,255,.6);
+    transition: .25s ease;
+}
+
+.search-box:focus{
+    box-shadow: 
+        0 8px 18px rgba(0,0,0,.12),
+        inset 0 0 0 rgba(255,255,255,1);
+    outline: none;
+    border-color: #007bff;
+}
+
+/* Highlight matched text */
+.highlight{
+    background: #ffeb3b;
+    color: #222;
+    padding: 2px 4px;
+    border-radius: 4px;
+}

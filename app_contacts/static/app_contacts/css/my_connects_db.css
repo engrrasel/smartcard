@@ -140,3 +140,21 @@
     .action-area{width:100%;justify-content:space-between;gap:6px!important;margin-top:14px!important;}
     .neo-btn{flex:1;font-size:17px;padding:13px!important;}
 }
+
+
+/* NOTE PANEL — ALWAYS CLOSED INITIALLY */
+.note-panel {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all .25s ease;
+    z-index: 9999 !important;
+    position: relative;
+}
+
+/* WHEN OPENED */
+.note-panel.active {
+    display: block !important;
+    opacity: 1;
+    transform: translateY(0);
+}

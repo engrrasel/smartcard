@@ -23,7 +23,7 @@
         <div id="counterBox" class="stat-vertical">
             <div class="stat-row">📞 Calls — <b id="callCount">{{ contact.calls|default_if_none:"0" }}</b></div>
             <div class="stat-row">✉ Emails — <b id="emailCount">{{ contact.emails|default_if_none:"0" }}</b></div>
-            <div class="stat-row">📝 Notes — <b id="noteCount">{{ notes.count|default_if_none:"0" }}</b></div>
+            <button class="neo-btn" onclick="toggleNote()">Note</button>
         </div>
     </div>
 

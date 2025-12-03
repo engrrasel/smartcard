@@ -85,7 +85,127 @@
         padding:6px 10px;
         display:block;
     }
+
+    /* ========== Modern Glass UI Upgrade (Matches Your Favorite UI) ========== */
+
+.sidebar{
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(12px);
+    border-right: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 4px 0 25px rgba(0,0,0,0.05);
+    border-radius: 0 20px 20px 0;
+}
+
+.sidebar h3{
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-left: 4px;
+}
+
+.sidebar a{
+    padding: 12px 15px;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(6px);
+    border-radius: 14px;
+    transition: 0.25s ease;
+}
+
+.sidebar a:hover{
+    transform: translateX(4px);
+    background: var(--primary);
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+.sidebar a.active{
+    background: var(--primary);
+    color: #fff !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+.logout-box{
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+}
+
+.logout-btn{
+    border-radius: 12px;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(231,76,60,0.25);
+}
+
+.main{
+    background: linear-gradient(135deg,#f3f7ff,#fff);
+    border-radius: 20px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+    padding: 2.5rem;
+}
+
+/* Toggle Button UI Upgrade */
+.sidebar-toggle{
+    background: rgba(255,255,255,0.85) !important;
+    border: 1px solid rgba(0,0,0,0.1);
+    backdrop-filter: blur(6px);
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    transition: 0.25s;
+}
+
+.sidebar-toggle:hover{
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* ===== FULL PAGE FIX — Remove White Gap ===== */
+
+/* Main area should stretch full available width */
+.main {
+    margin-left: 260px !important;
+    width: calc(100% - 260px) !important;
+    min-height: 100vh !important;
+    background: linear-gradient(135deg,#f3f7ff,#fff);
+    border-radius: 0;   /* Remove roundness causing white gap */
+    padding-top: 2.2rem !important;
+}
+
+/* When sidebar is collapsed */
+.main.expand {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
+
+/* Remove any outside page padding creating gap */
+body {
+    background: #f3f7ff !important;
+}
+
+/* Fix bottom part (white gap) caused by box-shadow area */
+main.main {
+    box-shadow: none !important;
+}
+/* MOBILE FULL WIDTH FIX */
+@media(max-width: 991px){
+    .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 18px !important;
+    }
+
+    body {
+        overflow-x: hidden !important;
+    }
+
+    /* Sidebar overlay হলে main যেন shift না হয় */
+    .sidebar.open + .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
 </style>
+
 
 </head>
 <body>

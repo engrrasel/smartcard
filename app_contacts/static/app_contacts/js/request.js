@@ -2,8 +2,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     const counter = document.getElementById("reqCount");
 
-
-    /*==================== ACCEPT ====================*/
+    /* ====================================================
+       ACCEPT BUTTON
+    ==================================================== */
     document.querySelectorAll(".btn-accept").forEach(btn=>{
         btn.onclick = ()=>{
 
@@ -15,9 +16,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
                     let box = document.getElementById("req-"+data.id);
                     box.style.opacity = "0";
 
-                    setTimeout(()=> box.remove(), 300); // UI instantly update
+                    setTimeout(()=> box.remove(), 300);
 
-                    updateCount();  // 🔥 Count reduce instantly
+                    updateCount();
 
                     Swal.fire({
                         icon:"success",
@@ -27,12 +28,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
                     });
                 }
             });
+
         };
     });
 
 
-
-    /*==================== REJECT ====================*/
+    /* ====================================================
+       REJECT BUTTON
+    ==================================================== */
     document.querySelectorAll(".btn-reject").forEach(btn=>{
         btn.onclick = ()=>{
 
@@ -46,7 +49,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
                     setTimeout(()=> box.remove(), 300);
 
-                    updateCount();  // 🔥 Live badge update
+                    updateCount();
 
                     Swal.fire({
                         icon:"info",
@@ -56,12 +59,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
                     });
                 }
             });
+
         };
     });
 
 
-
-    /*==================== 🔍 LIVE SEARCH ====================*/
+    /* ====================================================
+       🔍 ADVANCED LIVE SEARCH
+    ==================================================== */
     const searchInput = document.getElementById("searchReq");
 
     searchInput?.addEventListener("input",()=>{
@@ -69,15 +74,24 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const q = searchInput.value.toLowerCase().trim();
 
         document.querySelectorAll(".req-item").forEach(item=>{
-            item.style.display = item.dataset.name.includes(q) ? "" : "none";
+
+            const fields = (
+                (item.dataset.name || "") + " " +
+                (item.dataset.email || "") + " " +
+                (item.dataset.phone || "") + " " +
+                (item.dataset.username || "")
+            ).toLowerCase();
+
+            item.style.display = fields.includes(q) ? "flex" : "none";
         });
 
-        updateCount(); // 🔥 Search করলে count dynamic update
+        updateCount();
     });
 
 
-
-    /*==================== COUNT UPDATE ====================*/
+    /* ====================================================
+       COUNTER AUTO UPDATE
+    ==================================================== */
     function updateCount(){
         if(counter){
             const visible = document.querySelectorAll(".req-item:not([style*='display: none'])");

@@ -1,12 +1,11 @@
+# views.py (CLEAN + READY)
 from datetime import timedelta
 from io import BytesIO
+from collections import defaultdict
 
-import base64
 import qrcode
 import requests
-import urllib.parse
 
-from app_accounts.models import ClickEvent
 from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
@@ -27,41 +26,30 @@ from django.http import HttpResponse, JsonResponse
 from .forms import ChildProfileCreateForm, ProfileUpdateForm, SignupForm
 from .utils import get_client_ip, parse_user_agent
 
-# Models (single, clear import)
-from app_accounts.models import CustomUser, ContactSaveLead
+# Models
+from app_accounts.models import CustomUser, ContactSaveLead, ClickEvent
 
 User = get_user_model()
 
 
-# --- Lazy Load Function (Reusable) ---
-def LeadModel():
-    return apps.get_model("app_contacts", "ContactSaveLead")
-
-
-# Utility: model field names
 def _model_field_names(model_cls):
     """Return set of field names for a model class."""
     return {f.name for f in model_cls._meta.get_fields()}
 
 
 # ───────────────────────────────────────────────
-# SIGNUP
-# ───────────────────────────────────────────────
 def signup_view(request):
     if request.user.is_authenticated:
         return redirect("app_accounts:dashboard")
 
     form = SignupForm(request.POST or None)
-
     if request.method == "POST" and form.is_valid():
         user = form.save(commit=False)
-
         if settings.DEBUG:
             user.is_active = True
             user.save()
             login(request, user)
             messages.success(request, "Account created & logged in!")
-
             next_url = request.POST.get("next") or request.GET.get("next")
             if next_url:
                 return redirect(next_url)
@@ -69,20 +57,10 @@ def signup_view(request):
 
         user.is_active = False
         user.save()
-
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        activation_link = request.build_absolute_uri(
-            reverse("app_accounts:activate_account", args=[uid, token])
-        )
-
-        send_mail(
-            "Activate your SmartCard account",
-            f"Click to activate:\n{activation_link}",
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-        )
-
+        activation_link = request.build_absolute_uri(reverse("app_accounts:activate_account", args=[uid, token]))
+        send_mail("Activate your SmartCard account", f"Click to activate:\n{activation_link}", settings.DEFAULT_FROM_EMAIL, [user.email])
         messages.success(request, "Check your email to activate your account.")
         return redirect("app_accounts:email_sent")
 
@@ -112,7 +90,6 @@ def activate_account(request, uidb64, token):
 def dashboard(request):
     user = request.user
     profiles = User.objects.filter(Q(pk=user.pk) | Q(parent_user=user)).order_by("-updated_at")
-
     return render(request, "accounts/dashboard.html", {
         "user": user,
         "profiles": profiles,
@@ -137,20 +114,17 @@ def profile_and_card(request):
 @login_required
 def create_profile(request):
     user = request.user
-
     if not user.can_create_profile():
         messages.error(request, "You reached your profile limit.")
         return redirect("app_accounts:dashboard")
 
     if request.method == "POST":
         form = ChildProfileCreateForm(request.POST, request.FILES)
-
         if form.is_valid():
             child = form.save(commit=False)
             child.parent_user = user
             child.is_active = True
-            child.set_password("12345678")  # Default password
-
+            child.set_password("12345678")
             if not child.username:
                 base = child.email.split("@")[0]
                 new_user = base
@@ -159,7 +133,6 @@ def create_profile(request):
                     new_user = f"{base}{counter}"
                     counter += 1
                 child.username = new_user
-
             child.save()
             messages.success(request, "Profile created successfully!")
             return redirect("app_accounts:profile_and_card")
@@ -175,12 +148,10 @@ def edit_profile(request, pk):
         return HttpResponse("Forbidden", 403)
 
     form = ProfileUpdateForm(request.POST or None, request.FILES or None, instance=profile)
-
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Profile updated!")
         return redirect("app_accounts:profile_and_card")
-
     return render(request, "accounts/edit_profile.html", {"form": form, "profile": profile})
 
 
@@ -190,7 +161,6 @@ def remove_profile_picture(request, pk):
     profile = get_object_or_404(User, pk=pk)
     if profile != request.user and profile.parent_user != request.user:
         return HttpResponse("Forbidden", 403)
-
     if profile.profile_picture:
         profile.profile_picture.delete(save=True)
     messages.success(request, "Profile picture removed.")
@@ -198,8 +168,7 @@ def remove_profile_picture(request, pk):
 
 
 # ───────────────────────────────────────────────
-# ⭐ FIXED VERSION — ONLY RENDERS PAGE (NO TRACKING HERE)
-# tracking will be handled by track_visit()
+# public profile only renders template — tracking is handled by track_visit()
 def public_profile(request, username):
     profile = get_object_or_404(CustomUser, username=username)
     return render(request, "accounts/public_profile.html", {"profile": profile})
@@ -211,7 +180,6 @@ def download_qr(request, pk):
     profile = get_object_or_404(User, pk=pk)
     if profile != request.user and profile.parent_user != request.user:
         return HttpResponse("Forbidden", 403)
-
     qr = qrcode.make(request.build_absolute_uri(reverse("app_accounts:public_profile_by_id", args=[profile.public_id])))
     b = BytesIO()
     qr.save(b, "PNG")
@@ -224,18 +192,23 @@ def download_qr(request, pk):
 # ───────────────────────────────────────────────
 @login_required
 def profile_and_card_dashboard(request, pk):
+    """
+    Main dashboard for a single profile.
+    - loads last contact leads (location logs)
+    - loads click events
+    - builds a mapping (by device_ip or visitor id) of which buttons were clicked
+    so the template can show per-visitor which buttons were clicked.
+    """
     profile = get_object_or_404(CustomUser, pk=pk)
-
     if profile != request.user and profile.parent_user != request.user:
         return HttpResponse("Forbidden", 403)
 
-    base = ContactSaveLead.objects.filter(
-        profile=profile
-    ).select_related("visitor").order_by("-timestamp")
-
+    # Location leads (most recent first)
+    base = ContactSaveLead.objects.filter(profile=profile).select_related("visitor").order_by("-timestamp")
     leads = base[:200]
     location_logs = base[:50]
 
+    # Analytics
     total_views = base.count()
     gps_count = base.filter(latitude__isnull=False, longitude__isnull=False).count()
     ip_count = total_views - gps_count
@@ -246,7 +219,6 @@ def profile_and_card_dashboard(request, pk):
 
     today = timezone.now().date()
     labels, values = [], []
-
     for i in range(15):
         d = today - timedelta(days=(14 - i))
         labels.append(d.strftime("%d %b"))
@@ -254,22 +226,36 @@ def profile_and_card_dashboard(request, pk):
 
     top_countries = base.values("country").annotate(c=Count("id")).order_by("-c")[:5]
 
-    # 👉 NEW CLICK SYSTEM
+    # Click events (all)
     click_events = ClickEvent.objects.filter(profile=profile).order_by("-timestamp")
 
-    click_logs = click_events[:50]
+    # Build mapping of device_ip -> list of clicked buttons (preserve order, unique)
+    click_by_ip = defaultdict(list)
+    for ce in click_events:
+        key = ce.device_ip or "anon"
+        btn = (ce.button_type or "").strip().lower()
+        if btn and btn not in click_by_ip[key]:
+            click_by_ip[key].append(btn)
 
-    click_stats = {
-        "total": click_events.count(),
-        "connect": click_events.filter(button_type="connect").count(),
-        "save": click_events.filter(button_type="save").count(),
-        "call": click_events.filter(button_type="call").count(),
-    }
+    # Additionally build mapping for visitor user id if available from ContactSaveLead:
+    # We'll prepare a map lead_key -> buttons for quick template use.
+    lead_buttons_map = {}
+    for lead in location_logs:
+        # prefer visitor-based key if visitor exists, else device_ip
+        if lead.visitor:
+            # try to find clicks by device_ip first; also fallback to using visitor-specific lookup
+            key = lead.device_ip or f"user:{lead.visitor.pk}"
+        else:
+            key = lead.device_ip or "anon"
+        buttons = click_by_ip.get(lead.device_ip or "anon", [])
+        # store a shallow copy
+        lead_buttons_map[lead.id] = buttons
 
     return render(request, "accounts/profile_and_card_dashboard.html", {
         "profile": profile,
         "leads": leads,
         "location_logs": location_logs,
+        "lead_buttons_map": lead_buttons_map,   # use this in template: lead_buttons_map[lead.id]
         "total_views": total_views,
         "gps_count": gps_count,
         "ip_count": ip_count,
@@ -279,11 +265,15 @@ def profile_and_card_dashboard(request, pk):
         "chart_labels": labels,
         "chart_values": values,
         "top_countries": top_countries,
-
-        # Correct logs and stats
-        "click_logs": click_logs,
-        "click_stats": click_stats,
+        "click_events": click_events[:50],
+        "click_stats": {
+            "total": click_events.count(),
+            "connect": click_events.filter(button_type="connect").count(),
+            "save": click_events.filter(button_type="save").count(),
+            "call": click_events.filter(button_type="call").count(),
+        },
     })
+
 
 # ───────────────────────────────────────────────
 @login_required
@@ -292,7 +282,6 @@ def profile_search(request):
     profiles = User.objects.filter(Q(pk=request.user.pk) | Q(parent_user=request.user))
     if query:
         profiles = profiles.filter(full_name__icontains=query)
-
     return render(request, "dashboard/profile_search.html", {"results": profiles, "query": query})
 
 
@@ -304,11 +293,9 @@ def toggle_public_view(request, profile_id):
         profile = User.objects.get(id=profile_id)
         if profile != request.user and profile.parent_user != request.user:
             return JsonResponse({"status": "error", "message": "Forbidden"}, 403)
-
         profile.is_public = not profile.is_public
         profile.save()
         return JsonResponse({"status": "success", "is_public": profile.is_public})
-
     except User.DoesNotExist:
         return JsonResponse({"status": "error", "message": "Profile not found"}, 404)
 
@@ -337,7 +324,6 @@ ORG:{profile.company_name}
 TITLE:{profile.job_title}
 URL:{profile.website}
 END:VCARD"""
-
     r = HttpResponse(v, "text/vcard")
     r["Content-Disposition"] = f'attachment; filename="{profile.username}.vcf"'
     return r
@@ -379,16 +365,13 @@ def track_save_gps(request, username):
         lat = float(raw_lat) if raw_lat not in (None, "") else None
     except:
         lat = None
-
     try:
         lon = float(raw_lon) if raw_lon not in (None, "") else None
     except:
         lon = None
 
     is_gps = lat is not None and lon is not None
-
     device_type, browser, os_name = parse_user_agent(ua)
-
     allowed = _model_field_names(ContactSaveLead)
 
     data = {
@@ -398,18 +381,13 @@ def track_save_gps(request, username):
         "latitude": lat,
         "longitude": lon,
     }
-
     for k in ("country", "city", "thana", "post_office", "accuracy", "location_source"):
         v = request.POST.get(k)
         if v:
             data[k] = v
-
     lead_kwargs = {k: v for k, v in data.items() if k in allowed}
-
     lead = ContactSaveLead.objects.create(**lead_kwargs)
-
     redirect_url = reverse("app_accounts:public_profile", args=[username])
-
     return JsonResponse({
         "success": True,
         "url": redirect_url,
@@ -425,37 +403,34 @@ def track_save_gps(request, username):
 @require_POST
 @csrf_exempt
 def click_track(request, username):
+    """
+    Save both:
+     - a ContactSaveLead (so clicks also produce a short lead record)
+     - a ClickEvent (for precise click analytics)
+    Visitor is recorded only when a logged-in user views/clicks someone else's profile.
+    """
     user = get_object_or_404(CustomUser, username=username)
 
     ip = get_client_ip(request) or request.META.get("REMOTE_ADDR", "")
     ua = request.META.get("HTTP_USER_AGENT", "")[:1000]
 
-    # --- CLICKED BUTTON TYPE ---
-    action = request.POST.get("action", "").strip()  # connect | call | save
+    action = (request.POST.get("action") or "").strip().lower()
 
-    # ====================== VISITOR DETECTION ======================
-    if request.user.is_authenticated:
-        visitor = request.user    # নিজের অ্যাকাউন্ট থেকেও visitor হিসেবে লগ হবে
-    else:
-        visitor = None
+    # Visitor detection: only when logged-in user != profile owner
+    visitor = request.user if request.user.is_authenticated and request.user != user else None
 
-    # ---------- Optional GPS ----------
     raw_lat = request.POST.get("lat") or request.POST.get("latitude")
     raw_lon = request.POST.get("lon") or request.POST.get("longitude")
-
     try:
-        lat = float(raw_lat) if raw_lat else None
+        lat = float(raw_lat) if raw_lat not in (None, "") else None
     except:
         lat = None
-
     try:
-        lon = float(raw_lon) if raw_lon else None
+        lon = float(raw_lon) if raw_lon not in (None, "") else None
     except:
         lon = None
 
     allowed = _model_field_names(ContactSaveLead)
-
-    # ---------------- BASE DATA ----------------
     data = {
         "profile": user,
         "visitor": visitor,
@@ -463,24 +438,15 @@ def click_track(request, username):
         "user_agent": ua,
         "latitude": lat,
         "longitude": lon,
-        "action": action,   # ⭐⭐ MUST SAVE ACTION ⭐⭐
+        "action": action,
     }
-
-    # Optional data from JS (if any)
     for k in ("country", "city", "thana", "post_office", "accuracy", "location_source"):
         v = request.POST.get(k)
         if v:
             data[k] = v
-
-    # Filter only valid model fields
     lead_kwargs = {k: v for k, v in data.items() if k in allowed}
-
-    # ⭐⭐⭐ ORIGINAL CODE — DO NOT REMOVE ⭐⭐⭐
     ContactSaveLead.objects.create(**lead_kwargs)
 
-    # ============================================================
-    # ⭐⭐ NEW REQUIRED FEATURE → BUTTON CLICK MUST SAVE HERE ⭐⭐
-    # ============================================================
     ClickEvent.objects.create(
         profile=user,
         button_type=action,
@@ -489,18 +455,17 @@ def click_track(request, username):
         latitude=lat,
         longitude=lon,
     )
-    # ============================================================
 
     return JsonResponse({"saved": True, "action": action})
-
-
 
 
 # ───────────────────────────────────────────────
 @csrf_exempt
 def track_visit(request, username):
-    print("📌 TRACK VISIT HIT — USER =", username)
-
+    """
+    Called from public_profile JS. Attempts to use GPS when provided, otherwise falls back to IP.
+    Visitor recorded only when a logged-in user visits someone else's profile.
+    """
     user = get_object_or_404(CustomUser, username=username)
 
     lat = request.GET.get("lat")
@@ -527,7 +492,6 @@ def track_visit(request, username):
 
     gps_allowed = bool(lat and lon and acc_raw)
     gps_accuracy_m = None
-
     if gps_allowed:
         try:
             gps_accuracy_m = float(acc_raw)
@@ -543,34 +507,17 @@ def track_visit(request, username):
 
     if location_source == "GPS":
         try:
-            r = requests.get(
-                "https://nominatim.openstreetmap.org/reverse",
-                params={
-                    "format": "json",
-                    "lat": lat,
-                    "lon": lon,
-                    "zoom": 18,
-                    "accept-language": "en",
-                    "addressdetails": 1
-                },
-                headers={"User-Agent": "SmartCard-GPS-Tracker/4.0"},
-                timeout=5
-            ).json()
-
+            r = requests.get("https://nominatim.openstreetmap.org/reverse", params={
+                "format": "json", "lat": lat, "lon": lon, "zoom": 18, "accept-language": "en", "addressdetails": 1
+            }, headers={"User-Agent": "SmartCard-GPS-Tracker/4.0"}, timeout=5).json()
             addr = r.get("address", {})
-
             country = addr.get("country", "Unknown")
             city = addr.get("state_district") or addr.get("county") or addr.get("state") or "Unknown"
             thana = addr.get("town") or addr.get("city") or addr.get("village") or "Unknown"
             post_office = addr.get("postcode", "-")
-
-            latF = float(lat)
-            lonF = float(lon)
-
+            latF = float(lat); lonF = float(lon)
             if (24.14 <= latF <= 24.20) and (90.00 <= lonF <= 90.08):
-                thana = "Mirzapur"
-                city = "Tangail District"
-
+                thana = "Mirzapur"; city = "Tangail District"
         except Exception as e:
             print("⛔ GPS Reverse Error", e)
 
@@ -580,7 +527,6 @@ def track_visit(request, username):
             g = GeoIP2()
             ip = request.META.get("REMOTE_ADDR")
             geo = g.city(ip)
-
             country = geo.get("country_name", "Unknown")
             city = geo.get("city", "Unknown")
             thana = geo.get("region", "Unknown")
@@ -591,7 +537,6 @@ def track_visit(request, username):
         except Exception as e:
             print("❗ GEO Lookup Failed →", e)
 
-    # ⭐⭐ visitor include (YOUR REQUIRED FIX)
     visitor = request.user if request.user.is_authenticated and request.user != user else None
 
     ContactSaveLead.objects.create(
@@ -609,8 +554,6 @@ def track_visit(request, username):
         location_source=location_source,
     )
 
-    print("✔ Location Stored Successfully →", location_source, "ACC%", accuracy)
-
     return JsonResponse({
         "status": "saved",
         "source": location_source,
@@ -619,3 +562,14 @@ def track_visit(request, username):
         "city": city,
         "thana": thana,
     })
+
+
+from django import template
+register = template.Library()
+
+@register.filter
+def get_item(dictionary, key):
+    try:
+        return dictionary.get(key)
+    except:
+        return None

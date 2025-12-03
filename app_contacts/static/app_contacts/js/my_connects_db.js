@@ -1,10 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // 🔽 Note Toggle
-    const noteBox = document.getElementById("noteSection");
-    document.querySelector(".note-toggle").onclick = () => noteBox.classList.toggle("hidden");
+    // NOTE TOGGLE — final working version for all buttons
+    const notePanel = document.querySelector(".note-panel");
+    const noteBtns = document.querySelectorAll(".note-toggle");
 
-    // 📞 & ✉ Live Tracking
+    noteBtns.forEach(btn => {
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            notePanel.classList.toggle("active");
+            notePanel.classList.toggle("hidden");
+        });
+    });
+
+    // TOUCH FIX (mobile)
+    document.addEventListener("touchstart", function(){}, true);
+
+    /* =============================
+       YOUR EXISTING CODE (unchanged)
+       ============================= */
+
     document.querySelectorAll(".call, .email").forEach(btn => {
         btn.addEventListener("click", () => {
             let id = btn.dataset.id;
@@ -19,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 📝 NOTE SAVE (Final Corrected Version 🔥)
     const saveBtn = document.getElementById("saveNoteBtn");
     const newNote = document.getElementById("newNote");
     const noteList = document.getElementById("noteList");
@@ -58,9 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// 🔐 CSRF Helper
+// CSRF Helper
 function getCookie(name){
     return document.cookie.split("; ").reduce((a,b)=>{
-        let c=b.split("="); return c[0]==name?decodeURIComponent(c[1]):a;
-    },"");
+        let c=b.split("="); 
+        return c[0]==name ? decodeURIComponent(c[1]) : a;
+    }, "");
 }
