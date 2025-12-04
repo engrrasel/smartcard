@@ -3,253 +3,56 @@
 {% block title %}Profile & Card{% endblock %}
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'accounts/profile_card_responsive.css' %}">
-
-<style>
-
-    :root{
-        --card-bg: rgba(255, 255, 255, 0.75);
-        --border: rgba(0,0,0,0.08);
-        --shadow: 0 8px 24px rgba(0,0,0,0.06);
-        --radius: 18px;
-        --primary: #1a73e8;
-        --text-light: #6d6d6d;
-    }
-
-    body{
-        background: linear-gradient(135deg, #f7faff, #ffffff);
-    }
-
-    .pc-container{
-        max-width: 960px;
-        margin: auto;
-    }
-
-    /* --------- SECTION SWITCH BUTTONS --------- */
-    .pc-toggle{
-        display:flex;
-        gap:10px;
-        margin-bottom:20px;
-    }
-
-    .pc-btn,
-    .pc-btn-outline{
-        flex:1;
-        padding:12px;
-        border-radius: var(--radius);
-        font-weight:600;
-        cursor:pointer;
-        border:1px solid var(--border);
-        transition:.25s;
-    }
-
-    .pc-btn{
-        background:#111;
-        color:white;
-        border-color:#111;
-    }
-
-    .pc-btn-outline{
-        background:white;
-        color:#333;
-    }
-
-    .pc-btn-outline:hover{
-        border-color:#111;
-    }
-
-    /* --------- PROFILE CARD --------- */
-    .pc-card{
-        background: var(--card-bg);
-        border-radius: var(--radius);
-        padding:18px;
-        margin-bottom:18px;
-        backdrop-filter: blur(12px);
-        border:1px solid var(--border);
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        box-shadow:var(--shadow);
-        transition:.25s;
-        cursor:pointer;
-    }
-
-    .pc-card:hover{
-        transform: translateY(-4px);
-        box-shadow:0 12px 28px rgba(0,0,0,0.12);
-    }
-
-    /* --------- LEFT SECTION --------- */
-    .pc-left{
-        display:flex;
-        gap:16px;
-        align-items:center;
-    }
-
-    .pc-photo{
-        width:70px;
-        height:70px;
-        border-radius:50%;
-        object-fit:cover;
-        border:3px solid #fff;
-        box-shadow:0 4px 15px rgba(0,0,0,0.15);
-    }
-
-    .pc-name{
-        font-size:1.2rem;
-        font-weight:700;
-        margin-bottom:3px;
-    }
-
-    .pc-role{
-        color:var(--text-light);
-        font-size:0.9rem;
-    }
-
-    /* --------- RIGHT ACTION SECTION --------- */
-    .pc-right{
-        display:flex;
-        align-items:center;
-        gap:14px;
-    }
-
-    .pc-icon{
-        background: white;
-        border-radius:50%;
-        width:42px;
-        height:42px;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        box-shadow:0 4px 12px rgba(0,0,0,0.10);
-        transition:.25s;
-        color:#333;
-    }
-
-    .pc-icon i{
-        font-size:1.1rem;
-    }
-
-    .pc-icon:hover{
-        transform: scale(1.12);
-        background:#f3f3f3;
-    }
-
-    /* --------- SWITCH TOGGLE --------- */
-    .switch{
-        position:relative;
-        width:52px;
-        height:28px;
-        display:inline-block;
-    }
-
-    .switch input{ display:none; }
-
-    .slider{
-        position:absolute;
-        cursor:pointer;
-        top:0; left:0;
-        right:0; bottom:0;
-        background:#ccc;
-        border-radius:34px;
-        transition:.4s;
-    }
-
-    .slider:before{
-        position:absolute;
-        content:"";
-        height:22px; width:22px;
-        left:3px;
-        bottom:3px;
-        background:white;
-        border-radius:50%;
-        transition:.4s;
-        box-shadow:0 3px 6px rgba(0,0,0,0.2);
-    }
-
-    input:checked + .slider{
-        background:var(--primary);
-    }
-
-    input:checked + .slider:before{
-        transform: translateX(24px);
-    }
-
-    .pc-heading{
-        font-size:1.4rem;
-        font-weight:700;
-        margin-bottom:12px;
-        color:#111;
-    }
-
-    /* --------- FLOAT BUTTON --------- */
-    .pc-float{
-        position:fixed;
-        bottom:30px;
-        right:30px;
-        background:#111;
-        color:white;
-        padding:14px 20px;
-        border-radius: var(--radius);
-        box-shadow:0 8px 20px rgba(0,0,0,0.2);
-        font-weight:600;
-        display:flex;
-        gap:8px;
-        align-items:center;
-        transition:.3s;
-    }
-
-    .pc-float:hover{
-        transform: translateY(-4px);
-        background:#000;
-    }
-
-</style>
-
+<link rel="stylesheet" href="{% static 'accounts/css/profile_and_card.css' %}">
 
 <div class="pc-container">
 
-    <!-- ============ SECTION TOGGLE BUTTONS ============ -->
+    <!-- Section Switch -->
     <div class="pc-toggle">
         <button id="toggleMain" class="pc-btn active">Your Card</button>
         <button id="toggleChild" class="pc-btn-outline">Employee</button>
     </div>
 
-
-    <!-- ============ MAIN PROFILE SECTION ============ -->
+    <!-- MAIN PROFILE SECTION -->
     <div id="mainSection">
         <h3 class="pc-heading">Your Card</h3>
 
-        <div class="pc-card" onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}'">
+        <div class="pc-card" 
+             data-url="{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}">
 
             <div class="pc-left">
-                <img src="{{ main_profile.profile_picture.url|default:'https://via.placeholder.com/100' }}" class="pc-photo">
+                <img src="{{ main_profile.profile_picture.url|default:'/media/default.png' }}" class="pc-photo">
+
                 <div>
                     <div class="pc-name">{{ main_profile.full_name }}</div>
                     <div class="pc-role">{{ main_profile.job_title }}</div>
                 </div>
             </div>
 
-            <div class="pc-right" onclick="event.stopPropagation();">
+            <div class="pc-right">
 
-                <label class="switch">
-                    <input type="checkbox" {% if main_profile.is_public %}checked{% endif %}>
+                <label class="switch no-redirect">
+                    <input type="checkbox"
+                        class="public-toggle"
+                        data-id="{{ main_profile.id }}"
+                        {% if main_profile.is_public %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
 
-                <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="pc-icon">
+                <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
-                <button class="pc-icon copy-btn" data-url="{{request.scheme}}://{{request.get_host}}/user/{{main_profile.username}}">
+                <button class="pc-icon copy-btn no-redirect"
+                    data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' main_profile.username %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="pc-icon">
+                <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-pen"></i>
                 </a>
 
-                <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="pc-icon">
+                <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-qrcode"></i>
                 </a>
 
@@ -257,54 +60,49 @@
         </div>
     </div>
 
-
-
-
-    <!-- ============ EMPLOYEE SECTION ============ -->
-    <div id="childSection" style="display:none">
+    <!-- EMPLOYEE SECTION -->
+    <div id="childSection" style="display:none;">
         <h3 class="pc-heading">Employee Profiles</h3>
 
         {% for profile in child_profiles %}
-        <div class="pc-card" onclick="window.location.href='{% url 'app_accounts:profile_and_card_dashboard' profile.id %}'">
+        <div class="pc-card" 
+             data-url="{% url 'app_accounts:profile_and_card_dashboard' profile.id %}">
 
             <div class="pc-left">
-                <img src="{{ profile.profile_picture.url|default:'https://via.placeholder.com/100' }}" class="pc-photo">
+                <img src="{{ profile.profile_picture.url|default:'/media/default.png' }}" class="pc-photo">
+
                 <div>
                     <div class="pc-name">{{ profile.full_name }}</div>
                     <div class="pc-role">{{ profile.job_title }}</div>
                 </div>
             </div>
 
-            <div class="pc-right" onclick="event.stopPropagation();">
+            <div class="pc-right">
 
-                <label class="switch">
-                    <input type="checkbox" {% if profile.is_public %}checked{% endif %}>
+                <label class="switch no-redirect">
+                    <input type="checkbox"
+                        class="public-toggle"
+                        data-id="{{ profile.id }}"
+                        {% if profile.is_public %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
 
-                <a href="{% url 'app_accounts:public_profile' profile.username %}" class="pc-icon">
+                <a href="{% url 'app_accounts:public_profile' profile.username %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
-                <button class="pc-icon copy-btn" data-url="{{request.scheme}}://{{request.get_host}}/user/{{profile.username}}">
+                <button class="pc-icon copy-btn no-redirect"
+                    data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="pc-icon">
+                <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-pen"></i>
                 </a>
 
-                <a href="{% url 'app_accounts:download_qr' profile.id %}" class="pc-icon">
+                <a href="{% url 'app_accounts:download_qr' profile.id %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-qrcode"></i>
                 </a>
-
-                <!-- Unlink Button -->
-                <form action="{% url 'app_accounts:unlink_profile' profile.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button class="pc-icon" title="Unlink" style="color:#d93025;">
-                        <i class="fa-solid fa-user-xmark"></i>
-                    </button>
-                </form>
 
             </div>
         </div>
@@ -313,23 +111,10 @@
 
 </div>
 
-
-<!-- FLOAT BUTTON -->
 <a href="{% url 'app_accounts:create_profile' %}" class="pc-float">
     <i class="fa-solid fa-plus"></i> Create New
 </a>
 
-
-
-<script src="{% static 'accounts/profile_card_responsive.js' %}"></script>
-
-<script>
-document.querySelectorAll(".copy-btn").forEach(btn=>{
-    btn.onclick=()=>{
-        navigator.clipboard.writeText(btn.dataset.url);
-        alert("Link Copied ✓");
-    }
-});
-</script>
+<script src="{% static 'accounts/js/profile_and_card.js' %}"></script>
 
 {% endblock %}

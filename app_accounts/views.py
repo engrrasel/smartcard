@@ -298,16 +298,24 @@ def profile_search(request):
 @login_required
 @require_POST
 def toggle_public_view(request, profile_id):
-    try:
-        profile = User.objects.get(id=profile_id)
-        if profile != request.user and profile.parent_user != request.user:
-            return JsonResponse({"status": "error", "message": "Forbidden"}, 403)
-        profile.is_public = not profile.is_public
-        profile.save()
-        return JsonResponse({"status": "success", "is_public": profile.is_public})
-    except User.DoesNotExist:
-        return JsonResponse({"status": "error", "message": "Profile not found"}, 404)
 
+    profile = get_object_or_404(User, id=profile_id)
+
+    # permission check
+    if profile != request.user and profile.parent_user != request.user:
+        return JsonResponse({"status": "error", "message": "Forbidden"}, status=403)
+
+    import json
+    body = json.loads(request.body.decode("utf-8"))
+    new_state = body.get("is_public", None)
+
+    if new_state is None:
+        return JsonResponse({"status": "error", "message": "Invalid state"}, status=400)
+
+    profile.is_public = bool(new_state)
+    profile.save()
+
+    return JsonResponse({"status": "success", "is_public": profile.is_public})
 
 # ───────────────────────────────────────────────
 @login_required
