@@ -11,6 +11,8 @@ urlpatterns = [
     
     path('contacts/', include('app_contacts.urls')),
 
+    path("pages/", include("app_pages.urls")),
+
 
     # 🔐 Authentication
     path(

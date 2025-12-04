@@ -17,7 +17,7 @@
     <div id="mainSection">
         <h3 class="pc-heading">Your Card</h3>
 
-        <div class="pc-card" 
+        <div class="pc-card"
              data-url="{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}">
 
             <div class="pc-left">
@@ -31,20 +31,12 @@
 
             <div class="pc-right">
 
-                <label class="switch no-redirect">
-                    <input type="checkbox"
-                        class="public-toggle"
-                        data-id="{{ main_profile.id }}"
-                        {% if main_profile.is_public %}checked{% endif %}>
-                    <span class="slider"></span>
-                </label>
-
                 <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
                 <button class="pc-icon copy-btn no-redirect"
-                    data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' main_profile.username %}">
+                        data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' main_profile.username %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
@@ -65,7 +57,7 @@
         <h3 class="pc-heading">Employee Profiles</h3>
 
         {% for profile in child_profiles %}
-        <div class="pc-card" 
+        <div class="pc-card"
              data-url="{% url 'app_accounts:profile_and_card_dashboard' profile.id %}">
 
             <div class="pc-left">
@@ -79,20 +71,12 @@
 
             <div class="pc-right">
 
-                <label class="switch no-redirect">
-                    <input type="checkbox"
-                        class="public-toggle"
-                        data-id="{{ profile.id }}"
-                        {% if profile.is_public %}checked{% endif %}>
-                    <span class="slider"></span>
-                </label>
-
                 <a href="{% url 'app_accounts:public_profile' profile.username %}" class="pc-icon no-redirect">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
                 <button class="pc-icon copy-btn no-redirect"
-                    data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}">
+                        data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 

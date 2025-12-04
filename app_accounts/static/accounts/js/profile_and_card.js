@@ -15,36 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
         el.addEventListener("click", e => e.stopPropagation());
     });
 
-    /* PUBLIC TOGGLE */
-    document.querySelectorAll(".public-toggle").forEach(toggle => {
-        toggle.addEventListener("change", function () {
 
-            const profileId = this.dataset.id;
-            const newState = this.checked;
-
-            fetch(`/toggle-public/${profileId}/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
-                },
-                body: JSON.stringify({ is_public: newState })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.status !== "success") {
-                    this.checked = !newState;
-                    alert("Failed to update visibility");
-                }
-            })
-            .catch(() => {
-                this.checked = !newState;
-                alert("Network error");
-            });
-        });
-    });
-
-    /* COPY LINK */
+    /* ===== COPY LINK ===== */
     document.querySelectorAll(".copy-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             navigator.clipboard.writeText(btn.dataset.url);
@@ -69,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => box.remove(), 1200);
     }
 
-    /* TAB SWITCH */
+
+    /* ===== TAB SWITCH ===== */
     const mainBtn = document.getElementById("toggleMain");
     const childBtn = document.getElementById("toggleChild");
     const mainSection = document.getElementById("mainSection");
@@ -88,16 +61,5 @@ document.addEventListener("DOMContentLoaded", () => {
         childBtn.classList.add("active");
         mainBtn.classList.remove("active");
     });
-
-    function getCookie(name) {
-        let v = null;
-        document.cookie.split(";").forEach(c => {
-            c = c.trim();
-            if (c.startsWith(name + "=")) {
-                v = decodeURIComponent(c.slice(name.length + 1));
-            }
-        });
-        return v;
-    }
 
 });
