@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 import uuid
+from app_accounts.models import CustomUser
 
 class Company(models.Model):
     name = models.CharField(max_length=100)
@@ -48,3 +49,59 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+
+
+class Employee(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="employees")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="employee_profiles")
+
+    designation = models.CharField(max_length=100, blank=True, null=True)
+    joined_date = models.DateField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("company", "user")
+
+    def __str__(self):
+        return f"{self.user.full_name or self.user.email} ({self.company.name})"
+
+
+
+
+class EmployeeJoinRequest(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("company", "user")
+
+
+
+class JobPost(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="jobs")
+
+    title = models.CharField(max_length=150)
+    description = models.TextField()
+
+    location = models.CharField(max_length=120, blank=True, null=True)
+    salary = models.CharField(max_length=100, blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.company.name}"

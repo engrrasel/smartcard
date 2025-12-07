@@ -1,0 +1,73 @@
+{% extends "pages/page_base.html" %}
+{% block title %}Employee Hub{% endblock %}
+
+{% block page_content %}
+
+<h3 class="mb-3">👥 Employee Hub</h3>
+
+{% if selected_company %}
+
+<form method="get" class="d-flex gap-2 mb-3">
+    <input type="hidden" name="company" value="{{ selected_company }}">
+    <input type="text" name="q" class="form-control" placeholder="Search user by name, email, phone...">
+    <button class="btn btn-primary">🔍 Search</button>
+</form>
+
+{% if search_results %}
+<h5>🌍 Global Users</h5>
+<table class="table table-bordered mb-4">
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Action</th>
+    </tr>
+    {% for user in search_results %}
+    <tr>
+        <td>{{ user.full_name }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+            <a href="{% url 'app_pages:send_join_request' user.id %}?company={{ selected_company }}"
+               class="btn btn-sm btn-warning">
+               ➕ Send Join Request
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<h5>✅ Joined Employees</h5>
+<table class="table table-bordered">
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Joined</th>
+        <th>Action</th>
+    </tr>
+
+    {% for emp in joined_employees %}
+    <tr>
+        <td>{{ emp.user.full_name }}</td>
+        <td>{{ emp.user.email }}</td>
+        <td>{{ emp.joined_date }}</td>
+        <td>
+            <a href="{% url 'app_pages:remove_employee' emp.id %}"
+               class="btn btn-sm btn-danger"
+               onclick="return confirm('Are you sure you want to remove this employee?')">
+               ❌ Remove
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4" class="text-center text-muted">No employee yet</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% else %}
+<p class="text-danger">⚠️ Please select a company first.</p>
+{% endif %}
+
+{% endblock %}

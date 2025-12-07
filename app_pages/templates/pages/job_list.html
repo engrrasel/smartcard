@@ -1,0 +1,89 @@
+{% extends "pages/page_base.html" %}
+{% block title %}Job & Recruitment{% endblock %}
+
+{% block page_content %}
+
+<h3 class="mb-3">💼 Job & Recruitment</h3>
+
+<!-- ✅ JOIN REQUEST NOTIFICATION (USER SIDE) -->
+{% if join_requests %}
+<div class="alert alert-warning mb-4">
+    <h5>📩 Company Join Requests</h5>
+
+    <table class="table table-sm table-bordered mt-2">
+        <tr>
+            <th>Company</th>
+            <th>Action</th>
+        </tr>
+
+        {% for req in join_requests %}
+        <tr>
+            <td>{{ req.company.name }}</td>
+            <td>
+                <a href="{% url 'app_pages:accept_join_request' req.id %}"
+                   class="btn btn-sm btn-success">✅ Accept</a>
+
+                <a href="{% url 'app_pages:reject_join_request' req.id %}"
+                   class="btn btn-sm btn-danger">❌ Reject</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<!-- ✅ JOB POST LIST -->
+<table class="table table-bordered">
+    <tr>
+        <th>Company</th>
+        <th>Title</th>
+        <th>Location</th>
+        <th>Salary</th>
+        <th>Action</th>
+    </tr>
+
+    {% for job in jobs %}
+    <tr>
+        <td>{{ job.company.name }}</td>
+        <td>{{ job.title }}</td>
+        <td>{{ job.location }}</td>
+        <td>{{ job.salary }}</td>
+        <td>
+            <button class="btn btn-sm btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#jobModal{{ job.id }}">
+                View Details
+            </button>
+        </td>
+    </tr>
+
+    <!-- ✅ Job Detail Modal -->
+    <div class="modal fade" id="jobModal{{ job.id }}">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title">{{ job.title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <p><b>Company:</b> {{ job.company.name }}</p>
+            <p><b>Location:</b> {{ job.location }}</p>
+            <p><b>Salary:</b> {{ job.salary }}</p>
+            <hr>
+            <p>{{ job.description }}</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    {% empty %}
+    <tr>
+        <td colspan="5" class="text-center text-muted">No job posts available</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

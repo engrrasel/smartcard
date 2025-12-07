@@ -188,6 +188,16 @@ body{
            <i class="fa-solid fa-address-book"></i> Contacts
         </a>
 
+        <a href="{% url 'app_pages:job_list' %}"
+            class="{% if request.resolver_match.url_name == 'job_list' %}active{% endif %}">
+            <i class="fa-solid fa-briefcase"></i> Job / Recruitment
+
+            {% if unread_job_count and unread_job_count > 0 %}
+                <span class="badge bg-danger ms-auto">{{ unread_job_count }}</span>
+            {% endif %}
+        </a>
+
+
         <!-- ⭐ NEW: Pages Menu -->
         <a href="{% url 'app_pages:company_pages' %}"
            class="{% if request.resolver_match.url_name == 'company_pages' %}active{% endif %}">
