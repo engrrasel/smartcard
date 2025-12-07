@@ -1,0 +1,85 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block title %}Company System{% endblock %}
+
+{% block content %}
+
+<!-- ✅ COMPANY SYSTEM HEADER -->
+<div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center">
+
+    <!-- ✅ LEFT MENU -->
+    <div>
+        <a href="#" class="btn btn-outline-light btn-sm">Dashboard</a>
+        <a href="#" class="btn btn-outline-light btn-sm">Employee</a>
+        <a href="#" class="btn btn-outline-light btn-sm">Product</a>
+    </div>
+
+    <!-- ✅ RIGHT COMPANY DROPDOWN (LOGO + NAME) -->
+    <div class="dropdown">
+    <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+
+        {% if selected_company %}
+            {% if companies.0.logo %}
+                <img src="{{ companies.0.logo.url }}" width="25" height="25" style="border-radius:50%;">
+            {% endif %}
+            <span>{{ companies.0.name }}</span>
+        {% else %}
+            🏢 Select Company
+        {% endif %}
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end" style="min-width:240px;">
+
+        {% for company in companies %}
+            <li class="px-2 py-1 border-bottom">
+
+                <!-- ✅ Company Select -->
+                <a class="dropdown-item d-flex align-items-center gap-2"
+                   href="?company={{ company.id }}">
+
+                    {% if company.logo %}
+                        <img src="{{ company.logo.url }}" width="22" height="22"
+                             style="border-radius:50%;">
+                    {% endif %}
+
+                    <span>{{ company.name }}</span>
+                </a>
+
+                <!-- ✅ ONLY SELECTED COMPANY SHOWS EDIT -->
+                {% if selected_company and company.id|stringformat:"s" == selected_company %}
+                    <div class="text-end pe-2">
+                        <a href="{% url 'app_pages:edit_company' company.id %}"
+                           class="text-warning small">
+                           ✏️ Edit This Company
+                        </a>
+                    </div>
+                {% endif %}
+
+            </li>
+        {% empty %}
+            <li class="dropdown-item text-muted">No company found</li>
+        {% endfor %}
+
+    </ul>
+</div>
+
+
+</div>
+
+<!-- ✅ PAGE BODY -->
+<div class="p-4">
+    {% block page_content %}
+    {% endblock %}
+</div>
+
+<!-- ✅ ADD NEW COMPANY BUTTON -->
+<div class="p-3">
+    <a href="{% url 'app_pages:add_company' %}" class="btn btn-success btn-sm">
+        ➕ Add New Company
+    </a>
+</div>
+
+{% endblock %}
