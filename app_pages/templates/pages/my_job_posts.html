@@ -1,0 +1,47 @@
+{% extends "pages/page_base.html" %}
+{% block title %}My Job Posts{% endblock %}
+
+{% block page_content %}
+
+<h3 class="mb-3">💼 Job Posts — {{ company.name }}</h3>
+
+<table class="table table-bordered">
+    <tr class="table-dark">
+        <th>Title</th>
+        <th>Type</th>
+        <th>Salary</th>
+        <th>Deadline</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+
+    {% for job in jobs %}
+    <tr>
+        <td>{{ job.title }}</td>
+        <td>{{ job.get_job_type_display }}</td>
+        <td>{{ job.salary }}</td>
+        <td>{{ job.deadline|default:"N/A" }}</td>
+        <td>
+            {% if job.is_active %}
+            <span class="badge bg-success">Active</span>
+            {% else %}
+            <span class="badge bg-danger">Inactive</span>
+            {% endif %}
+        </td>
+        <td>
+            <a href="{% url 'app_pages:edit_job' job.id %}" class="btn btn-sm btn-primary">Edit</a>
+            <a href="{% url 'app_pages:delete_job' job.id %}"
+               class="btn btn-sm btn-danger"
+               onclick="return confirm('Are you sure?')">
+                Delete
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6" class="text-center text-muted">No job posts found.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

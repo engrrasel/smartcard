@@ -8,23 +8,46 @@
 <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center">
 
     <!-- ✅ LEFT MENU -->
-    <div>
-        <a href="#" class="btn btn-outline-light btn-sm">Dashboard</a>
-        <a href="#" class="btn btn-outline-light btn-sm">Product</a>
+    <!-- ✅ LEFT MENU -->
+<div>
+    <a href="#" class="btn btn-outline-light btn-sm">Dashboard</a>
+    <a href="#" class="btn btn-outline-light btn-sm">Product</a>
 
-        <!-- ✅ SAFE Employee Link -->
-        {% if selected_company %}
-            <a href="{% url 'app_pages:employee_hub' %}?company={{ selected_company }}"
-               class="btn btn-outline-light btn-sm">
-                Employee
-            </a>
-        {% else %}
-            <a href="{% url 'app_pages:employee_hub' %}"
-               class="btn btn-outline-light btn-sm">
-                Employee
-            </a>
-        {% endif %}
-    </div>
+    <!-- ✅ SAFE Employee Link -->
+    {% if selected_company %}
+        <a href="{% url 'app_pages:employee_hub' %}?company={{ selected_company }}"
+           class="btn btn-outline-light btn-sm">
+            Employee
+        </a>
+    {% else %}
+        <a href="{% url 'app_pages:employee_hub' %}"
+           class="btn btn-outline-light btn-sm">
+            Employee
+        </a>
+    {% endif %}
+
+    <!-- ✅ JOB POST (Create Job) -->
+    {% if selected_company %}
+        <a href="{% url 'app_pages:create_job' companies.0.id %}"
+           class="btn btn-outline-warning btn-sm">
+            💼 Post Job
+        </a>
+    {% else %}
+        <a href="{% url 'app_pages:job_list' %}"
+           class="btn btn-outline-warning btn-sm">
+            💼 Jobs
+        </a>
+    {% endif %}
+
+    <!-- ✅ ✅ NEW: MY JOB POSTS (Job History + Edit + Delete) -->
+    {% if selected_company %}
+        <a href="{% url 'app_pages:my_job_posts' companies.0.id %}"
+           class="btn btn-outline-info btn-sm">
+            📄 My Job Posts
+        </a>
+    {% endif %}
+</div>
+
 
     <!-- ✅ RIGHT COMPANY DROPDOWN (LOGO + NAME) -->
     <div class="dropdown">
