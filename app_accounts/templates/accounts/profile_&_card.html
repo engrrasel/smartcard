@@ -36,7 +36,7 @@
 
             <div class="pc-right">
 
-                <!-- ✅ PUBLIC TOGGLE (MAIN PROFILE) -->
+                <!-- PUBLIC TOGGLE (MAIN PROFILE) -->
                 <label class="public-switch no-redirect" title="Public Profile ON / OFF">
                     <input type="checkbox"
                            class="public-toggle"
@@ -51,7 +51,7 @@
                 </a>
 
                 <button class="pc-icon copy-btn no-redirect"
-                        data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' main_profile.username %}">
+                        data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' main_profile.username %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
@@ -89,7 +89,7 @@
 
             <div class="pc-right">
 
-                <!-- ✅ PUBLIC TOGGLE (EMPLOYEE PROFILE) -->
+                <!-- PUBLIC TOGGLE (EMPLOYEE PROFILE) -->
                 <label class="public-switch no-redirect" title="Public Profile ON / OFF">
                     <input type="checkbox"
                            class="public-toggle"
@@ -103,8 +103,9 @@
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
+                <!-- ✅ FIXED COPY LINK -->
                 <button class="pc-icon copy-btn no-redirect"
-                        data-url="{{ request.build_absolute_uri|slice:':-1' }}{% url 'app_accounts:public_profile' profile.username %}">
+                        data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'app_accounts:public_profile' profile.username %}">
                     <i class="fa-solid fa-link"></i>
                 </button>
 
