@@ -179,9 +179,24 @@ def remove_profile_picture(request, pk):
 # ───────────────────────────────────────────────
 # public profile only renders template — tracking is handled by track_visit()
 def public_profile(request, username):
-    profile = get_object_or_404(CustomUser, username=username)
-    return render(request, "accounts/public_profile.html", {"profile": profile})
+    profile = CustomUser.objects.filter(
+        username=username,
+        is_public=True
+    ).first()
 
+    if not profile:
+        # ✅ প্রফাইল পাব্লিক না হলে এই টেমপ্লেট দেখাবে
+        return render(
+            request,
+            "accounts/profile_not_found.html",
+            status=404
+        )
+
+    return render(
+        request,
+        "accounts/public_profile.html",
+        {"profile": profile}
+    )
 
 # ───────────────────────────────────────────────
 @login_required
@@ -298,24 +313,25 @@ def profile_search(request):
 @login_required
 @require_POST
 def toggle_public_view(request, profile_id):
-
     profile = get_object_or_404(User, id=profile_id)
 
-    # permission check
     if profile != request.user and profile.parent_user != request.user:
-        return JsonResponse({"status": "error", "message": "Forbidden"}, status=403)
+        return JsonResponse({"status": "error"}, status=403)
 
     import json
-    body = json.loads(request.body.decode("utf-8"))
-    new_state = body.get("is_public", None)
+    body = json.loads(request.body)
 
-    if new_state is None:
-        return JsonResponse({"status": "error", "message": "Invalid state"}, status=400)
+    # 🔍 DEBUG LINE — এখানেই লিখবেন
+    print("PUBLIC STATUS:", body.get("is_public"), type(body.get("is_public")))
 
-    profile.is_public = bool(new_state)
-    profile.save()
+    # FIXED LOGIC
+    profile.is_public = True if body.get("is_public") is True else False
+    profile.save(update_fields=["is_public"])
 
-    return JsonResponse({"status": "success", "is_public": profile.is_public})
+    return JsonResponse({
+        "status": "success",
+        "is_public": profile.is_public
+    })
 
 # ───────────────────────────────────────────────
 @login_required

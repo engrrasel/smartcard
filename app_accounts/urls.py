@@ -59,7 +59,7 @@ urlpatterns = [
     path('search/', views.profile_search, name='profile_search'),
 
     # 🌗 Toggle Public View
-    path("toggle-public/<int:profile_id>/", views.toggle_public_view, name="toggle_public"),
+    path("profile/toggle-public/<int:profile_id>/", views.toggle_public_view, name="toggle_public_view"),
 
     # 🧍 Additional Pages
     path('subscription/', views.subscription, name='subscription'),

@@ -35,35 +35,33 @@
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
-    transition: 0.25s;
-}
-
-.pc-btn {
-    background: var(--primary);
-    color: #fff;
-    border: 1px solid var(--primary);
-}
-.pc-btn:hover {
-    background: var(--primary-dark);
-}
-
-.pc-btn-outline {
-    border: 1px solid var(--primary);
+    transition: all .25s ease;
     background: #fff;
     color: var(--primary);
+    border: 1px solid var(--primary);
 }
+
+.pc-btn:hover,
 .pc-btn-outline:hover {
     background: #e9f1ff;
 }
 
-.pc-btn.active {
+/* only active button colored */
+.pc-btn.active,
+.pc-btn-outline.active {
     background: var(--primary);
     color: #fff;
+    border-color: var(--primary);
+}
+
+.pc-btn.active:hover,
+.pc-btn-outline.active:hover {
+    background: var(--primary-dark);
 }
 
 
 /* -----------------------------------------
-   PROFILE CARD STYLE
+   PROFILE CARD
 ----------------------------------------- */
 .pc-card {
     background: #fff;
@@ -76,19 +74,19 @@
     justify-content: space-between;
     align-items: center;
 
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.3s;
+    transition: transform .25s ease, box-shadow .25s ease, border .25s;
 }
 
 .pc-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0px 8px 22px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
     border-color: #c7c7c7;
     background: #fafafa;
 }
 
 
 /* -----------------------------------------
-   LEFT SIDE (photo + name)
+   LEFT SIDE
 ----------------------------------------- */
 .pc-left {
     display: flex;
@@ -102,7 +100,7 @@
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
 }
 
 .pc-name {
@@ -118,7 +116,7 @@
 
 
 /* -----------------------------------------
-   RIGHT SIDE ICONS
+   RIGHT SIDE ICONS & TOGGLE
 ----------------------------------------- */
 .pc-right {
     display: flex;
@@ -133,7 +131,7 @@
     color: #333;
     border: 1px solid #d6d6d6;
     background: #fff;
-    transition: 0.25s;
+    transition: .25s;
     cursor: pointer;
 }
 
@@ -145,6 +143,59 @@
 
 
 /* -----------------------------------------
+   PUBLIC TOGGLE SWITCH
+----------------------------------------- */
+.public-switch {
+    position: relative;
+    width: 42px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.public-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.public-switch .slider {
+    position: absolute;
+    inset: 0;
+    background: #cfcfcf;
+    border-radius: 999px;
+    transition: .3s;
+}
+
+.public-switch .slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    top: 2px;
+    background: #fff;
+    border-radius: 50%;
+    transition: .3s;
+}
+
+/* ON state */
+.public-switch input:checked + .slider {
+    background: var(--primary);
+}
+
+.public-switch input:checked + .slider::before {
+    transform: translateX(20px);
+}
+
+/* subtle hover */
+.public-switch:hover .slider {
+    box-shadow: 0 0 0 3px rgba(13,110,253,.15);
+}
+
+
+/* -----------------------------------------
    FLOATING BUTTON
 ----------------------------------------- */
 .pc-float {
@@ -152,13 +203,15 @@
     right: 22px;
     bottom: 22px;
     background: var(--primary);
-    color: white;
+    color: #fff;
     padding: 10px 22px;
     border-radius: 6px;
     font-weight: 600;
     border: 1px solid #0a58ca;
     font-size: 14px;
+    transition: .25s;
 }
+
 .pc-float:hover {
     background: var(--primary-dark);
 }

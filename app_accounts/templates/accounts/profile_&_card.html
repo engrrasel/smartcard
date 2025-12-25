@@ -7,13 +7,17 @@
 
 <div class="pc-container">
 
-    <!-- Section Switch -->
+    <!-- ================= SECTION SWITCH ================= -->
     <div class="pc-toggle">
-        <button id="toggleMain" class="pc-btn active">Your Card</button>
-        <button id="toggleChild" class="pc-btn-outline">Employee</button>
+        <button id="toggleMain" class="pc-btn active" data-tab="main">
+            Your Card
+        </button>
+        <button id="toggleChild" class="pc-btn-outline" data-tab="child">
+            Employee
+        </button>
     </div>
 
-    <!-- MAIN PROFILE SECTION -->
+    <!-- ================= MAIN PROFILE SECTION ================= -->
     <div id="mainSection">
         <h3 class="pc-heading">Your Card</h3>
 
@@ -21,7 +25,8 @@
              data-url="{% url 'app_accounts:profile_and_card_dashboard' main_profile.id %}">
 
             <div class="pc-left">
-                <img src="{{ main_profile.profile_picture.url|default:'/media/default.png' }}" class="pc-photo">
+                <img src="{{ main_profile.profile_picture.url|default:'/media/default.png' }}"
+                     class="pc-photo">
 
                 <div>
                     <div class="pc-name">{{ main_profile.full_name }}</div>
@@ -31,7 +36,17 @@
 
             <div class="pc-right">
 
-                <a href="{% url 'app_accounts:public_profile' main_profile.username %}" class="pc-icon no-redirect">
+                <!-- ✅ PUBLIC TOGGLE (MAIN PROFILE) -->
+                <label class="public-switch no-redirect" title="Public Profile ON / OFF">
+                    <input type="checkbox"
+                           class="public-toggle"
+                           data-id="{{ main_profile.id }}"
+                           {% if main_profile.is_public %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+
+                <a href="{% url 'app_accounts:public_profile' main_profile.username %}"
+                   class="pc-icon no-redirect">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
@@ -40,11 +55,13 @@
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <a href="{% url 'app_accounts:edit_profile' main_profile.id %}" class="pc-icon no-redirect">
+                <a href="{% url 'app_accounts:edit_profile' main_profile.id %}"
+                   class="pc-icon no-redirect">
                     <i class="fa-solid fa-pen"></i>
                 </a>
 
-                <a href="{% url 'app_accounts:download_qr' main_profile.id %}" class="pc-icon no-redirect">
+                <a href="{% url 'app_accounts:download_qr' main_profile.id %}"
+                   class="pc-icon no-redirect">
                     <i class="fa-solid fa-qrcode"></i>
                 </a>
 
@@ -52,7 +69,7 @@
         </div>
     </div>
 
-    <!-- EMPLOYEE SECTION -->
+    <!-- ================= EMPLOYEE SECTION ================= -->
     <div id="childSection" style="display:none;">
         <h3 class="pc-heading">Employee Profiles</h3>
 
@@ -61,7 +78,8 @@
              data-url="{% url 'app_accounts:profile_and_card_dashboard' profile.id %}">
 
             <div class="pc-left">
-                <img src="{{ profile.profile_picture.url|default:'/media/default.png' }}" class="pc-photo">
+                <img src="{{ profile.profile_picture.url|default:'/media/default.png' }}"
+                     class="pc-photo">
 
                 <div>
                     <div class="pc-name">{{ profile.full_name }}</div>
@@ -71,7 +89,17 @@
 
             <div class="pc-right">
 
-                <a href="{% url 'app_accounts:public_profile' profile.username %}" class="pc-icon no-redirect">
+                <!-- ✅ PUBLIC TOGGLE (EMPLOYEE PROFILE) -->
+                <label class="public-switch no-redirect" title="Public Profile ON / OFF">
+                    <input type="checkbox"
+                           class="public-toggle"
+                           data-id="{{ profile.id }}"
+                           {% if profile.is_public %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+
+                <a href="{% url 'app_accounts:public_profile' profile.username %}"
+                   class="pc-icon no-redirect">
                     <i class="fa-solid fa-eye"></i>
                 </a>
 
@@ -80,12 +108,21 @@
                     <i class="fa-solid fa-link"></i>
                 </button>
 
-                <a href="{% url 'app_accounts:edit_profile' profile.id %}" class="pc-icon no-redirect">
+                <a href="{% url 'app_accounts:edit_profile' profile.id %}"
+                   class="pc-icon no-redirect">
                     <i class="fa-solid fa-pen"></i>
                 </a>
 
-                <a href="{% url 'app_accounts:download_qr' profile.id %}" class="pc-icon no-redirect">
+                <a href="{% url 'app_accounts:download_qr' profile.id %}"
+                   class="pc-icon no-redirect">
                     <i class="fa-solid fa-qrcode"></i>
+                </a>
+
+                <a href="{% url 'app_accounts:unlink_profile' profile.id %}"
+                   class="pc-icon no-redirect text-warning"
+                   onclick="return confirmUnlink();"
+                   title="Unlink from dashboard">
+                    <i class="fa-solid fa-link-slash"></i>
                 </a>
 
             </div>
@@ -95,6 +132,7 @@
 
 </div>
 
+<!-- ================= FLOAT BUTTON ================= -->
 <a href="{% url 'app_accounts:create_profile' %}" class="pc-float">
     <i class="fa-solid fa-plus"></i> Create New
 </a>

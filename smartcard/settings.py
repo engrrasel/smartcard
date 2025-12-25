@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '192.168.1.130',
+    '192.168.1.131',
     'starlessly-knickered-stewart.ngrok-free.dev',   # ← ADD THIS
 ]
 
