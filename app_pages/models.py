@@ -63,21 +63,28 @@ class Company(models.Model):
 # ✅ EMPLOYEE MODEL (FULL HISTORY SUPPORT)
 # ================================
 class Employee(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="employees")
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="employee_profiles")
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="employees"
+    )
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="employee_profiles"
+    )
 
     designation = models.CharField(max_length=100, blank=True, null=True)
 
-    # ✅ Manual Control (Rejoin Support)
-    joined_date = models.DateField()
+    # ✅ System will auto-set join date
+    joined_date = models.DateField(auto_now_add=True)
+
     leave_date = models.DateField(blank=True, null=True)
 
     salary = models.PositiveIntegerField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # ❌ NO unique_together here — Multiple history allowed!
 
     def __str__(self):
         return f"{self.user} at {self.company}"

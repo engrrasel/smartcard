@@ -1,0 +1,25 @@
+<h4>My Career</h4>
+
+{% for emp in my_jobs %}
+<div class="card mb-2">
+    <div class="card-body">
+
+        <strong>{{ emp.company.name }}</strong><br>
+
+        {% if emp.is_active %}
+            <span class="badge bg-success">Active</span>
+            <small class="text-muted">
+                Joined on {{ emp.joined_date }}
+            </small>
+        {% else %}
+            <span class="badge bg-danger">Removed</span>
+            <small class="text-muted">
+                Left on {{ emp.leave_date }}
+            </small>
+        {% endif %}
+
+    </div>
+</div>
+{% empty %}
+<p>No career history found.</p>
+{% endfor %}

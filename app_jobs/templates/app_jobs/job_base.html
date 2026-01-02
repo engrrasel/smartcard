@@ -1,0 +1,37 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'app_jobs/css/job_base.css' %}">
+
+<div class="desktop-tabs">
+    <div class="d-flex gap-3 fw-semibold mb-4 justify-content-center">
+
+        <a href="{% url 'app_jobs:career_dashboard' %}?tab=available"
+           class="nav-btn {% if active_tab == 'available' %}active{% endif %}">
+            Dashboard
+        </a>
+
+        <a href="{% url 'app_jobs:career_dashboard' %}?tab=career"
+           class="nav-btn {% if active_tab == 'career' %}active{% endif %}">
+            My Career
+        </a>
+
+        <a href="{% url 'app_jobs:career_dashboard' %}?tab=requests"
+           class="nav-btn {% if active_tab == 'requests' %}active{% endif %}">
+            Requests
+            {% if join_requests.count > 0 %}
+                <span class="badge bg-danger ms-1">{{ join_requests.count }}</span>
+            {% endif %}
+        </a>
+
+
+    </div>
+</div>
+
+<div class="container mt-4">
+    {% block job_content %}{% endblock %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "app_jobs/job_base.html" %}
+
+{% block job_content %}
+
+{% if active_tab == "available" %}
+    {% include "app_jobs/career_available.html" %}
+{% elif active_tab == "career" %}
+    {% include "app_jobs/career_my_jobs.html" %}
+{% elif active_tab == "requests" %}
+    {% include "app_jobs/career_requests.html" %}
+{% endif %}
+
+{% endblock %}

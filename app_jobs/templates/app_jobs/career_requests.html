@@ -1,0 +1,48 @@
+<h4>Join Requests</h4>
+
+{% for req in requests %}
+    <div class="card mb-2">
+        <div class="card-body d-flex justify-content-between align-items-center">
+
+            <div>
+                <strong>{{ req.company.name }}</strong><br>
+
+                {% if req.request_type == "company_invite" %}
+                    <small class="text-muted">
+                        This company invited you to join
+                    </small>
+                {% elif req.request_type == "job_apply" %}
+                    <small class="text-muted">
+                        You applied for: {{ req.job.title }}
+                    </small>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+
+                <!-- ACCEPT -->
+                <form method="post"
+                      action="{% url 'app_jobs:employment_request_action' req.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="accept">
+                    <button class="btn btn-sm btn-success">
+                        Accept
+                    </button>
+                </form>
+
+                <!-- REJECT -->
+                <form method="post"
+                      action="{% url 'app_jobs:employment_request_action' req.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <button class="btn btn-sm btn-outline-danger">
+                        Reject
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <p>No join requests.</p>
+{% endfor %}

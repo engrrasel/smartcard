@@ -39,6 +39,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     "app_accounts.apps.AppAccountConfig",  # <-- এটি উপরে থাকবে (auth model তাই)
+    "app_jobs",
     "app_pages",
     "app_contacts",                        # <-- তারপর contacts
     'django_crontab',

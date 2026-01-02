@@ -188,14 +188,7 @@ body{
            <i class="fa-solid fa-address-book"></i> Contacts
         </a>
 
-        <a href="{% url 'app_pages:job_list' %}"
-            class="{% if request.resolver_match.url_name == 'job_list' %}active{% endif %}">
-            <i class="fa-solid fa-briefcase"></i> Job / Recruitment
 
-            {% if unread_job_count and unread_job_count > 0 %}
-                <span class="badge bg-danger ms-auto">{{ unread_job_count }}</span>
-            {% endif %}
-        </a>
 
 
         <!-- ⭐ NEW: Pages Menu -->
@@ -203,6 +196,12 @@ body{
            class="{% if request.resolver_match.url_name == 'company_pages' %}active{% endif %}">
            <i class="fa-solid fa-building"></i> Pages
         </a>
+
+        <a href="{% url 'app_jobs:career_dashboard' %}"
+        class="{% if request.resolver_match.url_name == 'career_dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-briefcase"></i> Career
+        </a>
+
 
         <a href="{% url 'app_accounts:subscription' %}"
            class="{% if request.resolver_match.url_name == 'subscription' %}active{% endif %}">

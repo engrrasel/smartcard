@@ -1,0 +1,12 @@
+<h4>Available Jobs</h4>
+
+{% for job in jobs %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <strong>{{ job.title }}</strong><br>
+            <small>{{ job.company.name }}</small>
+        </div>
+    </div>
+{% empty %}
+    <p>No jobs available.</p>
+{% endfor %}

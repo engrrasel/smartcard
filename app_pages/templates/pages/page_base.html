@@ -8,48 +8,25 @@
 <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center">
 
     <!-- ✅ LEFT MENU -->
-    <!-- ✅ LEFT MENU -->
-<div>
-    <a href="#" class="btn btn-outline-light btn-sm">Dashboard</a>
-    <a href="#" class="btn btn-outline-light btn-sm">Product</a>
+    <div>
+        <a href="#" class="btn btn-outline-light btn-sm">Dashboard</a>
+        <a href="#" class="btn btn-outline-light btn-sm">Product</a>
 
-    <!-- ✅ SAFE Employee Link -->
-    {% if selected_company %}
-        <a href="{% url 'app_pages:employee_hub' %}?company={{ selected_company }}"
-           class="btn btn-outline-light btn-sm">
-            Employee
-        </a>
-    {% else %}
-        <a href="{% url 'app_pages:employee_hub' %}"
-           class="btn btn-outline-light btn-sm">
-            Employee
-        </a>
-    {% endif %}
+        <!-- ✅ SAFE Employee Link -->
+        {% if selected_company %}
+            <a href="{% url 'app_pages:employee_hub' %}?company={{ selected_company }}"
+               class="btn btn-outline-light btn-sm">
+                Employee
+            </a>
+        {% else %}
+            <a href="{% url 'app_pages:employee_hub' %}"
+               class="btn btn-outline-light btn-sm">
+                Employee
+            </a>
+        {% endif %}
+    </div>
 
-    <!-- ✅ JOB POST (Create Job) -->
-    {% if selected_company %}
-        <a href="{% url 'app_pages:create_job' companies.0.id %}"
-           class="btn btn-outline-warning btn-sm">
-            💼 Post Job
-        </a>
-    {% else %}
-        <a href="{% url 'app_pages:job_list' %}"
-           class="btn btn-outline-warning btn-sm">
-            💼 Jobs
-        </a>
-    {% endif %}
-
-    <!-- ✅ ✅ NEW: MY JOB POSTS (Job History + Edit + Delete) -->
-    {% if selected_company %}
-        <a href="{% url 'app_pages:my_job_posts' companies.0.id %}"
-           class="btn btn-outline-info btn-sm">
-            📄 My Job Posts
-        </a>
-    {% endif %}
-</div>
-
-
-    <!-- ✅ RIGHT COMPANY DROPDOWN (LOGO + NAME) -->
+    <!-- ✅ RIGHT COMPANY DROPDOWN -->
     <div class="dropdown">
         <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2"
                 type="button"
@@ -83,7 +60,7 @@
                         <span>{{ company.name }}</span>
                     </a>
 
-                    <!-- ✅ ONLY SELECTED COMPANY SHOWS EDIT -->
+                    <!-- ✅ Edit only selected company -->
                     {% if selected_company and company.id|stringformat:"s" == selected_company %}
                         <div class="text-end pe-2">
                             <a href="{% url 'app_pages:edit_company' company.id %}"
@@ -105,8 +82,7 @@
 
 <!-- ✅ PAGE BODY -->
 <div class="p-4">
-    {% block page_content %}
-    {% endblock %}
+    {% block page_content %}{% endblock %}
 </div>
 
 <!-- ✅ ADD NEW COMPANY BUTTON -->

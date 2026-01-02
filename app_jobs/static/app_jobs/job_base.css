@@ -1,0 +1,42 @@
+/* ===== TOP NAV (Contacts style) ===== */
+
+.desktop-tabs {
+    margin-top: 10px;
+}
+
+.nav-btn {
+    padding: 8px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #6c757d;
+    background: transparent;
+    border: 1.5px solid transparent;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+/* Hover */
+.nav-btn:hover {
+    color: #0d6efd;
+}
+
+/* Active tab */
+.nav-btn.active {
+    color: #0d6efd;
+    border: 1.5px solid #0d6efd;
+    background: #f8fbff;
+}
+
+/* Disabled */
+.nav-btn.disabled {
+    color: #9aa0a6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Badge tweak */
+.nav-btn .badge {
+    font-size: 11px;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
