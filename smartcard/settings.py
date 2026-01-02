@@ -79,9 +79,8 @@ ROOT_URLCONF = 'smartcard.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
-
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -89,9 +88,12 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
-                # ⭐ ADD THESE TWO ↓ 
+                # existing
                 'app_contacts.context_processors.notif_context',
                 'app_contacts.context_processors.pending_request_count',
+
+                # company context
+                'app_pages.context_processors.company_context',
             ],
         },
     },

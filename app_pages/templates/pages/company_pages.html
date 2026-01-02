@@ -1,9 +1,31 @@
 {% extends "pages/page_base.html" %}
-{% load static %}
-
-{% block title %}Company Pages{% endblock %}
 
 {% block page_content %}
-<h2>📄 Company Pages</h2>
-<p>এখানে আপনার কোম্পানির পেইজ তৈরি বা ম্যানেজ করতে পারবেন।</p>
+
+<h4 class="mb-3">My Pages</h4>
+
+{% if companies %}
+    <div class="list-group">
+        {% for company in companies %}
+            <a href="{% url 'app_pages:company_pages' %}?company={{ company.id }}"
+               class="list-group-item list-group-item-action
+               {% if selected_company and selected_company.id == company.id %}active{% endif %}">
+                <strong>{{ company.name }}</strong>
+                <br>
+                <small class="text-muted">
+                    {{ company.business_type|default:"Business Page" }}
+                </small>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">You have not created any page yet.</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="{% url 'app_pages:add_company' %}" class="btn btn-sm btn-primary">
+        + Add New Page
+    </a>
+</div>
+
 {% endblock %}

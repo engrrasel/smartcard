@@ -1,73 +1,161 @@
 {% extends "pages/page_base.html" %}
+{% load static %}
+
 {% block title %}Employee Hub{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'app_pages/css/employee_hub.css' %}">
+{% endblock %}
 
 {% block page_content %}
 
-<h3 class="mb-3">👥 Employee Hub</h3>
-
 {% if selected_company %}
 
-<form method="get" class="d-flex gap-2 mb-3">
-    <input type="hidden" name="company" value="{{ selected_company }}">
-    <input type="text" name="q" class="form-control" placeholder="Search user by name, email, phone...">
-    <button class="btn btn-primary">🔍 Search</button>
-</form>
+<div class="employee-hub">
 
-{% if search_results %}
-<h5>🌍 Global Users</h5>
-<table class="table table-bordered mb-4">
-    <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Action</th>
-    </tr>
-    {% for user in search_results %}
-    <tr>
-        <td>{{ user.full_name }}</td>
-        <td>{{ user.email }}</td>
-        <td>
-            <a href="{% url 'app_pages:send_join_request' user.id %}?company={{ selected_company }}"
-               class="btn btn-sm btn-warning">
-               ➕ Send Join Request
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-{% endif %}
+    <!-- ================= HEADER ================= -->
+    <div class="hub-header mb-4">
+        <h4 class="mb-1">Employee Hub</h4>
+        <p class="text-muted mb-0">
+            Company: <strong>{{ selected_company.name }}</strong>
+        </p>
+    </div>
 
-<h5>✅ Joined Employees</h5>
-<table class="table table-bordered">
-    <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Joined</th>
-        <th>Action</th>
-    </tr>
+    <!-- ================= LIVE SEARCH (FACEBOOK STYLE) ================= -->
+    <div class="hub-search mb-3">
 
-    {% for emp in joined_employees %}
-    <tr>
-        <td>{{ emp.user.full_name }}</td>
-        <td>{{ emp.user.email }}</td>
-        <td>{{ emp.joined_date }}</td>
-        <td>
-            <a href="{% url 'app_pages:remove_employee' emp.id %}"
-               class="btn btn-sm btn-danger"
-               onclick="return confirm('Are you sure you want to remove this employee?')">
-               ❌ Remove
-            </a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4" class="text-center text-muted">No employee yet</td>
-    </tr>
-    {% endfor %}
-</table>
+        <!-- REQUIRED: company id for AJAX -->
+        <input type="hidden" id="companyId" value="{{ selected_company.id }}">
 
+        <div class="fb-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text"
+                   id="liveSearchInput"
+                   autocomplete="off"
+                   placeholder="Search people by name, email or phone">
+        </div>
+
+        <!-- AJAX RESULTS -->
+        <div id="liveSearchResults" class="live-search-results"></div>
+
+    </div>
+
+    <!-- ================= FALLBACK SEARCH RESULTS (NON-AJAX) ================= -->
+    {% if search_results %}
+    <div class="card hub-card mb-4">
+        <div class="card-header fw-semibold">
+            Available Users
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in search_results %}
+                    <tr>
+                        <td>
+                            <div class="user-row">
+                                <img
+                                    src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'img/default-user.png' %}{% endif %}"
+                                    class="avatar"
+                                    alt="avatar">
+                                <span>{{ user.full_name|default:"—" }}</span>
+                            </div>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'app_pages:send_join_request' user.id %}?company={{ selected_company.id }}"
+                               class="btn btn-sm btn-outline-warning">
+                                Send Request
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+
+<!-- ================= CURRENT EMPLOYEES ================= -->
+<div class="data-card mt-4">
+
+    <div class="table-responsive">
+        <table class="data-table">
+
+            <thead>
+                <tr>
+                    <th>EMPLOYEE</th>
+                    <th>EMAIL</th>
+                    <th>JOINED</th>
+                    <th class="text-end">ACTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for emp in joined_employees %}
+                <tr>
+
+                    <!-- Employee -->
+                    <td>
+                        <div class="user-row">
+                            <img
+                                src="{% if emp.user.profile_picture %}{{ emp.user.profile_picture.url }}{% else %}{% static 'img/default-user.png' %}{% endif %}"
+                                class="avatar"
+                                alt="avatar">
+                            <strong>{{ emp.user.full_name|default:"Anonymous" }}</strong>
+                        </div>
+                    </td>
+
+                    <!-- Email -->
+                    <td>{{ emp.user.email }}</td>
+
+                    <!-- Joined -->
+                    <td class="time">
+                        {{ emp.joined_date }}
+                    </td>
+
+                    <!-- Action -->
+                    <td class="text-end">
+                        <a href="{% url 'app_pages:remove_employee' emp.id %}"
+                           class="btn btn-sm btn-outline-danger btn-remove-employee">
+                            Remove
+                        </a>
+                    </td>
+
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        No employees added yet
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+
+
+</div>
 
 {% else %}
-<p class="text-danger">⚠️ Please select a company first.</p>
+<div class="alert alert-warning">
+    Please select a company to manage employees.
+</div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'app_pages/js/employee_hub.js' %}"></script>
 {% endblock %}

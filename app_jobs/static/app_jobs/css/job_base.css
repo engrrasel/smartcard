@@ -1,0 +1,248 @@
+/* ==================================================
+   TOP NAV TABS
+   ================================================== */
+
+.nav-btn {
+    color: #000;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.nav-btn:hover {
+    background-color: #f1f1f1;
+    color: #000;
+}
+
+.nav-btn.active {
+    background-color: #000;
+    color: #fff;
+}
+
+.nav-btn.active .badge {
+    background-color: #fff;
+    color: #000;
+}
+
+.nav-btn:active {
+    transform: scale(0.97);
+}
+
+
+/* ==================================================
+   COMPANY LOGO (GENERIC)
+   ================================================== */
+
+.company-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #e5e5e5;
+}
+
+.company-logo.placeholder {
+    background-color: #000;
+    color: #fff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+
+/* ==================================================
+   CAREER CARD ANIMATION (LOAD)
+   ================================================== */
+
+@keyframes cardFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ==================================================
+   CAREER CARD (SIMPLE + VISIBLE + INTERACTIVE)
+   ================================================== */
+
+.career-card {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+
+    background-color: #fafafa;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+
+    animation: cardFadeUp 0.35s ease forwards;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Card hover */
+.career-card:hover {
+    background-color: #f4f4f4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+/* Left accent glow */
+.career-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    background-color: #000;
+    opacity: 0;
+    border-radius: 3px;
+    transition: opacity 0.2s ease;
+}
+
+.career-card:hover::before {
+    opacity: 0.12;
+}
+
+
+/* ==================================================
+   CAREER LOGO (LEFT)
+   ================================================== */
+
+.career-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: #000;
+    color: #fff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.career-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.25s ease;
+}
+
+/* Logo hover zoom */
+.career-card:hover .career-logo img {
+    transform: scale(1.08);
+}
+
+
+/* ==================================================
+   CAREER INFO (RIGHT)
+   ================================================== */
+
+.career-info {
+    flex: 1;
+}
+
+/* Header */
+.career-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Company name */
+.career-header a {
+    position: relative;
+    color: #000;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Animated underline */
+.career-header a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background-color: #000;
+    transition: width 0.25s ease;
+}
+
+.career-card:hover .career-header a::after {
+    width: 100%;
+}
+
+
+/* ==================================================
+   STATUS BADGE
+   ================================================== */
+
+.status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.status.active {
+    background: #e8f7ee;
+    color: #1a7f37;
+}
+
+.status.removed {
+    background: #fdeaea;
+    color: #b42318;
+}
+
+/* Badge hover pulse */
+.career-card:hover .status {
+    transform: scale(1.05);
+}
+
+
+/* ==================================================
+   DATES & DURATION
+   ================================================== */
+
+.career-dates {
+    font-size: 13px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.career-duration {
+    font-size: 12px;
+    color: #444;
+    margin-top: 2px;
+}
+
+
+/* ==================================================
+   ACCESSIBILITY
+   ================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

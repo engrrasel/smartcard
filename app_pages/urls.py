@@ -45,4 +45,22 @@ urlpatterns = [
         name="remove_employee"
     ),
 
+        path("products/", views.company_products, name="products"),
+        path("recruitment/", views.recruitment_dashboard, name="recruitment"),
+
+
+    path(
+        "employee/live-search/",
+        views.employee_live_search,
+        name="employee_live_search"
+    ),
+
+    path("company/<int:company_id>/manage/",
+         views.company_manage,
+         name="company_manage"),
+
+    path("company/<int:company_id>/deactivate/",
+         views.company_deactivate,
+         name="company_deactivate"),
+
 ]

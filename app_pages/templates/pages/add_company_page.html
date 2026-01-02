@@ -1,75 +1,20 @@
-{% extends "pages/page_base.html" %}
+{% extends "dashboard/dashboard_base.html" %}
 
-{% block title %}
-    {% if edit_mode %}
-        Edit Company
-    {% else %}
-        Add New Company
-    {% endif %}
-{% endblock %}
+{% block content %}
+<div class="container py-4">
 
-{% block page_content %}
+    <h4 class="mb-3">
+        {% if edit_mode %}Edit Page{% else %}Add New Page{% endif %}
+    </h4>
 
-<h3 class="mb-3">
-    {% if edit_mode %}
-        ✏️ Edit Company
-    {% else %}
-        ➕ Add New Company
-    {% endif %}
-</h3>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
 
-<form method="post" enctype="multipart/form-data" style="max-width: 600px;">
-    {% csrf_token %}
+        <button type="submit" class="btn btn-primary">
+            {% if edit_mode %}Update{% else %}Create{% endif %}
+        </button>
+    </form>
 
-    <div class="mb-2">Company Name {{ form.name }}</div>
-    <div class="mb-2">Business Type {{ form.business_type }}</div>
-    <div class="mb-2">Founded Year {{ form.founded_year }}</div>
-
-    <div class="mb-2">Phone {{ form.phone }}</div>
-    <div class="mb-2">Email {{ form.email }}</div>
-    <div class="mb-2">Website {{ form.website }}</div>
-
-    <div class="mb-2">Address {{ form.address }}</div>
-    <div class="mb-2">Description {{ form.description }}</div>
-
-    <div class="mb-2">Facebook Page {{ form.facebook_page }}</div>
-    <div class="mb-2">Google Map {{ form.map_location }}</div>
-
-    <div class="mb-3">Company Logo {{ form.logo }}</div>
-
-    <button type="submit" class="btn btn-success">
-        {% if edit_mode %}
-            ✅ Update Company
-        {% else %}
-            ✅ Save Company
-        {% endif %}
-    </button>
-</form>
-
-{% if edit_mode and company %}
-    <div class="mt-4 p-3 border rounded bg-light">
-
-        <h6 class="mb-2">🌍 Public Company URLs</h6>
-
-        <!-- ✅ Auto Name Based URL -->
-        <div class="mb-2">
-            <label class="form-label">Public Name URL</label>
-            <input type="text"
-                   class="form-control"
-                   value="{{ request.scheme }}://{{ request.get_host }}{{ company.public_slug_url }}"
-                   readonly>
-        </div>
-
-        <!-- ✅ Permanent UID URL -->
-        <div class="mb-2">
-            <label class="form-label">Permanent URL</label>
-            <input type="text"
-                   class="form-control"
-                   value="{{ request.scheme }}://{{ request.get_host }}{{ company.public_uid_url }}"
-                   readonly>
-        </div>
-
-    </div>
-{% endif %}
-
+</div>
 {% endblock %}

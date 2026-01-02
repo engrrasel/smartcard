@@ -1,0 +1,255 @@
+/* =====================================================
+   EMPLOYEE HUB – PRODUCTION CSS (CLEAN & SAFE)
+===================================================== */
+
+/* ================= EMPLOYEE HUB CONTAINER ================= */
+.employee-hub {
+    max-width: 100%;
+}
+
+/* ================= HEADER ================= */
+.employee-hub .hub-header h4 {
+    font-weight: 600;
+}
+
+/* ================= HUB CARD ================= */
+.employee-hub .hub-card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.employee-hub .hub-card .card-header {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* ================= SEARCH WRAPPER ================= */
+.employee-hub .hub-search {
+    position: relative;
+}
+
+/* ================= FACEBOOK STYLE SEARCH ================= */
+.employee-hub .fb-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0f2f5;
+    border-radius: 999px;
+    padding: 10px 16px;
+    max-width: 420px;
+    transition: all 0.2s ease;
+}
+
+.employee-hub .fb-search i {
+    color: #65676b;
+    font-size: 14px;
+}
+
+.employee-hub .fb-search input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 14px;
+    color: #050505;
+}
+
+.employee-hub .fb-search input::placeholder {
+    color: #65676b;
+}
+
+.employee-hub .fb-search:focus-within {
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(24,119,242,.3);
+}
+
+/* ================= LIVE SEARCH RESULTS ================= */
+.employee-hub .live-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 8px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.12);
+    overflow: hidden;
+    display: none;
+    z-index: 1050;
+}
+
+.employee-hub .result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.employee-hub .result-item:last-child {
+    border-bottom: none;
+}
+
+.employee-hub .result-item:hover {
+    background: #f5f6f7;
+}
+
+.employee-hub .result-item img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #e9ecef;
+    flex-shrink: 0;
+}
+
+.employee-hub .result-item .name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.employee-hub .result-item .email {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.employee-hub .result-item a {
+    margin-left: auto;
+}
+
+.employee-hub .live-search-results .empty {
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+}
+
+/* ================= USER ROW (TABLE FALLBACK) ================= */
+.employee-hub .user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.employee-hub .avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #e9ecef;
+    flex-shrink: 0;
+}
+
+/* ================= EMPLOYEE CARD GRID ================= */
+.employee-hub .employee-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 16px;
+    text-align: center;
+    height: 100%;
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.employee-hub .employee-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+
+.employee-hub .employee-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 12px;
+    background: #e9ecef;
+}
+
+.employee-hub .employee-info h6 {
+    font-weight: 600;
+}
+
+.employee-hub .employee-info small {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.employee-hub .joined-date {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* ================= VISITOR / DATA CARD ================= */
+.data-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    padding: 12px;
+    overflow: hidden;
+}
+
+/* ================= DATA TABLE ================= */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.data-table thead th {
+    text-align: left;
+    padding: 14px 12px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: #6c757d;
+    white-space: nowrap;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.data-table tbody td {
+    padding: 14px 12px;
+    vertical-align: middle;
+    white-space: nowrap;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* ================= DATA BADGES ================= */
+.data-table .time {
+    font-weight: 600;
+    color: #212529;
+}
+
+.data-table .accuracy {
+    font-weight: 700;
+    color: #000;
+}
+
+.badge-ip {
+    background: #ffc107;
+    color: #000;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 992px) {
+    .data-table {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 576px) {
+    .employee-hub .fb-search,
+    .employee-hub .live-search-results {
+        max-width: 100%;
+    }
+}

@@ -1,0 +1,33 @@
+{% extends "pages/page_base.html" %}
+
+{% block page_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5>Products — {{ selected_company.name }}</h5>
+
+    <a href="#" class="btn btn-sm btn-primary">
+        + Add Product
+    </a>
+</div>
+
+{% if products %}
+    <div class="list-group">
+        {% for product in products %}
+            <div class="list-group-item d-flex justify-content-between">
+                <div>
+                    <strong>{{ product.name }}</strong><br>
+                    <small class="text-muted">
+                        ৳ {{ product.price }}
+                    </small>
+                </div>
+                {% if not product.is_active %}
+                    <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No products added yet.</p>
+{% endif %}
+
+{% endblock %}

@@ -6,6 +6,8 @@ from app_jobs.models import JobPost, EmploymentRequest
 from app_pages.models import Employee
 
 
+from datetime import date
+
 @login_required
 def career_dashboard(request):
     tab = request.GET.get("tab", "available")
@@ -18,6 +20,12 @@ def career_dashboard(request):
     my_jobs = Employee.objects.filter(
         user=request.user
     ).select_related("company").order_by("-created_at")
+
+    # 🔹 duration হিসাব
+    today = date.today()
+    for emp in my_jobs:
+        end_date = emp.leave_date if emp.leave_date else today
+        emp.duration_days = (end_date - emp.joined_date).days
 
     requests = EmploymentRequest.objects.filter(
         user=request.user,

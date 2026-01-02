@@ -1,22 +1,42 @@
 <h4>My Career</h4>
 
 {% for emp in my_jobs %}
-<div class="card mb-2">
-    <div class="card-body">
+<div class="career-card">
 
-        <strong>{{ emp.company.name }}</strong><br>
-
-        {% if emp.is_active %}
-            <span class="badge bg-success">Active</span>
-            <small class="text-muted">
-                Joined on {{ emp.joined_date }}
-            </small>
+    <!-- Left: Logo -->
+    <div class="career-logo">
+        {% if emp.company.logo %}
+            <img src="{{ emp.company.logo.url }}" alt="{{ emp.company.name }}">
         {% else %}
-            <span class="badge bg-danger">Removed</span>
-            <small class="text-muted">
-                Left on {{ emp.leave_date }}
-            </small>
+            <span>{{ emp.company.name|slice:":1" }}</span>
         {% endif %}
+    </div>
+
+    <!-- Right: Info -->
+    <div class="career-info">
+
+        <div class="career-header">
+            <a href="{% url 'app_pages:company_public_slug' emp.company.slug %}"
+               target="_blank">
+                {{ emp.company.name }}
+            </a>
+
+            {% if emp.is_active %}
+                <span class="status active">Active</span>
+            {% else %}
+                <span class="status removed">Removed</span>
+            {% endif %}
+        </div>
+
+        <div class="career-dates">
+            {{ emp.joined_date }}
+            →
+            {% if emp.leave_date %}{{ emp.leave_date }}{% else %}Present{% endif %}
+        </div>
+
+        <div class="career-duration">
+            {{ emp.duration_days }} days
+        </div>
 
     </div>
 </div>
