@@ -368,27 +368,24 @@
     box-shadow: 0 6px 16px rgba(0,0,0,.12);
     border-color: #d0d0d0;
 }
-
 /* Avatar inside button */
 .company-btn.logo-only .company-avatar {
-    width: 64px;
-    height: 64px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
-    background: #111;
-    color: #fff;
-
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 1;
+    background: #fff;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
     overflow: hidden;
+
+    /* subtle ring */
+    border: 1px solid #e5e5e5;
 }
 
-/* Logo image */
+/* Logo image (perfect fit) */
 .company-btn.logo-only .company-avatar img {
     width: 100%;
     height: 100%;
@@ -401,3 +398,4 @@
     box-shadow: 0 8px 20px rgba(0,0,0,.18);
     border-color: #bfbfbf;
 }
+
