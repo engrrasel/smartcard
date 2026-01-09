@@ -1,13 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib import messages
-
-from django.http import JsonResponse
-
 
 from .models import (
     Company,
@@ -28,18 +25,13 @@ from app_jobs.models import EmploymentRequest
 def company_pages(request):
     companies = Company.objects.filter(owner=request.user)
 
-    selected_company = None
     company_id = request.GET.get("company")
+    selected_company = companies.filter(id=company_id).first() if company_id else companies.first()
 
-    if company_id:
-        selected_company = companies.filter(id=company_id).first()
-    else:
-        selected_company = companies.first()
-
-    # 🔥 IMPORTANT: permanent absolute URL
+    # 🔒 Permanent absolute public URL (UID based)
     for company in companies:
         company.absolute_public_url = request.build_absolute_uri(
-            company.public_url()
+            company.get_public_url()
         )
 
     return render(request, "pages/company_pages.html", {
@@ -49,13 +41,12 @@ def company_pages(request):
     })
 
 
-
 # ======================================
 # ✅ PUBLIC COMPANY PAGES
 # ======================================
 def company_public_by_uid(request, uid):
     company = get_object_or_404(Company, uid=uid)
-    return render(request, "pages/company_public.html", {"company": company})
+    return redirect(company.get_absolute_url())
 
 
 def company_public_by_slug(request, slug):
@@ -74,6 +65,7 @@ def add_company(request):
         company = form.save(commit=False)
         company.owner = request.user
         company.save()
+        messages.success(request, "Company created successfully.")
         return redirect("app_pages:company_pages")
 
     return render(request, "pages/add_company_page.html", {
@@ -82,7 +74,7 @@ def add_company(request):
 
 
 # ======================================
-# ✅ EDIT or manage COMPANY
+# ✅ MANAGE / EDIT COMPANY
 # ======================================
 @login_required
 def company_manage(request, company_id):
@@ -125,7 +117,6 @@ def company_products(request):
     )
 
     products = Product.objects.filter(company=selected_company)
-
     companies.sort(key=lambda c: c.id != selected_company.id)
 
     return render(request, "pages/company_products.html", {
@@ -267,7 +258,6 @@ def recruitment_dashboard(request):
     )
 
     jobs = JobPost.objects.filter(company=selected_company)
-
     companies.sort(key=lambda c: c.id != selected_company.id)
 
     return render(request, "pages/recruitment_dashboard.html", {
@@ -278,7 +268,9 @@ def recruitment_dashboard(request):
     })
 
 
-
+# ======================================
+# ✅ EMPLOYEE LIVE SEARCH (AJAX)
+# ======================================
 @login_required
 def employee_live_search(request):
     company_id = request.GET.get("company")
@@ -287,20 +279,10 @@ def employee_live_search(request):
     if not company_id or not q:
         return JsonResponse({"results": []})
 
-    try:
-        company = Company.objects.get(id=company_id)
-    except Company.DoesNotExist:
-        return JsonResponse({
-            "results": [],
-            "error": "Invalid company ID"
-        }, status=400)
+    company = get_object_or_404(Company, id=company_id)
 
-    # 🔒 ownership check
     if company.owner != request.user:
-        return JsonResponse({
-            "results": [],
-            "error": "Not allowed"
-        }, status=403)
+        return JsonResponse({"error": "Not allowed"}, status=403)
 
     active_ids = Employee.objects.filter(
         company=company,
@@ -313,17 +295,19 @@ def employee_live_search(request):
         Q(phone__icontains=q)
     ).exclude(id__in=active_ids)[:10]
 
-    data = [{
-        "id": u.id,
-        "name": u.full_name or "—",
-        "email": u.email,
-        "avatar": u.profile_picture.url if u.profile_picture else "/static/img/default-user.png"
-    } for u in users]
+    return JsonResponse({
+        "results": [{
+            "id": u.id,
+            "name": u.full_name or "—",
+            "email": u.email,
+            "avatar": u.profile_picture.url if u.profile_picture else "/static/img/default-user.png"
+        } for u in users]
+    })
 
-    return JsonResponse({"results": data})
 
-
-
+# ======================================
+# ✅ DEACTIVATE COMPANY
+# ======================================
 @login_required
 def company_deactivate(request, company_id):
     company = get_object_or_404(

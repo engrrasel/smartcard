@@ -24,16 +24,20 @@ class Company(models.Model):
 
     name = models.CharField(max_length=100)
 
-    # ✅ Human-friendly company username (changeable)
+    # ✅ Human-friendly company username (SEO / UI)
     slug = models.SlugField(
         unique=True,
         blank=True,
         db_index=True,
-        help_text="Unique company username"
+        help_text="Unique company username (used in URL)"
     )
 
-    # ✅ Permanent identifier (never changes)
-    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    # 🔒 Permanent identifier (never changes)
+    uid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
+    )
 
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -52,27 +56,38 @@ class Company(models.Model):
     logo = models.ImageField(upload_to="company_logos/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # ================================
+    # URL METHODS
+    # ================================
+
     # 🔹 SEO / UI URL (slug based – can change)
-    def slug_url(self):
+    def get_absolute_url(self):
         return f"/pages/company/{self.slug}/"
 
-    # 🔒 Permanent URL (UID based – use for QR & Copy)
-    def public_url(self):
+    # 🔒 Permanent URL (UID based – never changes)
+    def get_public_url(self):
         return f"/pages/company/id/{self.uid}/"
 
+    # ================================
+    # SAVE LOGIC
+    # ================================
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.name)
             slug = base_slug
             counter = 1
-            while Company.objects.filter(slug=slug).exists():
+
+            while Company.objects.filter(slug=slug).exclude(pk=self.pk).exists():
                 slug = f"{base_slug}-{counter}"
                 counter += 1
+
             self.slug = slug
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
+
 
 
 # ================================
