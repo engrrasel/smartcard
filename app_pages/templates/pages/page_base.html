@@ -13,7 +13,7 @@
 
             <a href="{% url 'app_pages:company_pages' %}{% if selected_company %}?company={{ selected_company.id }}{% endif %}"
                class="nav-btn {% if active_tab == 'dashboard' %}active{% endif %}">
-                Dashboard
+                Pages
             </a>
 
             <a href="{% url 'app_pages:products' %}{% if selected_company %}?company={{ selected_company.id }}{% endif %}"

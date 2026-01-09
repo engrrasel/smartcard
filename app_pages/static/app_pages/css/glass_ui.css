@@ -1,0 +1,125 @@
+/* =========================
+   GLASS CONTAINER
+   ========================= */
+.glass-container {
+    max-width: 900px;
+    margin: auto;
+}
+
+/* =========================
+   GLASS CARD
+   ========================= */
+.glass-card {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    padding: 32px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================
+   PAGE TITLE
+   ========================= */
+.page-title {
+    font-weight: 700;
+    color: #1a73e8;
+}
+
+/* =========================
+   PROFILE / LOGO UPLOAD
+   ========================= */
+.profile-upload-box {
+    position: relative;
+    display: inline-block;
+}
+
+.upload-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.camera-btn {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 44px;
+    height: 44px;
+    background: #1a73e8;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.camera-btn:hover {
+    transform: scale(1.1);
+}
+
+/* =========================
+   INPUTS
+   ========================= */
+.glass-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(8px);
+    transition: 0.25s;
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 10px rgba(26, 115, 232, 0.25);
+}
+
+.form-label-custom {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+.neo-btn {
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: 0.25s;
+    box-shadow: 4px 4px 14px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+}
+
+.neo-btn:hover {
+    transform: scale(1.05);
+}
+
+.small-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+}
+
+.primary-btn {
+    background: #1a73e8;
+    color: #fff;
+}
+
+.cancel-btn {
+    background: #f1f1f1;
+    color: #333;
+}

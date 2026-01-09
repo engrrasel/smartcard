@@ -22,7 +22,6 @@ urlpatterns = [
     ),
 
     path("add-company/", views.add_company, name="add_company"),
-    path("company/edit/<int:id>/", views.edit_company, name="edit_company"),
 
 
     # =========================

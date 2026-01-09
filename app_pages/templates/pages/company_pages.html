@@ -1,31 +1,89 @@
 {% extends "pages/page_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'app_pages/css/company_page.css' %}">
+{% endblock %}
 
 {% block page_content %}
 
-<h4 class="mb-3">My Pages</h4>
+<h4 class="mb-4">My Pages</h4>
 
 {% if companies %}
-    <div class="list-group">
-        {% for company in companies %}
-            <a href="{% url 'app_pages:company_pages' %}?company={{ company.id }}"
-               class="list-group-item list-group-item-action
-               {% if selected_company and selected_company.id == company.id %}active{% endif %}">
-                <strong>{{ company.name }}</strong>
-                <br>
-                <small class="text-muted">
+<div class="d-flex flex-column gap-2">
+
+    {% for company in companies %}
+    <div class="company-row {% if selected_company and selected_company.id == company.id %}active{% endif %}">
+
+        <!-- LEFT -->
+        <div class="company-left">
+
+            <span class="company-avatar">
+                {% if company.logo %}
+                    <img src="{{ company.logo.url }}" alt="{{ company.name }}">
+                {% else %}
+                    {{ company.name|slice:":1"|upper }}
+                {% endif %}
+            </span>
+
+            <div class="company-text">
+                <div class="company-name">{{ company.name }}</div>
+                <div class="company-meta">
                     {{ company.business_type|default:"Business Page" }}
-                </small>
+                    {% if company.founded_year %}
+                        • Founded {{ company.founded_year }}
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="company-actions">
+
+            <!-- Manage -->
+            <a href="{% url 'app_pages:company_manage' company.id %}"
+               class="action-btn"
+               title="Manage Page">
+                <i class="fa-solid fa-gear"></i>
             </a>
-        {% endfor %}
+
+            <!-- QR -->
+            <button type="button"
+                    class="action-btn qr-btn"
+                    data-url="{{ request.scheme }}://{{ request.get_host }}{{ company.public_slug_url }}"
+                    title="QR Code">
+                <i class="fa-solid fa-qrcode"></i>
+            </button>
+
+            <!-- Copy -->
+            <button type="button"
+                    class="action-btn copy-btn"
+                    data-url="{{ request.scheme }}://{{ request.get_host }}{{ company.public_slug_url }}"
+                    title="Copy Link">
+                <i class="fa-solid fa-link"></i>
+            </button>
+
+        </div>
+
     </div>
+    {% endfor %}
+
+</div>
 {% else %}
-    <p class="text-muted">You have not created any page yet.</p>
+<div class="alert alert-light text-muted">
+    You have not created any page yet.
+</div>
 {% endif %}
 
-<div class="mt-3">
-    <a href="{% url 'app_pages:add_company' %}" class="btn btn-sm btn-primary">
+<div class="mt-4">
+    <a href="{% url 'app_pages:add_company' %}" class="btn btn-primary btn-sm">
         + Add New Page
     </a>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'app_pages/js/company_page.js' %}"></script>
 {% endblock %}

@@ -1,20 +1,153 @@
 {% extends "dashboard/dashboard_base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Company Profile{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'app_pages/css/glass_ui.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="glass-container py-4">
 
-    <h4 class="mb-3">
-        {% if edit_mode %}Edit Page{% else %}Add New Page{% endif %}
-    </h4>
+    <div class="glass-card">
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title">
+                <i class="fa-solid fa-building me-2"></i>
+                {% if edit_mode %}Edit Company{% else %}Create Company{% endif %}
+            </h3>
 
-        <button type="submit" class="btn btn-primary">
-            {% if edit_mode %}Update{% else %}Create{% endif %}
-        </button>
-    </form>
+            <a href="{% url 'app_pages:company_pages' %}" class="neo-btn small-btn">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back
+            </a>
+        </div>
 
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} shadow-sm rounded-3 small py-2 mb-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+
+            <!-- Company Logo -->
+            <div class="text-center mb-4">
+                <div class="profile-upload-box">
+                    <img id="previewImage"
+                         src="{% if company and company.logo %}{{ company.logo.url }}{% else %}https://via.placeholder.com/150{% endif %}"
+                         class="upload-preview"
+                         alt="Company Logo">
+
+                    <label for="id_logo" class="camera-btn">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                </div>
+
+                {{ form.logo|add_class:"d-none" }}
+                <div class="text-muted small mt-2">
+                    Tap camera icon to upload logo
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="row g-3">
+
+                <!-- Company Name -->
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Company Name</label>
+                    {{ form.name|add_class:"glass-input" }}
+                    {% if form.name.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.name.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Company Username (slug) -->
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Company Username</label>
+                    {{ form.slug|add_class:"glass-input" }}
+                    <div class="text-muted small">
+                        Used in public URL (e.g. /company/your-name)
+                    </div>
+                    {% if form.slug.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.slug.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Business Type</label>
+                    {{ form.business_type|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Founded Year</label>
+                    {{ form.founded_year|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Phone</label>
+                    {{ form.phone|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Email</label>
+                    {{ form.email|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Website</label>
+                    {{ form.website|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label form-label-custom">Address</label>
+                    {{ form.address|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label form-label-custom">Description</label>
+                    {{ form.description|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Facebook Page</label>
+                    {{ form.facebook_page|add_class:"glass-input" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label form-label-custom">Map Location</label>
+                    {{ form.map_location|add_class:"glass-input" }}
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-end mt-4 gap-2">
+                <a href="{% url 'app_pages:company_pages' %}" class="neo-btn cancel-btn">
+                    <i class="fa-solid fa-xmark me-1"></i> Cancel
+                </a>
+
+                <button type="submit" class="neo-btn primary-btn">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {% if edit_mode %}Update{% else %}Create{% endif %}
+                </button>
+            </div>
+
+        </form>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'app_pages/js/image_preview.js' %}"></script>
 {% endblock %}

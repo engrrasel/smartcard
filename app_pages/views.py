@@ -76,11 +76,15 @@ def add_company(request):
 
 
 # ======================================
-# ✅ EDIT COMPANY
+# ✅ EDIT or manage COMPANY
 # ======================================
 @login_required
-def edit_company(request, id):
-    company = get_object_or_404(Company, id=id, owner=request.user)
+def company_manage(request, company_id):
+    company = get_object_or_404(
+        Company,
+        id=company_id,
+        owner=request.user
+    )
 
     form = CompanyForm(
         request.POST or None,
@@ -90,12 +94,14 @@ def edit_company(request, id):
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        messages.success(request, "Company information updated successfully.")
         return redirect("app_pages:company_pages")
 
     return render(request, "pages/add_company_page.html", {
         "form": form,
         "edit_mode": True,
         "company": company,
+        "active_tab": "manage",
     })
 
 
@@ -310,18 +316,6 @@ def employee_live_search(request):
 
     return JsonResponse({"results": data})
 
-
-@login_required
-def company_manage(request, company_id):
-    company = get_object_or_404(
-        Company,
-        id=company_id,
-        owner=request.user
-    )
-
-    return render(request, "pages/company_manage.html", {
-        "company": company
-    })
 
 
 @login_required

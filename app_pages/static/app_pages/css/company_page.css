@@ -1,0 +1,96 @@
+/* ===== Single Line Company Row ===== */
+
+.company-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 14px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+}
+
+.company-row.active{
+    border-color:#0d6efd;
+    background:#f0f6ff;
+}
+
+/* ===== LEFT ===== */
+
+.company-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+}
+
+.company-avatar{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    background:#e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    overflow:hidden;
+    flex-shrink:0;
+}
+
+.company-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.company-text{
+    min-width:0;
+}
+
+.company-name{
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.company-meta{
+    font-size:.8rem;
+    color:#6b7280;
+    white-space:nowrap;
+}
+
+/* ===== RIGHT ACTIONS (HORIZONTAL) ===== */
+
+/* ===== FORCE HORIZONTAL ACTION BUTTONS ===== */
+
+.company-actions{
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* prevent bootstrap/block behavior */
+.company-actions > *{
+    display: inline-flex !important;
+    margin: 0 !important;
+}
+
+/* buttons */
+.action-btn{
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    cursor: pointer;
+    flex-shrink: 0;
+}

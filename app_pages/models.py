@@ -18,8 +18,15 @@ class Company(models.Model):
 
     name = models.CharField(max_length=100)
 
+    # ✅ This IS the company username
+    slug = models.SlugField(
+        unique=True,
+        blank=True,
+        db_index=True,
+        help_text="Unique company username"
+    )
+
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    slug = models.SlugField(unique=True, blank=True, db_index=True)
 
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -38,11 +45,8 @@ class Company(models.Model):
     logo = models.ImageField(upload_to="company_logos/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def public_slug_url(self):
+    def public_url(self):
         return f"/pages/company/{self.slug}/"
-
-    def public_uid_url(self):
-        return f"/pages/company/id/{self.uid}/"
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -57,6 +61,7 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
 
 
 # ================================
@@ -186,3 +191,5 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
