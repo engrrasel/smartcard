@@ -3,7 +3,11 @@
 
 {% block content %}
 
+<!-- ================= PAGE BASE CSS ================= -->
 <link rel="stylesheet" href="{% static 'app_pages/css/page_base.css' %}">
+
+<!-- ================= PAGE SPECIFIC CSS ================= -->
+{% block page_css %}{% endblock %}
 
 <div class="desktop-tabs">
     <div class="d-flex align-items-center justify-content-between mb-4">
@@ -55,11 +59,9 @@
 
             </button>
 
-
             <!-- ================= DROPDOWN ================= -->
             <div class="company-dropdown" id="companyDropdown">
 
-                <!-- CURRENT COMPANY -->
                 <div class="company-current">
                     <div class="avatar-lg">
                         {% if selected_company.logo %}
@@ -75,7 +77,6 @@
                     </div>
                 </div>
 
-                <!-- ACTIONS -->
                 <div class="company-actions">
                     <a href="{% url 'app_pages:company_manage' selected_company.id %}"
                        class="company-action">
@@ -94,11 +95,9 @@
 
                 <div class="dropdown-divider"></div>
 
-                <!-- COMPANY LIST -->
                 {% for company in companies %}
                 <a href="{{ request.path }}?company={{ company.id }}"
-                class="company-item {% if selected_company.id == company.id %}active{% endif %}">
-
+                   class="company-item {% if selected_company.id == company.id %}active{% endif %}">
                     <span class="avatar-sm">
                         {% if company.logo %}
                             <img src="{{ company.logo.url }}" alt="{{ company.name }}">
@@ -106,11 +105,9 @@
                             {{ company.name|slice:":1"|upper }}
                         {% endif %}
                     </span>
-
                     <span>{{ company.name }}</span>
                 </a>
                 {% endfor %}
-
 
                 <div class="dropdown-divider"></div>
 
@@ -130,6 +127,10 @@
     {% block page_content %}{% endblock %}
 </div>
 
+<!-- ================= PAGE BASE JS ================= -->
 <script src="{% static 'app_pages/js/page_base.js' %}"></script>
+
+<!-- ================= PAGE SPECIFIC JS ================= -->
+{% block page_js %}{% endblock %}
 
 {% endblock %}
