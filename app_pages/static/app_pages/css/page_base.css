@@ -179,7 +179,7 @@
     position: absolute;
     right: 0;
     top: calc(100% + 10px);
-    width: 260px;
+    width: 300px;
     background: var(--white);
     border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0,0,0,.15);
@@ -192,6 +192,7 @@
 .company-dropdown.show {
     display: block;
 }
+
 
 @keyframes dropdownFade {
     from { opacity: 0; transform: translateY(-6px) scale(.98); }

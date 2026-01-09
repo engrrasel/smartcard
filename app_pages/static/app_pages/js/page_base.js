@@ -1,45 +1,19 @@
-document.addEventListener("click", async function (e) {
+document.addEventListener("DOMContentLoaded", () => {
 
-    /* ========= COPY LINK ========= */
-    const copyBtn = e.target.closest(".copy-btn");
-    if (copyBtn) {
-        const url = copyBtn.dataset.url;
-        navigator.clipboard.writeText(url);
+    const toggleBtn = document.getElementById("companyToggle");
+    const dropdown = document.getElementById("companyDropdown");
 
-        copyBtn.innerHTML = "✓";
-        setTimeout(() => {
-            copyBtn.innerHTML = '<i class="fa-solid fa-link"></i>';
-        }, 1200);
-        return;
-    }
+    // Guard: এই পেজে company switcher না থাকলে
+    if (!toggleBtn || !dropdown) return;
 
-    /* ========= QR DIRECT DOWNLOAD ========= */
-    const qrBtn = e.target.closest(".qr-btn");
-    if (qrBtn) {
-        const pageUrl = encodeURIComponent(qrBtn.dataset.url);
+    // Toggle dropdown
+    toggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();               // 🔴 সবচেয়ে গুরুত্বপূর্ণ
+        dropdown.classList.toggle("show");
+    });
 
-        const qrApi =
-            `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${pageUrl}`;
-
-        try {
-            const response = await fetch(qrApi);
-            const blob = await response.blob();
-
-            const blobUrl = URL.createObjectURL(blob);
-
-            const a = document.createElement("a");
-            a.href = blobUrl;
-            a.download = "company-qr.png";
-            document.body.appendChild(a);
-            a.click();
-
-            document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
-
-        } catch (err) {
-            alert("QR download failed");
-            console.error(err);
-        }
-    }
-
+    // Click outside → close
+    document.addEventListener("click", () => {
+        dropdown.classList.remove("show");
+    });
 });
