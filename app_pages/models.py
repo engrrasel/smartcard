@@ -7,6 +7,12 @@ from app_accounts.models import CustomUser
 # ================================
 # ✅ COMPANY MODEL
 # ================================
+from django.db import models
+from django.utils.text import slugify
+import uuid
+from app_accounts.models import CustomUser
+
+
 class Company(models.Model):
     owner = models.ForeignKey(
         CustomUser,
@@ -18,7 +24,7 @@ class Company(models.Model):
 
     name = models.CharField(max_length=100)
 
-    # ✅ This IS the company username
+    # ✅ Human-friendly company username (changeable)
     slug = models.SlugField(
         unique=True,
         blank=True,
@@ -26,6 +32,7 @@ class Company(models.Model):
         help_text="Unique company username"
     )
 
+    # ✅ Permanent identifier (never changes)
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     address = models.TextField(blank=True, null=True)
@@ -45,8 +52,13 @@ class Company(models.Model):
     logo = models.ImageField(upload_to="company_logos/", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def public_url(self):
+    # 🔹 SEO / UI URL (slug based – can change)
+    def slug_url(self):
         return f"/pages/company/{self.slug}/"
+
+    # 🔒 Permanent URL (UID based – use for QR & Copy)
+    def public_url(self):
+        return f"/pages/company/id/{self.uid}/"
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -61,7 +73,6 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
-
 
 
 # ================================

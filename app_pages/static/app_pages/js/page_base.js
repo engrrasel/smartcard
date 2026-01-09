@@ -1,32 +1,45 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("click", async function (e) {
 
-    const toggle = document.getElementById("companyToggle");
-    const dropdown = document.getElementById("companyDropdown");
-    const deactivateBtn = document.getElementById("deactivateCompanyBtn");
+    /* ========= COPY LINK ========= */
+    const copyBtn = e.target.closest(".copy-btn");
+    if (copyBtn) {
+        const url = copyBtn.dataset.url;
+        navigator.clipboard.writeText(url);
 
-    if (!toggle || !dropdown) return;
+        copyBtn.innerHTML = "✓";
+        setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fa-solid fa-link"></i>';
+        }, 1200);
+        return;
+    }
 
-    // Toggle dropdown
-    toggle.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const open = dropdown.classList.toggle("show");
-        toggle.setAttribute("aria-expanded", open);
-    });
+    /* ========= QR DIRECT DOWNLOAD ========= */
+    const qrBtn = e.target.closest(".qr-btn");
+    if (qrBtn) {
+        const pageUrl = encodeURIComponent(qrBtn.dataset.url);
 
-    // Outside click close
-    document.addEventListener("click", function () {
-        dropdown.classList.remove("show");
-        toggle.setAttribute("aria-expanded", "false");
-    });
+        const qrApi =
+            `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${pageUrl}`;
 
-    dropdown.addEventListener("click", e => e.stopPropagation());
+        try {
+            const response = await fetch(qrApi);
+            const blob = await response.blob();
 
-    // Deactivate confirm
-    if (deactivateBtn) {
-        deactivateBtn.addEventListener("click", function () {
-            if (!confirm("Deactivate this page? It will be hidden but not deleted.")) return;
-            window.location.href = deactivateBtn.dataset.url;
-        });
+            const blobUrl = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = blobUrl;
+            a.download = "company-qr.png";
+            document.body.appendChild(a);
+            a.click();
+
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+
+        } catch (err) {
+            alert("QR download failed");
+            console.error(err);
+        }
     }
 
 });

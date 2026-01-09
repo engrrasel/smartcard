@@ -34,14 +34,20 @@ def company_pages(request):
     if company_id:
         selected_company = companies.filter(id=company_id).first()
     else:
-        # 🔥 default company (first one)
         selected_company = companies.first()
+
+    # 🔥 IMPORTANT: permanent absolute URL
+    for company in companies:
+        company.absolute_public_url = request.build_absolute_uri(
+            company.public_url()
+        )
 
     return render(request, "pages/company_pages.html", {
         "companies": companies,
         "selected_company": selected_company,
         "active_tab": "dashboard",
     })
+
 
 
 # ======================================
