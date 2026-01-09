@@ -62,11 +62,11 @@ class Company(models.Model):
 
     # 🔹 SEO / UI URL (slug based – can change)
     def get_absolute_url(self):
-        return f"/pages/company/{self.slug}/"
+        return f"/pages/{self.slug}/"
 
     # 🔒 Permanent URL (UID based – never changes)
     def get_public_url(self):
-        return f"/pages/company/id/{self.uid}/"
+        return f"/pages/id/{self.uid}/"
 
     # ================================
     # SAVE LOGIC

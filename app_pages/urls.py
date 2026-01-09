@@ -6,22 +6,13 @@ app_name = "app_pages"
 urlpatterns = [
 
     # =====================================
-    # ✅ PUBLIC COMPANY PAGES (NO LOGIN)
+    # 🔒 PERMANENT PUBLIC URL (UID BASED)
+    # 👉 only for redirect
     # =====================================
-    # ⚠️ Order matters: UID first, then SLUG
-
-    # 🔒 Permanent URL (QR / Copy) → redirects to slug URL
     path(
-        "company/id/<uuid:uid>/",
+        "id/<uuid:uid>/",
         views.company_public_by_uid,
         name="company_public_uid"
-    ),
-
-    # 🌍 Public visible URL (CUSTOM / SLUG)
-    path(
-        "<slug:slug>/",
-        views.company_public_by_slug,
-        name="company_public_slug"
     ),
 
     # =====================================
@@ -70,5 +61,15 @@ urlpatterns = [
         "employee/live-search/",
         views.employee_live_search,
         name="employee_live_search"
+    ),
+
+    # =====================================
+    # 🌍 PUBLIC COMPANY PAGE (SLUG BASED)
+    # ⚠️ MUST BE LAST
+    # =====================================
+    path(
+        "<slug:slug>/",
+        views.company_public_by_slug,
+        name="company_public_slug"
     ),
 ]
