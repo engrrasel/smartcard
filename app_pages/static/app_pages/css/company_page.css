@@ -173,3 +173,11 @@
         align-self: flex-end;
     }
 }
+
+.page-section {
+    margin-top: 4px;   /* page_base content alignment */
+}
+
+.page-title {
+    font-weight: 600;
+}

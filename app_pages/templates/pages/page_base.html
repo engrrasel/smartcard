@@ -3,128 +3,17 @@
 
 {% block content %}
 
-<!-- ================= PAGE BASE CSS ================= -->
-<link rel="stylesheet" href="{% static 'app_pages/css/page_base.css' %}">
-
 <!-- ================= PAGE SPECIFIC CSS ================= -->
 {% block page_css %}{% endblock %}
 
-<div class="desktop-tabs">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-
-        <!-- ================= LEFT: TABS ================= -->
-        <div class="d-flex gap-3 fw-semibold flex-grow-1 justify-content-center">
-
-            <a href="{% url 'app_pages:company_pages' %}{% if selected_company %}?company={{ selected_company.id }}{% endif %}"
-               class="nav-btn {% if active_tab == 'dashboard' %}active{% endif %}">
-                Pages
-            </a>
-
-            <a href="{% url 'app_pages:products' %}{% if selected_company %}?company={{ selected_company.id }}{% endif %}"
-               class="nav-btn {% if active_tab == 'products' %}active{% endif %}">
-                Products
-            </a>
-
-            <a href="{% url 'app_pages:employee_hub' %}{% if selected_company %}?company={{ selected_company.id }}{% endif %}"
-               class="nav-btn {% if active_tab == 'employee' %}active{% endif %}">
-                Employee
-                {% if join_requests and join_requests.count > 0 %}
-                    <span class="badge bg-danger ms-1">{{ join_requests.count }}</span>
-                {% endif %}
-            </a>
-
-            <a href="{% url 'app_pages:recruitment' %}{% if selected_company %}?company={{ selected_company.id }}{% endif %}"
-               class="nav-btn {% if active_tab == 'recruitment' %}active{% endif %}">
-                Requirements
-            </a>
-
-        </div>
-
-        <!-- ================= COMPANY SWITCHER ================= -->
-        {% if selected_company %}
-        <div class="company-switcher ms-3">
-
-            <button type="button"
-                    class="company-btn logo-only"
-                    id="companyToggle"
-                    aria-expanded="false">
-
-                <span class="company-avatar">
-                    {% if selected_company.logo %}
-                        <img src="{{ selected_company.logo.url }}" alt="{{ selected_company.name }}">
-                    {% else %}
-                        {{ selected_company.name|slice:":1"|upper }}
-                    {% endif %}
-                </span>
-
-            </button>
-
-            <!-- ================= DROPDOWN ================= -->
-            <div class="company-dropdown" id="companyDropdown">
-
-                <div class="company-current">
-                    <div class="avatar-lg">
-                        {% if selected_company.logo %}
-                            <img src="{{ selected_company.logo.url }}" alt="">
-                        {% else %}
-                            {{ selected_company.name|slice:":1"|upper }}
-                        {% endif %}
-                    </div>
-
-                    <div class="company-info">
-                        <strong>{{ selected_company.name }}</strong>
-                        <small>Company Page</small>
-                    </div>
-                </div>
-
-                <div class="company-actions">
-                    <a href="{% url 'app_pages:company_manage' selected_company.id %}"
-                       class="company-action">
-                        <i class="fa-solid fa-gear"></i>
-                        Manage Page
-                    </a>
-
-                    <button type="button"
-                            class="company-action danger"
-                            id="deactivateCompanyBtn"
-                            data-url="{% url 'app_pages:company_deactivate' selected_company.id %}">
-                        <i class="fa-solid fa-ban"></i>
-                        Deactivate Page
-                    </button>
-                </div>
-
-                <div class="dropdown-divider"></div>
-
-                {% for company in companies %}
-                <a href="{{ request.path }}?company={{ company.id }}"
-                   class="company-item {% if selected_company.id == company.id %}active{% endif %}">
-                    <span class="avatar-sm">
-                        {% if company.logo %}
-                            <img src="{{ company.logo.url }}" alt="{{ company.name }}">
-                        {% else %}
-                            {{ company.name|slice:":1"|upper }}
-                        {% endif %}
-                    </span>
-                    <span>{{ company.name }}</span>
-                </a>
-                {% endfor %}
-
-                <div class="dropdown-divider"></div>
-
-                <a href="{% url 'app_pages:add_company' %}" class="company-add">
-                    + Add New Page
-                </a>
-
-            </div>
-        </div>
-        {% endif %}
-
-    </div>
-</div>
+<!-- ================= PAGE HEADER ================= -->
+{% include "pages/_page_header.html" %}
 
 <!-- ================= PAGE CONTENT ================= -->
-<div class="container mt-4">
-    {% block page_content %}{% endblock %}
+<div class="container">
+    <div class="page-section">
+        {% block page_content %}{% endblock %}
+    </div>
 </div>
 
 <!-- ================= PAGE BASE JS ================= -->

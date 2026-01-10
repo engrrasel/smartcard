@@ -512,3 +512,53 @@
 }
 
 
+/* ==================================================
+   PAGE_BASE EXACT NAV POSITIONING
+   ================================================== */
+
+/* Desktop tabs wrapper */
+.desktop-tabs {
+    display: block;
+    width: 100%;
+}
+
+/* Outer row (left + center + right balance) */
+.desktop-tabs > .d-flex.align-items-center.justify-content-between.mb-4 {
+    width: 100%;
+    position: relative;
+}
+
+/* Center nav container – THIS IS THE KEY */
+.desktop-tabs
+.d-flex.gap-3.fw-semibold.flex-grow-1.justify-content-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+
+    flex-wrap: nowrap;        /* 🔴 NO WRAP ON DESKTOP */
+    width: 100%;
+}
+
+/* Each nav button stays natural width */
+.desktop-tabs .nav-btn {
+    flex: 0 0 auto;
+}
+
+
+/* ==================================================
+   NAV FONT SIZE – EXACT page_base MATCH
+   ================================================== */
+
+/* Desktop nav buttons */
+.desktop-tabs .nav-btn {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Badge text inside nav */
+.desktop-tabs .nav-btn .badge {
+    font-size: 12px;
+    font-weight: 600;
+}

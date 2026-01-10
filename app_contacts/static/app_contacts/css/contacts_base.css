@@ -1,170 +1,114 @@
-/* ===========================
-   TOP NAV MAIN STYLE (original)
-   ===========================*/
+/* ==================================================
+   DESKTOP TABS – EXACT page_base POSITIONING
+   ================================================== */
+
+.desktop-tabs {
+    display: block;
+}
+
+.desktop-tabs .d-flex.align-items-center.justify-content-between.mb-4 {
+    width: 100%;
+}
+
+.desktop-tabs .d-flex.gap-3.fw-semibold.flex-grow-1.justify-content-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;   /* 🔴 VERY IMPORTANT */
+}
+
+
+/* ==================================================
+   NAV BUTTON – page_base
+   ================================================== */
 .nav-btn {
-    padding: 10px 24px;
-    border: 1px solid transparent;
+    padding: 8px 16px;
     border-radius: 8px;
     background: transparent;
+    border: 1px solid transparent;
     font-weight: 500;
-    cursor: pointer;
+    font-size: 14px;
     text-decoration: none;
-    color: #333;
-    transition: .25s;
-    font-size: 14px;   /* ✅ 2px → 14px বা চাইলে 15px */
+    color: #000;
+    transition: background-color .2s ease, color .2s ease;
 }
 
-
-/* Hover */
 .nav-btn:hover {
-    border-color: #0d6efd;
-    background: rgba(13,110,253,0.08);
-    color: #0d6efd;
+    background: #f4f4f4;
 }
 
-/* Active */
 .nav-btn.active {
-    border-color: #0d6efd;
-    background: rgba(13,110,253,0.15);
-    color: #0d6efd;
+    background: #000;
+    color: #fff;
 }
 
-/* Disabled */
 .nav-btn.disabled {
+    opacity: .6;
     cursor: not-allowed;
 }
 
 
-/* ===========================
-   💥 MOBILE RESPONSIVE NAV UI
-   ===========================*/
-@media(max-width:768px){
+/* ==================================================
+   MOBILE NAV CONTROL (STRICT SEPARATION)
+   ================================================== */
 
-    .nav-btn{
-        padding: 6px 10px;
+.mobile-nav {
+    display: none;
+}
+
+
+/* ==================================================
+   MOBILE ONLY
+   ================================================== */
+@media (max-width: 768px) {
+
+    /* Hide desktop tabs fully */
+    .desktop-tabs {
+        display: none !important;
+    }
+
+    /* Bottom nav */
+    .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: 1px solid #e6e6e6;
+        display: flex;
+        justify-content: space-around;
+        padding: 8px 0 10px;
+        z-index: 9999;
+    }
+
+    .mobile-nav a {
+        position: relative;
+        text-align: center;
         font-size: 12px;
+        text-decoration: none;
+        color: #444;
+        font-weight: 500;
+    }
+
+    .mobile-nav a.active {
+        color: #000;
+        font-weight: 600;
+    }
+
+    .mobile-nav i {
         display: block;
-        width: 100%;                    /* Full width */
-        text-align: center;
-        margin-bottom: 8px;             /* Spacing between tabs */
-        border-radius: 10px;
+        font-size: 18px;
+        margin-bottom: 3px;
     }
 
-    /* Container layout responsive fix */
-    .d-flex.gap-3.fw-semibold.mb-4{
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-    }
-
-    .nav-btn.active,
-    .nav-btn:hover {
-        background: rgba(13,110,253,0.15);
-        color: #0d6efd;
-        border-color:#0d6efd;
-    }
-}
-
-/* 🔥 Fully Mobile Responsive Nav — No Scroll Anymore */
-@media(max-width:768px){
-
-    /* Make menu full vertical stacked */
-    .contact-nav,
-    .d-flex.gap-3.fw-semibold.mb-4{
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 10px !important;
-        width: 100%;
-    }
-
-    .nav-btn{
-        width: 100%;
-        display: block;
-        text-align: center;
-        padding: 11px 14px;
-        font-size: 16px;
-        border-radius: 10px;
-        margin: 0 !important;
-    }
-
-    .nav-btn.active,
-    .nav-btn:hover{
-        background: rgba(13,110,253,0.18);
-        border-color:#0d6efd;
-        color:#0d6efd;
-    }
-}
-/* 🔥 Responsive Nav Fix (No overflow, wrapping enabled) */
-.contact-nav,
-.d-flex.gap-3.fw-semibold.mb-4 {
-    display: flex;
-    flex-wrap: wrap !important;
-    gap: 8px 14px;
-    justify-content: center;
-    text-align: center;
-    width: 100%;
-}
-
-/* Each button adapts width */
-.nav-btn{
-    flex-shrink: 0;
-}
-
-/* Mobile — Perfect inline grid look */
-@media(max-width: 768px){
-    .nav-btn{
-        flex: 1 1 30%;         /* 3 items per line max */
-        padding: 12px;
-        font-size: 16px;
-    }
-}
-
-/* Desktop as usual */
-.desktop-tabs { display:block; }
-
-/* Bottom nav hidden default */
-.mobile-nav{
-    display:none;
-}
-
-/* ================= MOBILE UI ================= */
-@media(max-width:768px){
-
-    /* 🔹 Desktop menu hide */
-    .desktop-tabs{ display:none !important; }
-
-    /* 🔥 Bottom Menu Bar */
-    .mobile-nav{
-        position:fixed;
-        bottom:0; left:0; right:0;
-        background:#ffffff;
-        border-top:1px solid #ccc;
-        display:flex;
-        justify-content:space-around;
-        padding:8px 0 10px;
-        z-index:9999;
-    }
-    .mobile-nav a{
-        text-align:center;
-        font-size:13px;
-        text-decoration:none;
-        color:#444;
-    }
-    .mobile-nav a.active{ color:#0d6efd;font-weight:600; }
-
-    .mobile-nav i{
-        display:block;
-        font-size:18px;
-        margin-bottom:3px;
-    }
-
-    /* 🔥 Request alert badge small dot */
-    .alert-dot{
-        width:8px; height:8px;
-        background:red;
-        border-radius:50%;
-        display:inline-block;
-        position:absolute;
-        top:4px; right:18px;
+    .alert-dot {
+        width: 8px;
+        height: 8px;
+        background: #d92d20;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        right: 14px;
     }
 }
