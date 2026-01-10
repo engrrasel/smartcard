@@ -7,7 +7,6 @@ urlpatterns = [
 
     # =====================================
     # 🔒 PERMANENT PUBLIC URL (UID BASED)
-    # 👉 only for redirect
     # =====================================
     path(
         "id/<uuid:uid>/",
@@ -42,6 +41,14 @@ urlpatterns = [
     # ✅ EMPLOYEE SYSTEM
     # =====================================
     path("employee/", views.employee_hub, name="employee_hub"),
+
+    # 🔁 EMPLOYEE → PROFILE ANALYTICS REDIRECT
+    path(
+        "employee/<int:pk>/dashboard/",
+        views.employee_profile_dashboard,
+        name="employee_profile_dashboard"
+    ),
+
     path(
         "employee/send-request/<int:user_id>/",
         views.send_join_request,
@@ -65,7 +72,7 @@ urlpatterns = [
 
     # =====================================
     # 🌍 PUBLIC COMPANY PAGE (SLUG BASED)
-    # ⚠️ MUST BE LAST
+    # ⚠️ MUST BE ABSOLUTELY LAST
     # =====================================
     path(
         "<slug:slug>/",

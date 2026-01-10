@@ -321,3 +321,9 @@ def company_deactivate(request, company_id):
 
     messages.success(request, "Company page has been deactivated.")
     return redirect("app_pages:company_pages")
+
+
+
+@login_required
+def employee_profile_dashboard(request, pk):
+    return redirect("app_account:profile_and_card_dashboard", pk=pk)

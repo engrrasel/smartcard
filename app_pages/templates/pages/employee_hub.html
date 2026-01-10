@@ -21,10 +21,9 @@
         </p>
     </div>
 
-    <!-- ================= LIVE SEARCH (FACEBOOK STYLE) ================= -->
+    <!-- ================= LIVE SEARCH ================= -->
     <div class="hub-search mb-3">
 
-        <!-- REQUIRED: company id for AJAX -->
         <input type="hidden" id="companyId" value="{{ selected_company.id }}">
 
         <div class="fb-search">
@@ -35,116 +34,69 @@
                    placeholder="Search people by name, email or phone">
         </div>
 
-        <!-- AJAX RESULTS -->
         <div id="liveSearchResults" class="live-search-results"></div>
 
     </div>
 
-    <!-- ================= FALLBACK SEARCH RESULTS (NON-AJAX) ================= -->
-    {% if search_results %}
-    <div class="card hub-card mb-4">
-        <div class="card-header fw-semibold">
-            Available Users
-        </div>
+    <!-- ================= CURRENT EMPLOYEES ================= -->
+    <div class="data-card mt-4">
+
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="data-table">
+
                 <thead>
                     <tr>
-                        <th>User</th>
-                        <th>Email</th>
-                        <th class="text-end">Action</th>
+                        <th>EMPLOYEE</th>
+                        <th>EMAIL</th>
+                        <th>JOINED</th>
+                        <th class="text-end">ACTION</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                {% for user in search_results %}
-                    <tr>
+                {% for emp in joined_employees %}
+                    <tr class="employee-row"
+                        data-href="{% url 'app_pages:employee_profile_dashboard' emp.user.id %}">
+
+                        <!-- Employee -->
                         <td>
                             <div class="user-row">
                                 <img
-                                    src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'img/default-user.png' %}{% endif %}"
+                                    src="{% if emp.user.profile_picture %}{{ emp.user.profile_picture.url }}{% else %}{% static 'img/default-user.png' %}{% endif %}"
                                     class="avatar"
                                     alt="avatar">
-                                <span>{{ user.full_name|default:"—" }}</span>
+                                <strong>{{ emp.user.full_name|default:"Anonymous" }}</strong>
                             </div>
                         </td>
-                        <td>{{ user.email }}</td>
+
+                        <!-- Email -->
+                        <td>{{ emp.user.email }}</td>
+
+                        <!-- Joined -->
+                        <td class="time">{{ emp.joined_date }}</td>
+
+                        <!-- Action -->
                         <td class="text-end">
-                            <a href="{% url 'app_pages:send_join_request' user.id %}?company={{ selected_company.id }}"
-                               class="btn btn-sm btn-outline-warning">
-                                Send Request
+                            <a href="{% url 'app_pages:remove_employee' emp.id %}"
+                               class="btn btn-sm btn-outline-danger btn-remove-employee">
+                                Remove
                             </a>
+                        </td>
+
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No employees added yet
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
+
             </table>
         </div>
+
     </div>
-    {% endif %}
-
-
-<!-- ================= CURRENT EMPLOYEES ================= -->
-<div class="data-card mt-4">
-
-    <div class="table-responsive">
-        <table class="data-table">
-
-            <thead>
-                <tr>
-                    <th>EMPLOYEE</th>
-                    <th>EMAIL</th>
-                    <th>JOINED</th>
-                    <th class="text-end">ACTION</th>
-                </tr>
-            </thead>
-
-            <tbody>
-            {% for emp in joined_employees %}
-                <tr>
-
-                    <!-- Employee -->
-                    <td>
-                        <div class="user-row">
-                            <img
-                                src="{% if emp.user.profile_picture %}{{ emp.user.profile_picture.url }}{% else %}{% static 'img/default-user.png' %}{% endif %}"
-                                class="avatar"
-                                alt="avatar">
-                            <strong>{{ emp.user.full_name|default:"Anonymous" }}</strong>
-                        </div>
-                    </td>
-
-                    <!-- Email -->
-                    <td>{{ emp.user.email }}</td>
-
-                    <!-- Joined -->
-                    <td class="time">
-                        {{ emp.joined_date }}
-                    </td>
-
-                    <!-- Action -->
-                    <td class="text-end">
-                        <a href="{% url 'app_pages:remove_employee' emp.id %}"
-                           class="btn btn-sm btn-outline-danger btn-remove-employee">
-                            Remove
-                        </a>
-                    </td>
-
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center text-muted py-4">
-                        No employees added yet
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-
-        </table>
-    </div>
-
-</div>
-
-
 
 </div>
 
@@ -159,3 +111,28 @@
 {% block extra_js %}
 <script src="{% static 'app_pages/js/employee_hub.js' %}"></script>
 {% endblock %}
+
+
+{% for emp in joined_employees %}
+<tr class="employee-row"
+    data-href="{% url 'app_accounts:profile_dashboard' emp.user.id %}">
+
+    <td>
+        <div class="user-row">
+            <img src="{% if emp.user.profile_picture %}{{ emp.user.profile_picture.url }}{% else %}{% static 'img/default-user.png' %}{% endif %}"
+                 class="avatar">
+            <strong>{{ emp.user.full_name|default:"Anonymous" }}</strong>
+        </div>
+    </td>
+
+    <td>{{ emp.user.email }}</td>
+    <td>{{ emp.joined_date }}</td>
+
+    <td class="text-end">
+        <a href="{% url 'app_pages:remove_employee' emp.id %}"
+           class="btn btn-sm btn-outline-danger btn-remove-employee">
+            Remove
+        </a>
+    </td>
+</tr>
+{% endfor %}

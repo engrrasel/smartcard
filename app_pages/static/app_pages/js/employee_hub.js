@@ -1,15 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ================= REMOVE EMPLOYEE CONFIRM ================= */
+    /* =====================================================
+       REMOVE EMPLOYEE CONFIRMATION
+    ===================================================== */
     document.querySelectorAll(".btn-remove-employee").forEach(btn => {
         btn.addEventListener("click", e => {
             if (!confirm("Are you sure you want to remove this employee?")) {
                 e.preventDefault();
+                e.stopPropagation(); // 🔥 row click বন্ধ
             }
         });
     });
 
-    /* ================= LIVE SEARCH ================= */
+    /* =====================================================
+       EMPLOYEE ROW CLICK → PROFILE DASHBOARD
+    ===================================================== */
+    document.querySelectorAll(".employee-row").forEach(row => {
+
+        row.addEventListener("click", function (e) {
+
+            // ❌ Remove button এ ক্লিক হলে redirect নয়
+            if (e.target.closest(".btn-remove-employee")) {
+                return;
+            }
+
+            const url = this.dataset.href;
+            if (url) {
+                window.location.href = url;
+            }
+        });
+
+    });
+
+    /* =====================================================
+       LIVE SEARCH (AJAX)
+    ===================================================== */
     const input = document.getElementById("liveSearchInput");
     const resultsBox = document.getElementById("liveSearchResults");
     const companyId = document.getElementById("companyId")?.value;
@@ -36,14 +61,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 300);
     });
 
-    /* ================= CLICK OUTSIDE TO CLOSE ================= */
+    /* =====================================================
+       CLICK OUTSIDE → CLOSE SEARCH RESULTS
+    ===================================================== */
     document.addEventListener("click", e => {
         if (!e.target.closest(".hub-search")) {
             hideResults();
         }
     });
 
-    /* ================= RENDER RESULTS ================= */
+    /* =====================================================
+       RENDER SEARCH RESULTS
+    ===================================================== */
     function renderResults(results) {
         if (!results.length) {
             resultsBox.innerHTML = `<div class="empty">No results</div>`;
@@ -68,7 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsBox.style.display = "block";
     }
 
-    /* ================= HIDE RESULTS ================= */
+    /* =====================================================
+       HIDE SEARCH RESULTS
+    ===================================================== */
     function hideResults() {
         resultsBox.style.display = "none";
         resultsBox.innerHTML = "";

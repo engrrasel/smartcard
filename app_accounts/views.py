@@ -6,6 +6,7 @@ from collections import defaultdict
 import qrcode
 import requests
 
+from app_pages.models import Employee
 from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
@@ -213,47 +214,94 @@ def download_qr(request, pk):
     return res
 
 
-# ───────────────────────────────────────────────
 @login_required
 def profile_and_card_dashboard(request, pk):
     """
     Main dashboard for a single profile.
-    - loads last contact leads (location logs)
-    - loads click events
-    - builds a mapping (by device_ip or visitor id) of which buttons were clicked
-    so the template can show per-visitor which buttons were clicked.
+    Company/Page owner can view analytics
+    if the profile is added as an active employee.
     """
-    profile = get_object_or_404(CustomUser, pk=pk)
-    if profile != request.user and profile.parent_user != request.user:
-        return HttpResponse("Forbidden", 403)
 
-    # Location leads (most recent first)
-    base = ContactSaveLead.objects.filter(profile=profile).select_related("visitor").order_by("-timestamp")
+    profile = get_object_or_404(CustomUser, pk=pk)
+
+    # ─────────────────────────────
+    # 🔐 PERMISSION LOGIC (FINAL)
+    # ─────────────────────────────
+    allowed = False
+
+    # 1️⃣ Own profile
+    if profile == request.user:
+        allowed = True
+
+    # 2️⃣ Child profile
+    elif profile.parent_user == request.user:
+        allowed = True
+
+    # 3️⃣ Company owner → employee access
+    elif Employee.objects.filter(
+        user=profile,
+        company__owner=request.user,
+        is_active=True
+    ).exists():
+        allowed = True
+
+    if not allowed:
+        return HttpResponse("Forbidden", status=403)
+
+    # ─────────────────────────────
+    # 📊 ANALYTICS LOGIC (UNCHANGED)
+    # ─────────────────────────────
+
+    base = (
+        ContactSaveLead.objects
+        .filter(profile=profile)
+        .select_related("visitor")
+        .order_by("-timestamp")
+    )
+
     leads = base[:200]
     location_logs = base[:50]
 
-    # Analytics
+    # Basic counts
     total_views = base.count()
-    gps_count = base.filter(latitude__isnull=False, longitude__isnull=False).count()
+    gps_count = base.filter(
+        latitude__isnull=False,
+        longitude__isnull=False
+    ).count()
     ip_count = total_views - gps_count
 
-    mobile = base.filter(user_agent__icontains="Mobile").count()
-    tablet = base.filter(user_agent__icontains="Tablet").count()
-    desktop = total_views - (mobile + tablet)
+    # Device stats
+    mobile_count = base.filter(user_agent__icontains="Mobile").count()
+    tablet_count = base.filter(user_agent__icontains="Tablet").count()
+    desktop_count = total_views - (mobile_count + tablet_count)
 
+    # Last 15 days chart
     today = timezone.now().date()
-    labels, values = [], []
+    chart_labels = []
+    chart_values = []
+
     for i in range(15):
-        d = today - timedelta(days=(14 - i))
-        labels.append(d.strftime("%d %b"))
-        values.append(base.filter(timestamp__date=d).count())
+        day = today - timedelta(days=(14 - i))
+        chart_labels.append(day.strftime("%d %b"))
+        chart_values.append(
+            base.filter(timestamp__date=day).count()
+        )
 
-    top_countries = base.values("country").annotate(c=Count("id")).order_by("-c")[:5]
+    # Top countries
+    top_countries = (
+        base.values("country")
+        .annotate(c=Count("id"))
+        .order_by("-c")[:5]
+    )
 
-    # Click events (all)
-    click_events = ClickEvent.objects.filter(profile=profile).order_by("-timestamp")
+    # Click events
+    click_events = (
+        ClickEvent.objects
+        .filter(profile=profile)
+        .order_by("-timestamp")
+    )
 
-    # Build mapping of device_ip -> list of clicked buttons (preserve order, unique)
+    # Map: device_ip → clicked buttons
     click_by_ip = defaultdict(list)
     for ce in click_events:
         key = ce.device_ip or "anon"
@@ -261,43 +309,43 @@ def profile_and_card_dashboard(request, pk):
         if btn and btn not in click_by_ip[key]:
             click_by_ip[key].append(btn)
 
-    # Additionally build mapping for visitor user id if available from ContactSaveLead:
-    # We'll prepare a map lead_key -> buttons for quick template use.
+    # Map: lead.id → buttons clicked
     lead_buttons_map = {}
     for lead in location_logs:
-        # prefer visitor-based key if visitor exists, else device_ip
-        if lead.visitor:
-            # try to find clicks by device_ip first; also fallback to using visitor-specific lookup
-            key = lead.device_ip or f"user:{lead.visitor.pk}"
-        else:
-            key = lead.device_ip or "anon"
-        buttons = click_by_ip.get(lead.device_ip or "anon", [])
-        # store a shallow copy
-        lead_buttons_map[lead.id] = buttons
+        ip_key = lead.device_ip or "anon"
+        lead_buttons_map[lead.id] = click_by_ip.get(ip_key, [])
 
-    return render(request, "accounts/profile_and_card_dashboard.html", {
-        "profile": profile,
-        "leads": leads,
-        "location_logs": location_logs,
-        "lead_buttons_map": lead_buttons_map,   # use this in template: lead_buttons_map[lead.id]
-        "total_views": total_views,
-        "gps_count": gps_count,
-        "ip_count": ip_count,
-        "mobile_count": mobile,
-        "tablet_count": tablet,
-        "desktop_count": desktop,
-        "chart_labels": labels,
-        "chart_values": values,
-        "top_countries": top_countries,
-        "click_events": click_events[:50],
-        "click_stats": {
-            "total": click_events.count(),
-            "connect": click_events.filter(button_type="connect").count(),
-            "save": click_events.filter(button_type="save").count(),
-            "call": click_events.filter(button_type="call").count(),
-        },
-    })
+    return render(
+        request,
+        "accounts/profile_and_card_dashboard.html",
+        {
+            "profile": profile,
+            "leads": leads,
+            "location_logs": location_logs,
+            "lead_buttons_map": lead_buttons_map,
 
+            "total_views": total_views,
+            "gps_count": gps_count,
+            "ip_count": ip_count,
+
+            "mobile_count": mobile_count,
+            "tablet_count": tablet_count,
+            "desktop_count": desktop_count,
+
+            "chart_labels": chart_labels,
+            "chart_values": chart_values,
+
+            "top_countries": top_countries,
+            "click_events": click_events[:50],
+
+            "click_stats": {
+                "total": click_events.count(),
+                "connect": click_events.filter(button_type="connect").count(),
+                "save": click_events.filter(button_type="save").count(),
+                "call": click_events.filter(button_type="call").count(),
+            },
+        }
+    )
 
 # ───────────────────────────────────────────────
 @login_required

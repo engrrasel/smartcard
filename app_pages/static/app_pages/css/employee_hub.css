@@ -253,3 +253,13 @@
         max-width: 100%;
     }
 }
+
+
+.employee-row {
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.employee-row:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
